@@ -1,0 +1,20 @@
+Tests SourceMapParser and CompilerScriptMapping.
+
+
+Running: testSimpleMap
+
+Running: testNoMappingEntry
+
+Running: testEmptyLine
+
+Running: testSections
+
+Running: testResolveSourceMapURL
+
+Running: testCompilerScriptMapping
+
+Running: testInlinedSourceMap
+
+Running: testSourceMapCouldNotBeLoaded
+compiled.js
+

@@ -1,0 +1,81 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+
+<script>
+
+function f1()
+{
+    var a=0;var b=1;var c=3;var d=4;var e=5;
+    var f=0;
+    return 0;
+}
+
+var test = function()
+{
+    WebInspector.breakpointManager._storage._breakpoints = {};
+    var panel = WebInspector.panels.scripts;
+    var sourceFrame;
+
+    InspectorTest.runDebuggerTestSuite([
+        function testBreakpointsInOriginalAndFormattedSource(next)
+        {
+            var root;
+            InspectorTest.showScriptSource("script-formatter-breakpoints.html", didShowScriptSource);
+
+            function didShowScriptSource(frame)
+            {
+                sourceFrame = frame;
+                root = sourceFrame._url.substr(0, sourceFrame._url.lastIndexOf("/") + 1);
+                InspectorTest.setBreakpoint(sourceFrame, 10, "", true);
+                InspectorTest.waitUntilPaused(pausedInF1);
+                InspectorTest.evaluateInPageWithTimeout("f1()");
+            }
+
+            function pausedInF1(callFrames)
+            {
+                dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.resumeExecution(resumed);
+            }
+
+            function resumed()
+            {
+                sourceFrame._javaScriptSource.setFormatted(true, didFormatPage);
+            }
+
+            function didFormatPage()
+            {
+                // There should be a breakpoint in f1 although script is pretty-printed.
+                InspectorTest.waitUntilPaused(pausedInF1Again);
+                InspectorTest.evaluateInPageWithTimeout("f1()");
+            }
+
+            function pausedInF1Again(callFrames)
+            {
+                dumpBreakpointSidebarPane("while paused in pretty printed");
+                sourceFrame._javaScriptSource.setFormatted(false);
+                dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.resumeExecution(next);
+            }
+        }
+    ]);
+
+    function dumpBreakpointSidebarPane(title)
+    {
+        var paneElement = WebInspector.panels.scripts.sidebarPanes.jsBreakpoints.listElement
+        InspectorTest.addResult("Breakpoint sidebar pane " + title);
+        InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(paneElement));
+    }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests the script formatting is working fine with breakpoints.
+</p>
+
+</body>
+</html>

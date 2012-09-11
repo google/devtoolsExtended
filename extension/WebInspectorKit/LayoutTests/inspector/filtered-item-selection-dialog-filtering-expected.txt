@@ -1,0 +1,75 @@
+Check to see that FilteredItemSelectionDialog uses proper regex to filter results.
+
+{
+    input : [
+        "a"
+        "bc"
+    ]
+    output : [
+        "a"
+        "bc"
+    ]
+    query : ""
+    title : "Empty query matches everything"
+}
+{
+    input : [
+        "abc"
+        "acB"
+    ]
+    output : [
+        "acB"
+    ]
+    query : "aB"
+    title : "Case sensitive matching"
+}
+{
+    input : [
+        "abc"
+        "bac"
+        "a_B"
+    ]
+    output : [
+        "abc"
+        "a_B"
+    ]
+    query : "ab"
+    title : "Case insensitive matching"
+}
+{
+    input : [
+        "div .visible"
+        "div.visible "
+    ]
+    output : [
+        "div .visible"
+    ]
+    query : "d v "
+    title : "Spaces in query"
+}
+{
+    input : [
+        "abab"
+        "abaa"
+        "caab"
+        "baac"
+    ]
+    output : [
+        "abab"
+        "caab"
+    ]
+    query : "aab"
+    title : "Duplicate symbols in query"
+}
+{
+    input : [
+        "^[]{}()\.$*+?|"
+        "0123456789abcdef"
+    ]
+    output : [
+        "^[]{}()\.$*+?|"
+    ]
+    query : "^[]{}()\.$*+?|"
+    title : "Dangerous input escaping"
+}
+

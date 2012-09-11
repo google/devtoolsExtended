@@ -1,0 +1,116 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script>
+function test()
+{
+    // Always use indentation in scripts drop box
+    WebInspector._isMac = false;
+    WebInspector.showPanel("scripts");
+
+    var persistentBreakpoints = [];
+    var breakpointStorage = {
+        get: function() { return persistentBreakpoints; },
+        set: function(breakpoints) { persistentBreakpoints = breakpoints; }
+    };
+
+    var contentProvider = {
+        contentType: function()
+        {
+            return WebInspector.resourceTypes.Script;
+        }
+    }
+    
+    function createUISouceCode(url)
+    {
+        var uiSourceCode = new WebInspector.JavaScriptSource(url, null, contentProvider, false);
+        uiSourceCode.requestContent = function(callback)
+        {
+            InspectorTest.addResult("Source requested for " + url);
+            callback("");
+        };
+        return uiSourceCode;
+    }
+
+    InspectorTest.runTestSuite([
+        function testInitialLoad(next)
+        {
+            var workspace = new WebInspector.Workspace();
+            
+            var uiSourceCode = createUISouceCode("foobar.js");
+            var uiSourceCodeFoo = createUISouceCode("foo.js");
+            var uiSourceCodeBar = createUISouceCode("bar.js");
+            var uiSourceCodeBaz = createUISouceCode("baz.js");
+
+            workspace.project().addUISourceCode(uiSourceCode);
+
+            var panel = new WebInspector.ScriptsPanel(workspace);
+            panel.show();
+
+            workspace.project().addUISourceCode(uiSourceCodeFoo);
+            workspace.project().addUISourceCode(uiSourceCodeBar);
+            workspace.project().addUISourceCode(uiSourceCodeBaz);
+
+            InspectorTest.dumpScriptsNavigator(panel._navigator);
+
+            // Select "baz.js".
+            panel._showFile(uiSourceCodeBaz);
+            panel.detach();
+
+            next();
+        },
+
+        function testReset(next)
+        {
+            var workspace = new WebInspector.Workspace();
+            var workspaceController = new WebInspector.WorkspaceController(workspace);
+            var panel = new WebInspector.ScriptsPanel(workspace);
+            panel.show();
+
+            var uiSourceCodeFoo = createUISouceCode("foo.js");
+            var uiSourceCodeBar = createUISouceCode("bar.js");
+            var uiSourceCodeBaz = createUISouceCode("baz.js");
+
+            workspace.project().addUISourceCode(uiSourceCodeFoo);
+            workspace.project().addUISourceCode(uiSourceCodeBar);
+            workspace.project().addUISourceCode(uiSourceCodeBaz);
+
+            InspectorTest.dumpScriptsNavigator(panel._navigator);
+
+            workspaceController._mainFrameNavigated();
+            workspace.project().addUISourceCode(uiSourceCodeBar);
+            InspectorTest.dumpScriptsNavigator(panel._navigator);
+
+            panel.detach();
+            next();
+        },
+
+        function testSourceReplaced(next)
+        {
+            var workspace = new WebInspector.Workspace();
+            var panel = new WebInspector.ScriptsPanel(workspace);
+            panel.show();
+
+            var uiSourceCodeFoo = createUISouceCode("foo.js");
+            workspace.project().addUISourceCode(uiSourceCodeFoo);
+            var compiledSourceCode = createUISouceCode("compiled.js");
+            workspace.project().addUISourceCode(compiledSourceCode);
+
+            InspectorTest.dumpScriptsNavigator(panel._navigator);
+
+            // Plug compiler source mapping.
+            var sourceSourceCode = createUISouceCode("source.js");
+            workspace.project().replaceUISourceCode(compiledSourceCode, sourceSourceCode);
+
+            InspectorTest.dumpScriptsNavigator(panel._navigator);
+            next();
+        }
+    ]);
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that scripts panel UI elements work as intended.</p>
+</body>
+</html>
