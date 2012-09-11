@@ -41,6 +41,8 @@ require_clean_work_tree "$LOCAL_BRANCH"
 
 CHROMIUM_WEBKIT="$CHROMIUM_ROOT/third_party/WebKit"
 echo "Copying source from $CHROMIUM_WEBKIT branch $WEBKIT_BRANCH to local branch $LOCAL_BRANCH"
+BUILT_FRONT_END="$CHROMIUM_ROOT/out/Release/resources/inspector"
+
 #----------------
 
 git checkout "$LOCAL_BRANCH"
@@ -48,6 +50,10 @@ CWD=$(pwd)
 cd "$CHROMIUM_WEBKIT"
 require_clean_work_tree "$CHROMIUM_WEBKIT"
 git checkout $WEBKIT_BRANCH
+cd "$CHROMIUM_ROOT"
+# We want to be sure that the source and built copies are identical
+rm -r $BUILT_FRONT_END
+cr build
 cd $CWD
 
 copySubDir "Source/WebCore/inspector/front-end"
@@ -56,7 +62,6 @@ copySubDir "LayoutTests/http/tests/inspector"
 copySubDir "Source/WebKit/chromium/src/js"
 
 
-BUILT_FRONT_END="$CHROMIUM_ROOT/out/Release/resources/inspector"
 echo "Copying built files from $BUILT_FRONT_END"
 
 LOCAL_FRONT_END="$LOCAL_WEBKIT/Source/WebCore/inspector/front-end/"
