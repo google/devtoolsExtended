@@ -93,6 +93,7 @@ InspectorBackend.registerCommand("Network.disable", [], []);
 InspectorBackend.registerCommand("Network.setUserAgentOverride", [{"name": "userAgent", "type": "string", "optional": false}], []);
 InspectorBackend.registerCommand("Network.setExtraHTTPHeaders", [{"name": "headers", "type": "object", "optional": false}], []);
 InspectorBackend.registerCommand("Network.getResponseBody", [{"name": "requestId", "type": "string", "optional": false}], ["body", "base64Encoded"]);
+InspectorBackend.registerCommand("Network.replayXHR", [{"name": "requestId", "type": "string", "optional": false}], []);
 InspectorBackend.registerCommand("Network.canClearBrowserCache", [], ["result"]);
 InspectorBackend.registerCommand("Network.clearBrowserCache", [], []);
 InspectorBackend.registerCommand("Network.canClearBrowserCookies", [], ["result"]);
@@ -191,8 +192,9 @@ InspectorBackend.registerCommand("DOM.markUndoableState", [], []);
 InspectorBackend.registerCSSDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "CSS");
 InspectorBackend.registerEvent("CSS.mediaQueryResultChanged", []);
 InspectorBackend.registerEvent("CSS.styleSheetChanged", ["styleSheetId"]);
-InspectorBackend.registerEvent("CSS.namedFlowCreated", ["documentNodeId", "namedFlow"]);
-InspectorBackend.registerEvent("CSS.namedFlowRemoved", ["documentNodeId", "namedFlow"]);
+InspectorBackend.registerEvent("CSS.namedFlowCreated", ["namedFlow"]);
+InspectorBackend.registerEvent("CSS.namedFlowRemoved", ["documentNodeId", "flowName"]);
+InspectorBackend.registerEvent("CSS.regionLayoutUpdated", ["namedFlow"]);
 InspectorBackend.registerCommand("CSS.enable", [], []);
 InspectorBackend.registerCommand("CSS.disable", [], []);
 InspectorBackend.registerCommand("CSS.getMatchedStylesForNode", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "includePseudo", "type": "boolean", "optional": true}, {"name": "includeInherited", "type": "boolean", "optional": true}], ["matchedCSSRules", "pseudoElements", "inherited"]);
@@ -211,7 +213,6 @@ InspectorBackend.registerCommand("CSS.forcePseudoState", [{"name": "nodeId", "ty
 InspectorBackend.registerCommand("CSS.startSelectorProfiler", [], []);
 InspectorBackend.registerCommand("CSS.stopSelectorProfiler", [], ["profile"]);
 InspectorBackend.registerCommand("CSS.getNamedFlowCollection", [{"name": "documentNodeId", "type": "number", "optional": false}], ["namedFlows"]);
-InspectorBackend.registerCommand("CSS.getFlowByName", [{"name": "documentNodeId", "type": "number", "optional": false}, {"name": "name", "type": "string", "optional": false}], ["namedFlow"]);
 
 // Timeline.
 InspectorBackend.registerTimelineDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Timeline");
