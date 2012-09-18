@@ -8,11 +8,13 @@
 set -e -x
 git checkout syncToWebKit
 git checkout atopwi
+git checkout 97032_asyncSourceMaps_1
 git checkout 93166_shortestItemSelected
 git checkout 96040_ExtensionItemSelector
 git checkout 96148_focusExtensionPanel
 
-git rebase syncToWebKit 93166_shortestItemSelected
+git rebase syncToWebKit 97032_asyncSourceMaps_1
+git rebase 97032_asyncSourceMaps_1 93166_shortestItemSelected
 git rebase 93166_shortestItemSelected 96040_ExtensionItemSelector
 git rebase 96040_ExtensionItemSelector 96148_focusExtensionPanel
 git rebase 96148_focusExtensionPanel atopwi 

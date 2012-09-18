@@ -8,6 +8,7 @@
 set -e -x
 git push -f origin syncToWebKit
 git push -f origin atopwi
+git push -f origin 97032_asyncSourceMaps_1
 git push -f origin 93166_shortestItemSelected
 git push -f origin 96040_ExtensionItemSelector
 git push -f origin 96148_focusExtensionPanel
