@@ -44,7 +44,7 @@ input[type="search"]:focus, input[type="text"]:focus {
 }
 
 .nowrap {
-    white-space: nowrap;
+    white-space: nowrap !important;
 }
 
 #toolbar {
@@ -2348,6 +2348,7 @@ li.breakpoint-hit .breakpoint-hit-marker {
     -webkit-border-radius: 7px;
     border: 2px solid rgb(169, 172, 203);
     width: 90%;
+    pointer-events: auto;
 }
 
 .source-frame-breakpoint-message {

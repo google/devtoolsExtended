@@ -98,6 +98,7 @@ function defineCommonExtensionSymbols(apiPrivate)
         ShowPanel: "showPanel",
         StopAuditCategoryRun: "stopAuditCategoryRun",
         Unsubscribe: "unsubscribe",
+        UpdateAuditProgress: "updateAuditProgress",
         UpdateButton: "updateButton",
         InspectedURLChanged: "inspectedURLChanged"
     };
@@ -510,6 +511,8 @@ Audits.prototype = {
     addCategory: function(displayName, resultCount)
     {
         var id = "extension-audit-category-" + extensionServer.nextObjectId();
+        if (typeof resultCount !== "undefined")
+            console.warn("Passing resultCount to audits.addCategory() is deprecated. Use AuditResult.updateProgress() instead.");
         extensionServer.sendRequest({ command: commands.AddAuditCategory, id: id, displayName: displayName, resultCount: resultCount });
         return new AuditCategory(id);
     }
@@ -569,6 +572,11 @@ AuditResultImpl.prototype = {
     createResult: function()
     {
         return new AuditResultNode(Array.prototype.slice.call(arguments));
+    },
+
+    updateProgress: function(worked, totalWork)
+    {
+        extensionServer.sendRequest({ command: commands.UpdateAuditProgress, resultId: this._id, progress: worked / totalWork });
     },
 
     done: function()

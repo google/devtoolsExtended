@@ -303,13 +303,13 @@ InspectorBackend.registerCommand("Worker.connectToWorker", [{"name": "workerId",
 InspectorBackend.registerCommand("Worker.disconnectFromWorker", [{"name": "workerId", "type": "number", "optional": false}], []);
 InspectorBackend.registerCommand("Worker.setAutoconnectToWorkers", [{"name": "value", "type": "boolean", "optional": false}], []);
 
-// WebGL.
-InspectorBackend.registerWebGLDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "WebGL");
-InspectorBackend.registerCommand("WebGL.enable", [], []);
-InspectorBackend.registerCommand("WebGL.disable", [], []);
-InspectorBackend.registerCommand("WebGL.dropTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}], []);
-InspectorBackend.registerCommand("WebGL.captureFrame", [], ["traceLogId"]);
-InspectorBackend.registerCommand("WebGL.getTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}], ["traceLog"]);
-InspectorBackend.registerCommand("WebGL.replayTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}, {"name": "stepNo", "type": "number", "optional": false}], ["screenshotDataUrl"]);
+// Canvas.
+InspectorBackend.registerCanvasDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Canvas");
+InspectorBackend.registerCommand("Canvas.enable", [], []);
+InspectorBackend.registerCommand("Canvas.disable", [], []);
+InspectorBackend.registerCommand("Canvas.dropTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}], []);
+InspectorBackend.registerCommand("Canvas.captureFrame", [], ["traceLogId"]);
+InspectorBackend.registerCommand("Canvas.getTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}], ["traceLog"]);
+InspectorBackend.registerCommand("Canvas.replayTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}, {"name": "stepNo", "type": "number", "optional": false}], ["screenshotDataUrl"]);
 
 
