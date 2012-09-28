@@ -10,4 +10,7 @@ git push -f origin syncToWebKit
 git push -f origin 97332_revert_open_resource_dialog_filter
 git push -f origin 93166_shortestItemSelected
 git push -f origin 96040_ExtensionItemSelector
+git push -f origin remoteDebug
+git push -f origin DebuggerProtocol
+
 git push -f origin atopwi
