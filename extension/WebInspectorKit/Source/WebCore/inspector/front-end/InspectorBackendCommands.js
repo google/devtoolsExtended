@@ -58,7 +58,8 @@ InspectorBackend.registerCommand("Runtime.getProperties", [{"name": "objectId", 
 InspectorBackend.registerCommand("Runtime.releaseObject", [{"name": "objectId", "type": "string", "optional": false}], []);
 InspectorBackend.registerCommand("Runtime.releaseObjectGroup", [{"name": "objectGroup", "type": "string", "optional": false}], []);
 InspectorBackend.registerCommand("Runtime.run", [], []);
-InspectorBackend.registerCommand("Runtime.setReportExecutionContextCreation", [{"name": "enabled", "type": "boolean", "optional": false}], []);
+InspectorBackend.registerCommand("Runtime.enable", [], []);
+InspectorBackend.registerCommand("Runtime.disable", [], []);
 
 // Console.
 InspectorBackend.registerConsoleDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Console");

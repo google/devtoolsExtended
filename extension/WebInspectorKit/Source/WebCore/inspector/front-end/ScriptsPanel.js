@@ -247,7 +247,7 @@ WebInspector.ScriptsPanel.prototype = {
     _addUISourceCode: function(uiSourceCode)
     {
         if (this._toggleFormatSourceButton.toggled)
-            uiSourceCode.setFormatted(true);
+            uiSourceCode.setFormatted(true, this._uiSourceCodeFormatted.bind(this, uiSourceCode));
 
         this._navigator.addUISourceCode(uiSourceCode);
         this._editorContainer.addUISourceCode(uiSourceCode);
@@ -299,7 +299,7 @@ WebInspector.ScriptsPanel.prototype = {
         else if (details.reason === WebInspector.DebuggerModel.BreakReason.Assert)
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on assertion."));
         else if (details.reason === WebInspector.DebuggerModel.BreakReason.CSPViolation)
-            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a script blocked due to Content Security Policy directive: \"%s\".", details.auxData.directiveText));
+            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a script blocked due to Content Security Policy directive: \"%s\".", details.auxData["directiveText"]));
         else {
             function didGetUILocation(uiLocation)
             {
@@ -928,12 +928,18 @@ WebInspector.ScriptsPanel.prototype = {
         view.replaceAllWith(query, text);
     },
 
+    _uiSourceCodeFormatted: function(uiSourceCode)
+    {
+        if (uiSourceCode instanceof WebInspector.JavaScriptSource)
+            WebInspector.breakpointManager.restoreBreakpoints(uiSourceCode);
+    },
+
     _toggleFormatSource: function()
     {
         this._toggleFormatSourceButton.toggled = !this._toggleFormatSourceButton.toggled;
         var uiSourceCodes = this._workspace.uiSourceCodes();
         for (var i = 0; i < uiSourceCodes.length; ++i)
-            uiSourceCodes[i].setFormatted(this._toggleFormatSourceButton.toggled);
+            uiSourceCodes[i].setFormatted(this._toggleFormatSourceButton.toggled, this._uiSourceCodeFormatted.bind(this, uiSourceCodes[i]));
     },
 
     addToWatch: function(expression)
@@ -1100,8 +1106,9 @@ WebInspector.ScriptsPanel.prototype = {
 
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ target;
         contextMenu.appendItem(WebInspector.UIString("Local modifications..."), this._showLocalHistory.bind(this, uiSourceCode));
-        if (uiSourceCode.resource() && uiSourceCode.resource().request)
-            contextMenu.appendApplicableItems(uiSourceCode.resource().request);
+        var resource = WebInspector.resourceForURL(uiSourceCode.url);
+        if (resource && resource.request)
+            contextMenu.appendApplicableItems(resource.request);
     },
 
     /** 
