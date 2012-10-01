@@ -7,6 +7,7 @@
 
 set -e -x
 git push -f origin syncToWebKit
+git push -f origin 97768_revert_implicit_star_beginning
 git push -f origin 97332_revert_open_resource_dialog_filter
 git push -f origin 93166_shortestItemSelected
 git push -f origin 96040_ExtensionItemSelector

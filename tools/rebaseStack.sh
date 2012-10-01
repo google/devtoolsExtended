@@ -7,6 +7,7 @@
 
 set -e -x
 git checkout syncToWebKit
+git checkout 97768_revert_implicit_star_beginning
 git checkout 97332_revert_open_resource_dialog_filter
 git checkout 93166_shortestItemSelected
 git checkout 96040_ExtensionItemSelector
@@ -14,7 +15,8 @@ git checkout remoteDebug
 git checkout DebuggerProtocol
 git checkout atopwi
 
-git rebase syncToWebKit 97332_revert_open_resource_dialog_filter
+git rebase syncToWebKit 97768_revert_implicit_star_beginning
+git rebase 97768_revert_implicit_star_beginning 97332_revert_open_resource_dialog_filter
 git rebase 97332_revert_open_resource_dialog_filter 93166_shortestItemSelected
 git rebase 93166_shortestItemSelected 96040_ExtensionItemSelector
 git rebase 96040_ExtensionItemSelector  remoteDebug 
