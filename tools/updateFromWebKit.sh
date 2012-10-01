@@ -50,6 +50,7 @@ CWD=$(pwd)
 cd "$CHROMIUM_WEBKIT"
 require_clean_work_tree "$CHROMIUM_WEBKIT"
 git checkout $WEBKIT_BRANCH
+WEBKIT_GIT_HEAD=$(git rev-parse HEAD)
 cd "$CHROMIUM_ROOT"
 # We want to be sure that the source and built copies are identical
 rm -r $BUILT_FRONT_END
@@ -69,3 +70,5 @@ mkdir -p "$LOCAL_FRONT_END"
 cp "$BUILT_FRONT_END/devtools_extension_api.js" "$LOCAL_FRONT_END"
 cp "$BUILT_FRONT_END/InspectorBackendCommands.js" "$LOCAL_FRONT_END"
 cp "$BUILT_FRONT_END/devtools.html" "$LOCAL_FRONT_END"
+
+git commit -m "Sync to WebKit at $WEBKIT_GIT_HEAD" -- extension/WebInspectorKit/
