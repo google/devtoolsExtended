@@ -130,17 +130,6 @@ WebInspector.ScriptsNavigator.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} oldUISourceCode
-     * @param {WebInspector.UISourceCode} uiSourceCode
-     */
-    replaceUISourceCode: function(oldUISourceCode, uiSourceCode)
-    {
-        this._scriptsView.replaceUISourceCode(oldUISourceCode, uiSourceCode);
-        this._contentScriptsView.replaceUISourceCode(oldUISourceCode, uiSourceCode);
-        this._snippetsView.replaceUISourceCode(oldUISourceCode, uiSourceCode);
-    },
-
-    /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      * @param {function(boolean)=} callback
      */
@@ -186,10 +175,10 @@ WebInspector.ScriptsNavigator.prototype = {
         this._scriptsView.reset();
         this._contentScriptsView.reset();
         this._snippetsView.reset();
-    }
-}
+    },
 
-WebInspector.ScriptsNavigator.prototype.__proto__ = WebInspector.Object.prototype;
+    __proto__: WebInspector.Object.prototype
+}
 
 /**
  * @constructor
@@ -276,7 +265,7 @@ WebInspector.SnippetsNavigatorView.prototype = {
     _snippetCreationRequested: function()
     {
         this.dispatchEventToListeners(WebInspector.SnippetsNavigatorView.Events.SnippetCreationRequested, null);
-    }
-}
+    },
 
-WebInspector.SnippetsNavigatorView.prototype.__proto__ = WebInspector.NavigatorView.prototype;
+    __proto__: WebInspector.NavigatorView.prototype
+}

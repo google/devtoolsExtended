@@ -783,10 +783,10 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         if (this._spectrum.visible)
             this._spectrum.hide(false);
-    }
-}
+    },
 
-WebInspector.StylesSidebarPane.prototype.__proto__ = WebInspector.SidebarPane.prototype;
+    __proto__: WebInspector.SidebarPane.prototype
+}
 
 /**
  * @constructor
@@ -826,10 +826,10 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
         }
 
         this._stylesSidebarPane._refreshUpdate(null, true, callback.bind(this));
-    }
-}
+    },
 
-WebInspector.ComputedStyleSidebarPane.prototype.__proto__ = WebInspector.SidebarPane.prototype;
+    __proto__: WebInspector.SidebarPane.prototype
+}
 
 /**
  * @constructor
@@ -1342,10 +1342,10 @@ WebInspector.StylePropertiesSection.prototype = {
         // Do nothing but mark the selectors in group if necessary.
         // This is overridden by BlankStylePropertiesSection.
         this._markSelectorMatches();
-    }
-}
+    },
 
-WebInspector.StylePropertiesSection.prototype.__proto__ = WebInspector.PropertiesSection.prototype;
+    __proto__: WebInspector.PropertiesSection.prototype
+}
 
 /**
  * @constructor
@@ -1463,10 +1463,10 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
             if (name in this._propertyTreeElements)
                 this._propertyTreeElements[name].expand();
         }
-    }
-}
+    },
 
-WebInspector.ComputedStylePropertiesSection.prototype.__proto__ = WebInspector.PropertiesSection.prototype;
+    __proto__: WebInspector.PropertiesSection.prototype
+}
 
 /**
  * @constructor
@@ -1538,10 +1538,10 @@ WebInspector.BlankStylePropertiesSection.prototype = {
 
         // FIXME: replace this instance by a normal WebInspector.StylePropertiesSection.
         this._normal = true;
-    }
-}
+    },
 
-WebInspector.BlankStylePropertiesSection.prototype.__proto__ = WebInspector.StylePropertiesSection.prototype;
+    __proto__: WebInspector.StylePropertiesSection.prototype
+}
 
 /**
  * @constructor
@@ -2505,10 +2505,10 @@ WebInspector.StylePropertyTreeElement.prototype = {
         if (!this.section.computedStyle)
             return event.target === this._expandElement;
         return TreeElement.prototype.isEventWithinDisclosureTriangle.call(this, event);
-    }
-}
+    },
 
-WebInspector.StylePropertyTreeElement.prototype.__proto__ = TreeElement.prototype;
+    __proto__: TreeElement.prototype
+}
 
 /**
  * @constructor
@@ -2583,15 +2583,22 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
         return this._cssCompletions.keySet().hasOwnProperty(word);
     },
 
-    _buildPropertyCompletions: function(textPrompt, wordRange, force, completionsReadyCallback)
+    /**
+     * @param {Element} proxyElement
+     * @param {Range} wordRange
+     * @param {boolean} force
+     * @param {function(Array.<string>, number=)} completionsReadyCallback
+     */
+    _buildPropertyCompletions: function(proxyElement, wordRange, force, completionsReadyCallback)
     {
         var prefix = wordRange.toString().toLowerCase();
         if (!prefix && !force)
             return;
 
         var results = this._cssCompletions.startsWith(prefix);
-        completionsReadyCallback(results);
-    }
-}
+        var selectedIndex = this._cssCompletions.mostUsedOf(results);
+        completionsReadyCallback(results, selectedIndex);
+    },
 
-WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype.__proto__ = WebInspector.TextPrompt.prototype;
+    __proto__: WebInspector.TextPrompt.prototype
+}

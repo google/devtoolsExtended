@@ -485,7 +485,7 @@ WebInspector.UISourceCode.prototype = {
      */
     formatted: function()
     {
-        return this._formatted;
+        return !!this._formatted;
     },
 
     /**
@@ -562,10 +562,10 @@ WebInspector.UISourceCode.prototype = {
     setSourceMapping: function(sourceMapping)
     {
         this._sourceMapping = sourceMapping;
-    }
-}
+    },
 
-WebInspector.UISourceCode.prototype.__proto__ = WebInspector.Object.prototype;
+    __proto__: WebInspector.Object.prototype
+}
 
 /**
  * @interface
@@ -576,7 +576,8 @@ WebInspector.UISourceCodeProvider = function()
 
 WebInspector.UISourceCodeProvider.Events = {
     UISourceCodeAdded: "UISourceCodeAdded",
-    UISourceCodeReplaced: "UISourceCodeReplaced",
+    TemporaryUISourceCodeAdded: "TemporaryUISourceCodeAdded",
+    TemporaryUISourceCodeRemoved: "TemporaryUISourceCodeRemoved",
     UISourceCodeRemoved: "UISourceCodeRemoved"
 }
 

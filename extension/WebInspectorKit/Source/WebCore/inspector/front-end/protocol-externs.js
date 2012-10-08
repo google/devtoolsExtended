@@ -193,9 +193,10 @@ PageAgent.removeScriptToEvaluateOnLoad.invoke = function(obj, opt_callback) {}
 /**
  * @param {boolean=} opt_ignoreCache
  * @param {string=} opt_scriptToEvaluateOnLoad
+ * @param {string=} opt_scriptPreprocessor
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-PageAgent.reload = function(opt_ignoreCache, opt_scriptToEvaluateOnLoad, opt_callback) {}
+PageAgent.reload = function(opt_ignoreCache, opt_scriptToEvaluateOnLoad, opt_scriptPreprocessor, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 PageAgent.reload.invoke = function(obj, opt_callback) {}
 
@@ -439,6 +440,13 @@ RuntimeAgent.PropertyDescriptor = function()
 }
 
 /** @constructor */
+RuntimeAgent.InternalPropertyDescriptor = function()
+{
+/** @type {string} */ this.name;
+/** @type {RuntimeAgent.RemoteObject|undefined} */ this.value;
+}
+
+/** @constructor */
 RuntimeAgent.CallArgument = function()
 {
 /** @type {*|undefined} */ this.value;
@@ -485,10 +493,10 @@ RuntimeAgent.callFunctionOn.invoke = function(obj, opt_callback) {}
 /**
  * @param {RuntimeAgent.RemoteObjectId} objectId
  * @param {boolean=} opt_ownProperties
- * @param {function(?Protocol.Error, Array.<RuntimeAgent.PropertyDescriptor>):void=} opt_callback
+ * @param {function(?Protocol.Error, Array.<RuntimeAgent.PropertyDescriptor>, Array.<RuntimeAgent.InternalPropertyDescriptor>=):void=} opt_callback
  */
 RuntimeAgent.getProperties = function(objectId, opt_ownProperties, opt_callback) {}
-/** @param {function(?Protocol.Error, Array.<RuntimeAgent.PropertyDescriptor>):void=} opt_callback */
+/** @param {function(?Protocol.Error, Array.<RuntimeAgent.PropertyDescriptor>, Array.<RuntimeAgent.InternalPropertyDescriptor>=):void=} opt_callback */
 RuntimeAgent.getProperties.invoke = function(obj, opt_callback) {}
 
 /**
@@ -2390,8 +2398,9 @@ DebuggerAgent.Dispatcher.prototype.globalObjectCleared = function() {};
  * @param {number} endColumn
  * @param {boolean=} opt_isContentScript
  * @param {string=} opt_sourceMapURL
+ * @param {boolean=} opt_hasSourceURL
  */
-DebuggerAgent.Dispatcher.prototype.scriptParsed = function(scriptId, url, startLine, startColumn, endLine, endColumn, opt_isContentScript, opt_sourceMapURL) {};
+DebuggerAgent.Dispatcher.prototype.scriptParsed = function(scriptId, url, startLine, startColumn, endLine, endColumn, opt_isContentScript, opt_sourceMapURL, opt_hasSourceURL) {};
 /**
  * @param {string} url
  * @param {string} scriptSource

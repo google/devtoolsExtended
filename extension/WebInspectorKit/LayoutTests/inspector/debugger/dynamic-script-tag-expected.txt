@@ -9,13 +9,13 @@ script2: LayoutTests/inspector/debugger/dynamic-script-tag.html
 Is anonymous:false
 Is inline script:false
 Dumping uiSourceCodes:
-UISourceCode: LayoutTests/inspector/debugger/dynamic-script-tag.html (1)
-UISourceCode is editable: true
+UISourceCode: 
+UISourceCode is editable: false
 UISourceCode is content script: false
 Mime type: text/javascript
 UISourceCode content: function foo() { }
-UISourceCode: LayoutTests/inspector/debugger/dynamic-script-tag.html (2)
-UISourceCode is editable: true
+UISourceCode: 
+UISourceCode is editable: false
 UISourceCode is content script: false
 Mime type: text/javascript
 UISourceCode content: function bar() { }
