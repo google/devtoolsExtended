@@ -48,6 +48,7 @@ InspectorBackend.registerCommand("Page.setDeviceOrientationOverride", [{"name": 
 InspectorBackend.registerCommand("Page.clearDeviceOrientationOverride", [], []);
 InspectorBackend.registerCommand("Page.canOverrideDeviceOrientation", [], ["result"]);
 InspectorBackend.registerCommand("Page.setTouchEmulationEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], []);
+InspectorBackend.registerCommand("Page.setCompositingBordersVisible", [{"name": "visible", "type": "boolean", "optional": false}], []);
 
 // Runtime.
 InspectorBackend.registerRuntimeDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Runtime");

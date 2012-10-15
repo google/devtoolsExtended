@@ -43,7 +43,8 @@ var Preferences = {
     exposeDisableCache: false,
     applicationTitle: "Web Inspector - %s",
     showDockToRight: false,
-    exposeFileSystemInspection: false
+    exposeFileSystemInspection: false,
+    experimentsEnabled: true
 }
 
 var Capabilities = {
@@ -65,7 +66,7 @@ WebInspector.Settings = function()
 {
     this._eventSupport = new WebInspector.Object();
 
-    this.colorFormat = this.createSetting("colorFormat", "hex");
+    this.colorFormat = this.createSetting("colorFormat", "original");
     this.consoleHistory = this.createSetting("consoleHistory", []);
     this.debuggerEnabled = this.createSetting("debuggerEnabled", false);
     this.domWordWrap = this.createSetting("domWordWrap", true);
@@ -216,7 +217,7 @@ WebInspector.ExperimentsSettings.prototype = {
      */
     get experimentsEnabled()
     {
-        return "experiments" in WebInspector.queryParamsObject;
+        return Preferences.experimentsEnabled || ("experiments" in WebInspector.queryParamsObject);
     },
     
     /**
