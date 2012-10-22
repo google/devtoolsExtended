@@ -481,6 +481,10 @@ body.platform-mac .toolbar-item.close-right {
     display: none;
 }
 
+body.remote .toolbar-item.close-left, body.remote .toolbar-item.close-right {
+    display: none;
+}
+
 body:not(.platform-mac) .toolbar-item.close-left {
     display: none;
 }
@@ -751,8 +755,9 @@ button.status-bar-item.settings-status-bar-item:active {
     -webkit-mask-position: -160px -24px;
 }
 
-body.port-qt #dock-status-bar-item {
-    display: none
+body.remote .dock-status-bar-item,
+body.port-qt .dock-status-bar-item {
+    display: none;
 }
 
 .console-status-bar-item .glyph {
@@ -1586,9 +1591,18 @@ li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-but
     padding-left: 4px;
 }
 
+.properties-tree.watch-expressions > li > .value {
+    display: inline;
+    position: static;
+}
+
 .properties-tree.watch-expressions > li:not(.parent) {
     margin-left: 1px;
     padding-left: 15px;
+}
+
+.properties-tree.watch-expressions > li.hovered {
+    padding-right: 14px;
 }
 
 .watch-expressions > li.editing-sub-part .text-prompt {

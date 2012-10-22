@@ -254,8 +254,16 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     _contextMenuFired: function(value, event)
     {
         var contextMenu = new WebInspector.ContextMenu();
+        this.populateContextMenu(contextMenu);
         contextMenu.appendApplicableItems(value);
         contextMenu.show(event);
+    },
+
+    /**
+     * @param {WebInspector.ContextMenu} contextMenu
+     */
+    populateContextMenu: function(contextMenu)
+    {
     },
 
     updateSiblings: function()
@@ -371,6 +379,29 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         };
         this.property.parentObject.setPropertyValue(this.property.name, expression.trim(), callback.bind(this));
     },
+
+    propertyPath: function()
+    {
+        if ("_cachedPropertyPath" in this)
+            return this._cachedPropertyPath;
+
+        var current = this;
+        var result;
+
+        do {
+            if (current.property) {
+                if (result)
+                    result = current.property.name + "." + result;
+                else
+                    result = current.property.name;
+            }
+            current = current.parent;
+        } while (current && !current.root);
+
+        this._cachedPropertyPath = result;
+        return result;
+    },
+
 
     __proto__: TreeElement.prototype
 }

@@ -60,6 +60,8 @@ WebInspector.BreakpointManager.Events = {
 
 WebInspector.BreakpointManager.breakpointStorageId = function(uiSourceCode)
 {
+    if (uiSourceCode.isTemporary)
+        return "";
     return uiSourceCode.formatted() ? "deobfuscated:" + uiSourceCode.url : uiSourceCode.url;
 }
 
@@ -92,7 +94,7 @@ WebInspector.BreakpointManager.prototype = {
     _uiSourceCodeAdded: function(event)
     {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ event.data;
-        if (uiSourceCode instanceof WebInspector.JavaScriptSource)
+        if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script || uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
             this.restoreBreakpoints(uiSourceCode);
     },
 
@@ -102,7 +104,7 @@ WebInspector.BreakpointManager.prototype = {
     _uiSourceCodeRemoved: function(event)
     {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ event.data;
-        if (!(uiSourceCode instanceof WebInspector.JavaScriptSource))
+        if (uiSourceCode.contentType() !== WebInspector.resourceTypes.Script && uiSourceCode.contentType() !== WebInspector.resourceTypes.Document)
             return;
         if (uiSourceCode.divergedVersion)
             return;
@@ -575,7 +577,7 @@ WebInspector.BreakpointManager.Storage.prototype = {
      */
     _updateBreakpoint: function(breakpoint)
     {
-        if (this._muted)
+        if (this._muted || !breakpoint._breakpointStorageId())
             return;
         this._breakpoints[breakpoint._breakpointStorageId()] = new WebInspector.BreakpointManager.Storage.Item(breakpoint);
         this._save();

@@ -36,6 +36,7 @@
     <file>CSSNamedFlowView.js</file>
     <file>CSSSelectorProfileView.js</file>
     <file>CSSStyleModel.js</file>
+    <file>cm/cmdevtools.css</file>
     <file>cm/codemirror.css</file>
     <file>cm/codemirror.js</file>
     <file>cm/css.js</file>
@@ -99,7 +100,6 @@
     <file>InspectorFrontendHostStub.js</file>
     <file>InspectorView.js</file>
     <file>JavaScriptFormatter.js</file>
-    <file>JavaScriptSource.js</file>
     <file>JavaScriptSourceFrame.js</file>
     <file>jsdifflib.js</file>
     <file>KeyboardShortcut.js</file>
@@ -184,7 +184,6 @@
     <file>SplitView.js</file>
     <file>StatusBarButton.js</file>
     <file>StyleSheetOutlineDialog.js</file>
-    <file>StyleSource.js</file>
     <file>StylesSourceMapping.js</file>
     <file>StylesSidebarPane.js</file>
     <file>TabbedEditorContainer.js</file>
@@ -222,7 +221,6 @@
     <file>canvasProfiler.css</file>
     <file>cssNamedFlows.css</file>
     <file>dataGrid.css</file>
-    <file>cmdevtools.css</file>
     <file>dialog.css</file>
     <file>elementsPanel.css</file>
     <file>filteredItemSelectionDialog.css</file>

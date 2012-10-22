@@ -132,7 +132,9 @@ WebInspector.HandlerRegistry.prototype = {
 
         function doSave(forceSaveAs, content)
         {
-            WebInspector.fileManager.save(contentProvider.contentURL(), content, forceSaveAs);
+            var url = contentProvider.contentURL();
+            WebInspector.fileManager.save(url, content, forceSaveAs);
+            WebInspector.fileManager.close(url);
         }
 
         function save(forceSaveAs)
@@ -141,6 +143,7 @@ WebInspector.HandlerRegistry.prototype = {
                 var uiSourceCode = /** @type {WebInspector.UISourceCode} */ contentProvider;
                 if (uiSourceCode.isDirty()) {
                     doSave(forceSaveAs, uiSourceCode.workingCopy());
+                    uiSourceCode.commitWorkingCopy(function() { });
                     return;
                 }
             }
