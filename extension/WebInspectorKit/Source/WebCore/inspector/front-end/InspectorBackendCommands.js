@@ -224,6 +224,7 @@ InspectorBackend.registerCommand("Timeline.start", [{"name": "maxCallStackDepth"
 InspectorBackend.registerCommand("Timeline.stop", [], []);
 InspectorBackend.registerCommand("Timeline.setIncludeMemoryDetails", [{"name": "enabled", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Timeline.supportsFrameInstrumentation", [], ["result"]);
+InspectorBackend.registerCommand("Timeline.canMonitorMainThread", [], ["result"]);
 
 // Debugger.
 InspectorBackend.registerDebuggerDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Debugger");

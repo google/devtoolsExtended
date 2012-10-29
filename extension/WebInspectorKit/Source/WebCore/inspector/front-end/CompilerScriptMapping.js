@@ -32,10 +32,12 @@
  * @constructor
  * @implements {WebInspector.SourceMapping}
  * @param {WebInspector.Workspace} workspace
+ * @param {WebInspector.NetworkWorkspaceProvider} networkWorkspaceProvider
  */
-WebInspector.CompilerScriptMapping = function(workspace)
+WebInspector.CompilerScriptMapping = function(workspace, networkWorkspaceProvider)
 {
     this._workspace = workspace;
+    this._networkWorkspaceProvider = networkWorkspaceProvider;
     /** @type {Object.<string, WebInspector.SourceMapParser>} */
     this._sourceMapForSourceMapURL = {};
     /** @type {Object.<string, WebInspector.SourceMapParser>} */
@@ -92,11 +94,10 @@ WebInspector.CompilerScriptMapping.prototype = {
     {
         // FIXME: We should only create temporary uiSourceCodes on demand and should set this as a mapping to 
         // relevant uiSourceCodes added by NetworkUISourceCodeProvider.
-        var originalUISourceCode = new WebInspector.UISourceCode(script.sourceURL, script, false);
+        var originalUISourceCode = this._workspace.addTemporaryUISourceCode(script.sourceURL, script, false);
+        originalUISourceCode.setSourceMapping(this);
         this._originalUISourceCodeForScriptId[script.scriptId] = originalUISourceCode;
         this._scriptForOriginalUISourceCode.put(originalUISourceCode, script);
-        originalUISourceCode.setSourceMapping(this);
-        this._workspace.project().addTemporaryUISourceCode(originalUISourceCode);
 
         var sourceMap = this.loadSourceMapForScript(script);
 
@@ -118,9 +119,8 @@ WebInspector.CompilerScriptMapping.prototype = {
                 contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, sourceContent);
             else
                 contentProvider = new WebInspector.CompilerSourceMappingContentProvider(sourceURL);
-            var uiSourceCode = new WebInspector.UISourceCode(sourceURL, contentProvider, false);
-            this._workspace.project().addUISourceCode(uiSourceCode);
-
+            this._networkWorkspaceProvider.addFile(sourceURL, contentProvider, true);
+            var uiSourceCode = this._workspace.uiSourceCodeForURL(sourceURL);
             uiSourceCode.setSourceMapping(this);
             uiSourceCode.isContentScript = script.isContentScript;
         }

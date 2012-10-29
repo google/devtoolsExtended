@@ -55,6 +55,7 @@ var Capabilities = {
     heapProfilerPresent: false,
     canOverrideDeviceMetrics: false,
     timelineSupportsFrameInstrumentation: false,
+    canMonitorMainThread: false,
     canOverrideGeolocation: false,
     canOverrideDeviceOrientation: false,
 }
@@ -105,6 +106,8 @@ WebInspector.Settings = function()
     this.searchInContentScripts = this.createSetting("searchInContentScripts", false);
     this.textEditorIndent = this.createSetting("textEditorIndent", "    ");
     this.lastDockState = this.createSetting("lastDockState", "");
+    this.cssReloadEnabled = this.createSetting("cssReloadEnabled", false);
+    this.cssReloadTimeout = this.createSetting("cssReloadTimeout", 1000);
 
     // If there are too many breakpoints in a storage, it is likely due to a recent bug that caused
     // periodical breakpoints duplication leading to inspector slowness.
@@ -194,8 +197,6 @@ WebInspector.ExperimentsSettings = function()
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
     this.canvasInspection = this._createExperiment("canvasInspection ", "Canvas inspection");
     this.mainThreadMonitoring = this._createExperiment("mainThreadMonitoring", "Show CPU activity in Timeline");
-    this.geolocationOverride = this._createExperiment("geolocationOverride", "Override Device Geolocation");
-    this.deviceOrientationOverride = this._createExperiment("deviceOrientationOverride", "Override Device Orientation");
     this.sass = this._createExperiment("sass", "Support for SASS");
     this.codemirror = this._createExperiment("codemirror", "Use CodeMirror editor");
     this.cssRegions = this._createExperiment("cssRegions", "CSS Regions Support");

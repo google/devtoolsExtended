@@ -3,7 +3,9 @@ var initialize_WorkspaceTest = function() {
 InspectorTest.testWorkspace;
 InspectorTest.createWorkspace = function()
 {
+    InspectorTest.testNetworkWorkspaceProvider = new WebInspector.NetworkWorkspaceProvider();
     InspectorTest.testWorkspace = new WebInspector.Workspace();
+    InspectorTest.testWorkspace.addProject("network", InspectorTest.testNetworkWorkspaceProvider);
     InspectorTest.testWorkspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, InspectorTest._defaultUISourceCodeProviderEventHandler);
     InspectorTest.testWorkspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeRemoved, InspectorTest._defaultUISourceCodeProviderEventHandler);
     InspectorTest.testWorkspace.addEventListener(WebInspector.UISourceCodeProvider.Events.TemporaryUISourceCodeAdded, InspectorTest._defaultUISourceCodeProviderEventHandler);
@@ -53,8 +55,7 @@ InspectorTest.addMockUISourceCodeToWorkspace = function(url, type, content)
 {
     var isDocument = type === WebInspector.resourceTypes.Document;
     var mockContentProvider = new WebInspector.StaticContentProvider(type, content);
-    var uiSourceCode = new WebInspector.UISourceCode(url, mockContentProvider, !isDocument);
-    InspectorTest.testWorkspace.project().addUISourceCode(uiSourceCode);
+    InspectorTest.testNetworkWorkspaceProvider.addFile(url, mockContentProvider, !isDocument);
 }
 
 InspectorTest._defaultUISourceCodeProviderEventHandler = function(event)
@@ -68,7 +69,7 @@ InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
     InspectorTest.addResult("UISourceCode: " + url);
     InspectorTest.addResult("UISourceCode is editable: " + uiSourceCode.isEditable());
     if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script || uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
-        InspectorTest.addResult("UISourceCode is content script: " + uiSourceCode.isContentScript);
+        InspectorTest.addResult("UISourceCode is content script: " + !!uiSourceCode.isContentScript);
     uiSourceCode.requestContent(didRequestContent);
 
     function didRequestContent(content, contentEncoded, mimeType)

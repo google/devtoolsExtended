@@ -193,10 +193,9 @@ PageAgent.removeScriptToEvaluateOnLoad.invoke = function(obj, opt_callback) {}
 /**
  * @param {boolean=} opt_ignoreCache
  * @param {string=} opt_scriptToEvaluateOnLoad
- * @param {string=} opt_scriptPreprocessor
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-PageAgent.reload = function(opt_ignoreCache, opt_scriptToEvaluateOnLoad, opt_scriptPreprocessor, opt_callback) {}
+PageAgent.reload = function(opt_ignoreCache, opt_scriptToEvaluateOnLoad, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 PageAgent.reload.invoke = function(obj, opt_callback) {}
 
@@ -367,6 +366,21 @@ PageAgent.canOverrideDeviceOrientation.invoke = function(obj, opt_callback) {}
 PageAgent.setTouchEmulationEnabled = function(enabled, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 PageAgent.setTouchEmulationEnabled.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+PageAgent.getCompositingBordersVisible = function(opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+PageAgent.getCompositingBordersVisible.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} visible
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+PageAgent.setCompositingBordersVisible = function(visible, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+PageAgent.setCompositingBordersVisible.invoke = function(obj, opt_callback) {}
 /** @interface */
 PageAgent.Dispatcher = function() {};
 /**
@@ -1004,6 +1018,7 @@ IndexedDBAgent.DatabaseWithObjectStores = function()
 {
 /** @type {string} */ this.name;
 /** @type {string} */ this.version;
+/** @type {number} */ this.intVersion;
 /** @type {Array.<IndexedDBAgent.ObjectStore>} */ this.objectStores;
 }
 
@@ -2119,6 +2134,13 @@ TimelineAgent.setIncludeMemoryDetails.invoke = function(obj, opt_callback) {}
 TimelineAgent.supportsFrameInstrumentation = function(opt_callback) {}
 /** @param {function(?Protocol.Error, boolean):void=} opt_callback */
 TimelineAgent.supportsFrameInstrumentation.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+TimelineAgent.canMonitorMainThread = function(opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+TimelineAgent.canMonitorMainThread.invoke = function(obj, opt_callback) {}
 /** @interface */
 TimelineAgent.Dispatcher = function() {};
 /**
