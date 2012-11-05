@@ -140,7 +140,7 @@ WebInspector.ConsoleView.prototype = {
      */
     _frameAdded: function(event)
     {
-        var contextList = /** @type {WebInspector.FrameExecutionContextList} */ event.data;
+        var contextList = /** @type {WebInspector.FrameExecutionContextList} */ (event.data);
         this._addFrame(contextList);
     },
 
@@ -165,7 +165,7 @@ WebInspector.ConsoleView.prototype = {
      */
     _frameRemoved: function(event)
     {
-        var contextList = /** @type {WebInspector.FrameExecutionContextList} */ event.data;
+        var contextList = /** @type {WebInspector.FrameExecutionContextList} */ (event.data);
         this._frameSelector.removeOption(contextList._consoleOption);
         this._frameChanged();
     },
@@ -485,9 +485,6 @@ WebInspector.ConsoleView.prototype = {
         var shortcutL = shortcut.makeDescriptor("l", WebInspector.KeyboardShortcut.Modifiers.Ctrl);
         this._shortcuts[shortcutL.key] = this._requestClearMessages.bind(this);
 
-        var shortcutM = shortcut.makeDescriptor("m", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta | WebInspector.KeyboardShortcut.Modifiers.Shift);
-        this._shortcuts[shortcutM.key] = this._dumpMemory.bind(this);
-
         var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Console"));
         var keys = WebInspector.isMac() ? [ shortcutK.name, shortcutL.name ] : [ shortcutL.name ];
         section.addAlternateKeys(keys, WebInspector.UIString("Clear console"));
@@ -582,7 +579,7 @@ WebInspector.ConsoleView.prototype = {
             
             this._printResult(result, wasThrown, commandMessage);
         }
-        WebInspector.runtimeModel.evaluate(text, "console", useCommandLineAPI, false, false, printResult.bind(this));
+        WebInspector.runtimeModel.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(this));
 
         WebInspector.userMetrics.ConsoleEvaluated.record();
     },
@@ -590,44 +587,6 @@ WebInspector.ConsoleView.prototype = {
     elementsToRestoreScrollPositionsFor: function()
     {
         return [this.messagesElement];
-    },
-
-    _dumpMemory: function()
-    {
-        function comparator(a, b)
-        {
-            if (a.size < b.size)
-                return 1;
-            if (a.size > b.size)
-                return -1;
-            return a.title.localeCompare(b.title);
-        }
-
-        function callback(error, groups)
-        {
-            var titles = [];
-            groups.sort(comparator);
-            for (var i = 0; i < groups.length; ++i) {
-                var suffix = groups[i].size > 0 ? " [" + groups[i].size + "]" : "";
-                titles.push(groups[i].title + suffix + (groups[i].documentURI ? " (" + groups[i].documentURI + ")" : ""));
-            }
-
-            var counter = 1;
-            var previousTitle = null;
-            for (var i = 0; i < titles.length; ++i) {
-                 var title = titles[i];
-                 if (title === previousTitle) {
-                     counter++;
-                     continue;
-                 }
-                 if (previousTitle)
-                     WebInspector.log(counter > 1 ? counter + " x " + previousTitle : previousTitle);
-                 previousTitle = title;
-                 counter = 1;
-            }
-            WebInspector.log(counter > 1 ? counter + " x " + previousTitle : previousTitle);
-        }
-        MemoryAgent.getDOMNodeCount(callback);
     },
 
     __proto__: WebInspector.View.prototype
@@ -704,6 +663,16 @@ WebInspector.ConsoleCommandResult = function(result, wasThrown, originatingComma
 }
 
 WebInspector.ConsoleCommandResult.prototype = {
+    /**
+     * @override
+     * @param {WebInspector.RemoteObject} array
+     * @return {boolean}
+     */
+    useArrayPreviewInFormatter: function(array)
+    {
+        return false;
+    },
+
     toMessageElement: function()
     {
         var element = WebInspector.ConsoleMessageImpl.prototype.toMessageElement.call(this);

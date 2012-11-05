@@ -355,9 +355,18 @@ WebInspector.ConsoleMessageImpl.prototype = {
         object.pushNodeToFrontend(printNode.bind(this));
     },
 
+    /**
+     * @param {WebInspector.RemoteObject} array
+     * @return {boolean}
+     */
+    useArrayPreviewInFormatter: function(array)
+    {
+        return !!array.preview;
+    },
+
     _formatParameterAsArray: function(array, elem)
     {
-        if (array.preview) {
+        if (this.useArrayPreviewInFormatter(array)) {
             this._formatParameterAsArrayOrObject(array, "", elem, true);
             return;
         }
@@ -442,9 +451,23 @@ WebInspector.ConsoleMessageImpl.prototype = {
             return this._formatParameter(obj, force, false);
         }
 
-        function valueFormatter(obj)
+        function stringFormatter(obj)
         {
             return obj.description;
+        }
+
+        function floatFormatter(obj)
+        {
+            if (typeof obj.value !== "number")
+                return "NaN";
+            return obj.value;
+        }
+
+        function integerFormatter(obj)
+        {
+            if (typeof obj.value !== "number")
+                return "NaN";
+            return Math.floor(obj.value);
         }
 
         function styleFormatter(obj)
@@ -470,11 +493,11 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
         // Firebug uses %o for formatting objects.
         formatters.o = parameterFormatter.bind(this, false);
-        formatters.s = valueFormatter;
-        formatters.f = valueFormatter;
+        formatters.s = stringFormatter;
+        formatters.f = floatFormatter;
         // Firebug allows both %i and %d for formatting integers.
-        formatters.i = valueFormatter;
-        formatters.d = valueFormatter;
+        formatters.i = integerFormatter;
+        formatters.d = integerFormatter;
 
         // Firebug uses %c for styling the message.
         formatters.c = styleFormatter;

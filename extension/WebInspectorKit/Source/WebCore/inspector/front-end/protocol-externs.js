@@ -33,6 +33,10 @@ InspectorAgent.Dispatcher.prototype.evaluateForTestInFrontend = function(testCal
  */
 InspectorAgent.Dispatcher.prototype.inspect = function(object, hints) {};
 /**
+ * @param {string} reason
+ */
+InspectorAgent.Dispatcher.prototype.detached = function(reason) {};
+/**
  * @param {InspectorAgent.Dispatcher} dispatcher
  */
 InspectorBackend.registerInspectorDispatcher = function(dispatcher) {}
@@ -451,6 +455,7 @@ RuntimeAgent.PropertyDescriptor = function()
 /** @type {boolean} */ this.configurable;
 /** @type {boolean} */ this.enumerable;
 /** @type {boolean|undefined} */ this.wasThrown;
+/** @type {boolean|undefined} */ this.isOwn;
 }
 
 /** @constructor */
@@ -486,9 +491,10 @@ RuntimeAgent.ExecutionContextDescription = function()
  * @param {boolean=} opt_doNotPauseOnExceptionsAndMuteConsole
  * @param {RuntimeAgent.ExecutionContextId=} opt_contextId
  * @param {boolean=} opt_returnByValue
+ * @param {boolean=} opt_generatePreview
  * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback
  */
-RuntimeAgent.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_doNotPauseOnExceptionsAndMuteConsole, opt_contextId, opt_returnByValue, opt_callback) {}
+RuntimeAgent.evaluate = function(expression, opt_objectGroup, opt_includeCommandLineAPI, opt_doNotPauseOnExceptionsAndMuteConsole, opt_contextId, opt_returnByValue, opt_generatePreview, opt_callback) {}
 /** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback */
 RuntimeAgent.evaluate.invoke = function(obj, opt_callback) {}
 
@@ -498,9 +504,10 @@ RuntimeAgent.evaluate.invoke = function(obj, opt_callback) {}
  * @param {Array.<RuntimeAgent.CallArgument>=} opt_arguments
  * @param {boolean=} opt_doNotPauseOnExceptionsAndMuteConsole
  * @param {boolean=} opt_returnByValue
+ * @param {boolean=} opt_generatePreview
  * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback
  */
-RuntimeAgent.callFunctionOn = function(objectId, functionDeclaration, opt_arguments, opt_doNotPauseOnExceptionsAndMuteConsole, opt_returnByValue, opt_callback) {}
+RuntimeAgent.callFunctionOn = function(objectId, functionDeclaration, opt_arguments, opt_doNotPauseOnExceptionsAndMuteConsole, opt_returnByValue, opt_generatePreview, opt_callback) {}
 /** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback */
 RuntimeAgent.callFunctionOn.invoke = function(obj, opt_callback) {}
 
@@ -2375,9 +2382,10 @@ DebuggerAgent.setPauseOnExceptions.invoke = function(obj, opt_callback) {}
  * @param {boolean=} opt_includeCommandLineAPI
  * @param {boolean=} opt_doNotPauseOnExceptionsAndMuteConsole
  * @param {boolean=} opt_returnByValue
+ * @param {boolean=} opt_generatePreview
  * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback
  */
-DebuggerAgent.evaluateOnCallFrame = function(callFrameId, expression, opt_objectGroup, opt_includeCommandLineAPI, opt_doNotPauseOnExceptionsAndMuteConsole, opt_returnByValue, opt_callback) {}
+DebuggerAgent.evaluateOnCallFrame = function(callFrameId, expression, opt_objectGroup, opt_includeCommandLineAPI, opt_doNotPauseOnExceptionsAndMuteConsole, opt_returnByValue, opt_generatePreview, opt_callback) {}
 /** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject, boolean=):void=} opt_callback */
 DebuggerAgent.evaluateOnCallFrame.invoke = function(obj, opt_callback) {}
 
