@@ -335,6 +335,10 @@ WebInspector.loaded = function()
             InspectorFrontendHost.sendMessageToBackend = WebInspector.socket.send.bind(WebInspector.socket);
             WebInspector.doLoadedDone();
         }
+        WebInspector.socket.onclose = function() {
+            if (!WebInspector.socket._detachReason)
+                (new WebInspector.RemoteDebuggingTerminatedScreen("websocket_closed")).showModal();
+        }
         return;
     }
 
@@ -520,11 +524,6 @@ WebInspector.dispatch = function(message) {
     setTimeout(function() {
         InspectorBackend.dispatch(messagesToDispatch.shift());
     }, 0);
-}
-
-WebInspector.dispatchMessageFromBackend = function(messageObject)
-{
-    WebInspector.dispatch(messageObject);
 }
 
 WebInspector.windowResize = function(event)
@@ -910,6 +909,7 @@ WebInspector.inspect = function(payload, hints)
 // Inspector.detached protocol event
 WebInspector.detached = function(reason)
 {
+    WebInspector.socket._detachReason = reason;
     (new WebInspector.RemoteDebuggingTerminatedScreen(reason)).showModal();
 }
 
