@@ -153,7 +153,9 @@ WebInspector.NativeSnapshotNode.prototype = {
         if (this._nodeData !== this._profile)
             this._nodeData.children.sort(comparator);
         for (var node in this._nodeData.children) {
-            this.appendChild(new WebInspector.NativeSnapshotNode(this._nodeData.children[node], this._profile));
+            var nodeData = this._nodeData.children[node];
+            if (WebInspector.settings.showNativeSnapshotUninstrumentedSize.get() || nodeData.name !== "Other")
+                this.appendChild(new WebInspector.NativeSnapshotNode(nodeData, this._profile));
         }
     },
 
@@ -209,6 +211,7 @@ WebInspector.NativeMemoryProfileType.prototype = {
             }
             profileHeader._memoryBlock = memoryBlock;
             profileHeader.isTemporary = false;
+            profileHeader.sidebarElement.subtitle = Number.bytesToString(memoryBlock.size);
         }
         MemoryAgent.getProcessMemoryDistribution(didReceiveMemorySnapshot.bind(this));
         return false;

@@ -40,6 +40,8 @@ InspectorBackend.registerCommand("Page.setDocumentContent", [{"name": "frameId",
 InspectorBackend.registerCommand("Page.canOverrideDeviceMetrics", [], ["result"]);
 InspectorBackend.registerCommand("Page.setDeviceMetricsOverride", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "fontScaleFactor", "type": "number", "optional": false}, {"name": "fitWindow", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Page.setShowPaintRects", [{"name": "result", "type": "boolean", "optional": false}], []);
+InspectorBackend.registerCommand("Page.canShowFPSCounter", [], ["show"]);
+InspectorBackend.registerCommand("Page.setShowFPSCounter", [{"name": "show", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Page.getScriptExecutionStatus", [], ["result"]);
 InspectorBackend.registerCommand("Page.setScriptExecutionDisabled", [{"name": "value", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Page.setGeolocationOverride", [{"name": "latitude", "type": "number", "optional": true}, {"name": "longitude", "type": "number", "optional": true}, {"name": "accuracy", "type": "number", "optional": true}], []);
