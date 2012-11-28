@@ -62,6 +62,9 @@ window.getComputedStyle = function(element) {}
 /** @param {*} message */
 function postMessage(message) {}
 
+/** @type {*} */
+window.testRunner = null;
+
 /**
  * @constructor
  */
@@ -233,6 +236,7 @@ WebInspector.evaluateInConsole = function(expression, showResultOnly) {}
 WebInspector.queryParamsObject = {}
 
 WebInspector.Events = {
+    InspectorLoaded: "InspectorLoaded",
     InspectorClosing: "InspectorClosing"
 }
 

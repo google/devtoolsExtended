@@ -59,10 +59,15 @@ WebInspector.NativeSnapshotDataGrid = function(profile)
         size: { title: WebInspector.UIString("Size"), sortable: false },
     };
     WebInspector.DataGrid.call(this, columns);
-    this.setRootNode(new WebInspector.DataGridNode(null, true));
     var totalNode = new WebInspector.NativeSnapshotNode(profile, profile);
-    this.rootNode().appendChild(totalNode);
-    totalNode.expand();
+    if (WebInspector.settings.showNativeSnapshotUninstrumentedSize.get()) {
+        this.setRootNode(new WebInspector.DataGridNode(null, true));
+        this.rootNode().appendChild(totalNode)
+        totalNode.expand();
+    } else {
+        this.setRootNode(totalNode);
+        totalNode._populate();
+    }
 }
 
 WebInspector.NativeSnapshotDataGrid.prototype = {
@@ -108,8 +113,11 @@ WebInspector.NativeSnapshotNode.prototype = {
     {
         var node = this;
         var viewProperties = null;
+        var dimmed = false;
         while (!viewProperties || viewProperties._fillStyle === "inherit") {
             viewProperties = WebInspector.MemoryBlockViewProperties._forMemoryBlock(node._nodeData);
+            if (viewProperties._fillStyle === "inherit")
+                dimmed = true;
             node = node.parent;
         }
 
@@ -139,6 +147,8 @@ WebInspector.NativeSnapshotNode.prototype = {
         barDiv.appendChild(percentDiv);
 
         var barHolderDiv = document.createElement("div");
+        if (dimmed)
+            barHolderDiv.className = "dimmed";
         barHolderDiv.appendChild(barDiv);
         cell.appendChild(barHolderDiv);
 
@@ -254,7 +264,7 @@ WebInspector.NativeMemoryProfileType.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileHeader}
- * @param {WebInspector.NativeMemoryProfileType} type
+ * @param {!WebInspector.NativeMemoryProfileType} type
  * @param {string} title
  * @param {number=} uid
  */
