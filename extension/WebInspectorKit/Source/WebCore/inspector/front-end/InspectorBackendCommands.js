@@ -183,7 +183,7 @@ InspectorBackend.registerCommand("DOM.discardSearchResults", [{"name": "searchId
 InspectorBackend.registerCommand("DOM.requestNode", [{"name": "objectId", "type": "string", "optional": false}], ["nodeId"]);
 InspectorBackend.registerCommand("DOM.setInspectModeEnabled", [{"name": "enabled", "type": "boolean", "optional": false}, {"name": "highlightConfig", "type": "object", "optional": true}], []);
 InspectorBackend.registerCommand("DOM.highlightRect", [{"name": "x", "type": "number", "optional": false}, {"name": "y", "type": "number", "optional": false}, {"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "color", "type": "object", "optional": true}, {"name": "outlineColor", "type": "object", "optional": true}], []);
-InspectorBackend.registerCommand("DOM.highlightNode", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "highlightConfig", "type": "object", "optional": false}], []);
+InspectorBackend.registerCommand("DOM.highlightNode", [{"name": "nodeId", "type": "number", "optional": true}, {"name": "objectId", "type": "string", "optional": true}, {"name": "highlightConfig", "type": "object", "optional": false}], []);
 InspectorBackend.registerCommand("DOM.hideHighlight", [], []);
 InspectorBackend.registerCommand("DOM.highlightFrame", [{"name": "frameId", "type": "string", "optional": false}, {"name": "contentColor", "type": "object", "optional": true}, {"name": "contentOutlineColor", "type": "object", "optional": true}], []);
 InspectorBackend.registerCommand("DOM.pushNodeByPathToFrontend", [{"name": "path", "type": "string", "optional": false}], ["nodeId"]);

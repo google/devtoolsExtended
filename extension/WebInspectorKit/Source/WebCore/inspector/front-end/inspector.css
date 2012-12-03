@@ -1067,6 +1067,7 @@ ol.watch-expressions > li.hovered {
 
 .console-message-url {
     float: right;
+    text-align: right;
     max-width: 100%;
     margin-left: 4px;
 }
@@ -1138,6 +1139,10 @@ ol.watch-expressions > li.hovered {
     display: inline-block;
     vertical-align: top;
     color: black;
+}
+
+.console-formatted-node:hover {
+    background-color: rgba(56, 121, 217, 0.1);
 }
 
 .console-formatted-object .section, .console-formatted-node .section, .console-formatted-array .section {
