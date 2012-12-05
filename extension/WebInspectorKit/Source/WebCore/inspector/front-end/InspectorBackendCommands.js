@@ -51,6 +51,7 @@ InspectorBackend.registerCommand("Page.setDeviceOrientationOverride", [{"name": 
 InspectorBackend.registerCommand("Page.clearDeviceOrientationOverride", [], []);
 InspectorBackend.registerCommand("Page.canOverrideDeviceOrientation", [], ["result"]);
 InspectorBackend.registerCommand("Page.setTouchEmulationEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], []);
+InspectorBackend.registerCommand("Page.setEmulatedMedia", [{"name": "media", "type": "string", "optional": false}], []);
 InspectorBackend.registerCommand("Page.getCompositingBordersVisible", [], ["result"]);
 InspectorBackend.registerCommand("Page.setCompositingBordersVisible", [{"name": "visible", "type": "boolean", "optional": false}], []);
 
@@ -193,6 +194,7 @@ InspectorBackend.registerCommand("DOM.moveTo", [{"name": "nodeId", "type": "numb
 InspectorBackend.registerCommand("DOM.undo", [], []);
 InspectorBackend.registerCommand("DOM.redo", [], []);
 InspectorBackend.registerCommand("DOM.markUndoableState", [], []);
+InspectorBackend.registerCommand("DOM.focus", [{"name": "nodeId", "type": "number", "optional": false}], []);
 
 // CSS.
 InspectorBackend.registerCSSDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "CSS");
@@ -320,5 +322,9 @@ InspectorBackend.registerCommand("Canvas.startCapturing", [], ["traceLogId"]);
 InspectorBackend.registerCommand("Canvas.stopCapturing", [{"name": "traceLogId", "type": "string", "optional": false}], []);
 InspectorBackend.registerCommand("Canvas.getTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}, {"name": "startOffset", "type": "number", "optional": true}], ["traceLog"]);
 InspectorBackend.registerCommand("Canvas.replayTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}, {"name": "stepNo", "type": "number", "optional": false}], ["screenshotDataUrl"]);
+
+// Input.
+InspectorBackend.registerInputDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Input");
+InspectorBackend.registerCommand("Input.dispatchKeyEvent", [{"name": "type", "type": "string", "optional": false}, {"name": "modifiers", "type": "number", "optional": true}, {"name": "timestamp", "type": "number", "optional": true}, {"name": "text", "type": "string", "optional": true}, {"name": "unmodifiedText", "type": "string", "optional": true}, {"name": "keyIdentifier", "type": "string", "optional": true}, {"name": "windowsVirtualKeyCode", "type": "number", "optional": true}, {"name": "nativeVirtualKeyCode", "type": "number", "optional": true}, {"name": "macCharCode", "type": "number", "optional": true}, {"name": "autoRepeat", "type": "boolean", "optional": true}, {"name": "isKeypad", "type": "boolean", "optional": true}, {"name": "isSystemKey", "type": "boolean", "optional": true}], []);
 
 
