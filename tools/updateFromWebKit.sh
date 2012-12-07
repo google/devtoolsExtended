@@ -71,4 +71,5 @@ cp "$BUILT_FRONT_END/devtools_extension_api.js" "$LOCAL_FRONT_END"
 cp "$BUILT_FRONT_END/InspectorBackendCommands.js" "$LOCAL_FRONT_END"
 cp "$BUILT_FRONT_END/devtools.html" "$LOCAL_FRONT_END"
 
-git commit -m "Sync to WebKit at $WEBKIT_GIT_HEAD" -- extension/WebInspectorKit/
+git add -A extension/WebInspectorKit/
+git commit -m "Sync to WebKit at $WEBKIT_GIT_HEAD" 
