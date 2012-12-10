@@ -184,7 +184,7 @@ InspectorBackend.registerCommand("DOM.discardSearchResults", [{"name": "searchId
 InspectorBackend.registerCommand("DOM.requestNode", [{"name": "objectId", "type": "string", "optional": false}], ["nodeId"]);
 InspectorBackend.registerCommand("DOM.setInspectModeEnabled", [{"name": "enabled", "type": "boolean", "optional": false}, {"name": "highlightConfig", "type": "object", "optional": true}], []);
 InspectorBackend.registerCommand("DOM.highlightRect", [{"name": "x", "type": "number", "optional": false}, {"name": "y", "type": "number", "optional": false}, {"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "color", "type": "object", "optional": true}, {"name": "outlineColor", "type": "object", "optional": true}], []);
-InspectorBackend.registerCommand("DOM.highlightNode", [{"name": "nodeId", "type": "number", "optional": true}, {"name": "objectId", "type": "string", "optional": true}, {"name": "highlightConfig", "type": "object", "optional": false}], []);
+InspectorBackend.registerCommand("DOM.highlightNode", [{"name": "highlightConfig", "type": "object", "optional": false}, {"name": "nodeId", "type": "number", "optional": true}, {"name": "objectId", "type": "string", "optional": true}], []);
 InspectorBackend.registerCommand("DOM.hideHighlight", [], []);
 InspectorBackend.registerCommand("DOM.highlightFrame", [{"name": "frameId", "type": "string", "optional": false}, {"name": "contentColor", "type": "object", "optional": true}, {"name": "contentOutlineColor", "type": "object", "optional": true}], []);
 InspectorBackend.registerCommand("DOM.pushNodeByPathToFrontend", [{"name": "path", "type": "string", "optional": false}], ["nodeId"]);
@@ -326,5 +326,13 @@ InspectorBackend.registerCommand("Canvas.replayTraceLog", [{"name": "traceLogId"
 // Input.
 InspectorBackend.registerInputDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Input");
 InspectorBackend.registerCommand("Input.dispatchKeyEvent", [{"name": "type", "type": "string", "optional": false}, {"name": "modifiers", "type": "number", "optional": true}, {"name": "timestamp", "type": "number", "optional": true}, {"name": "text", "type": "string", "optional": true}, {"name": "unmodifiedText", "type": "string", "optional": true}, {"name": "keyIdentifier", "type": "string", "optional": true}, {"name": "windowsVirtualKeyCode", "type": "number", "optional": true}, {"name": "nativeVirtualKeyCode", "type": "number", "optional": true}, {"name": "macCharCode", "type": "number", "optional": true}, {"name": "autoRepeat", "type": "boolean", "optional": true}, {"name": "isKeypad", "type": "boolean", "optional": true}, {"name": "isSystemKey", "type": "boolean", "optional": true}], []);
+
+// LayerTree.
+InspectorBackend.registerLayerTreeDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "LayerTree");
+InspectorBackend.registerEvent("LayerTree.layerTreeDidChange", []);
+InspectorBackend.registerCommand("LayerTree.enable", [], []);
+InspectorBackend.registerCommand("LayerTree.disable", [], []);
+InspectorBackend.registerCommand("LayerTree.getLayerTree", [], ["layerTree"]);
+InspectorBackend.registerCommand("LayerTree.nodeIdForLayerId", [{"name": "layerId", "type": "string", "optional": false}], ["nodeId"]);
 
 

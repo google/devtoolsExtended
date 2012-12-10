@@ -197,9 +197,10 @@ PageAgent.removeScriptToEvaluateOnLoad.invoke = function(obj, opt_callback) {}
 /**
  * @param {boolean=} opt_ignoreCache
  * @param {string=} opt_scriptToEvaluateOnLoad
+ * @param {string=} opt_scriptPreprocessor
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-PageAgent.reload = function(opt_ignoreCache, opt_scriptToEvaluateOnLoad, opt_callback) {}
+PageAgent.reload = function(opt_ignoreCache, opt_scriptToEvaluateOnLoad, opt_scriptPreprocessor, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 PageAgent.reload.invoke = function(obj, opt_callback) {}
 
@@ -301,6 +302,21 @@ PageAgent.setShowPaintRects = function(result, opt_callback) {}
 PageAgent.setShowPaintRects.invoke = function(obj, opt_callback) {}
 
 /**
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+PageAgent.canShowFPSCounter = function(opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+PageAgent.canShowFPSCounter.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} show
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+PageAgent.setShowFPSCounter = function(show, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+PageAgent.setShowFPSCounter.invoke = function(obj, opt_callback) {}
+
+/**
  * @param {function(?Protocol.Error, string):void=} opt_callback
  */
 PageAgent.getScriptExecutionStatus = function(opt_callback) {}
@@ -370,6 +386,14 @@ PageAgent.canOverrideDeviceOrientation.invoke = function(obj, opt_callback) {}
 PageAgent.setTouchEmulationEnabled = function(enabled, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 PageAgent.setTouchEmulationEnabled.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {string} media
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+PageAgent.setEmulatedMedia = function(media, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+PageAgent.setEmulatedMedia.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {function(?Protocol.Error, boolean):void=} opt_callback
@@ -1069,8 +1093,8 @@ IndexedDBAgent.KeyRange = function()
 /** @constructor */
 IndexedDBAgent.DataEntry = function()
 {
-/** @type {IndexedDBAgent.Key} */ this.key;
-/** @type {IndexedDBAgent.Key} */ this.primaryKey;
+/** @type {RuntimeAgent.RemoteObject} */ this.key;
+/** @type {RuntimeAgent.RemoteObject} */ this.primaryKey;
 /** @type {RuntimeAgent.RemoteObject} */ this.value;
 }
 
@@ -1600,11 +1624,12 @@ DOMAgent.highlightRect = function(x, y, width, height, opt_color, opt_outlineCol
 DOMAgent.highlightRect.invoke = function(obj, opt_callback) {}
 
 /**
- * @param {DOMAgent.NodeId} nodeId
  * @param {DOMAgent.HighlightConfig} highlightConfig
+ * @param {DOMAgent.NodeId=} opt_nodeId
+ * @param {RuntimeAgent.RemoteObjectId=} opt_objectId
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-DOMAgent.highlightNode = function(nodeId, highlightConfig, opt_callback) {}
+DOMAgent.highlightNode = function(highlightConfig, opt_nodeId, opt_objectId, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 DOMAgent.highlightNode.invoke = function(obj, opt_callback) {}
 
@@ -1680,6 +1705,14 @@ DOMAgent.redo.invoke = function(obj, opt_callback) {}
 DOMAgent.markUndoableState = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 DOMAgent.markUndoableState.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {DOMAgent.NodeId} nodeId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+DOMAgent.focus = function(nodeId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+DOMAgent.focus.invoke = function(obj, opt_callback) {}
 /** @interface */
 DOMAgent.Dispatcher = function() {};
 DOMAgent.Dispatcher.prototype.documentUpdated = function() {};
@@ -2797,6 +2830,8 @@ CanvasAgent.TraceLog = function()
 {
 /** @type {CanvasAgent.TraceLogId} */ this.id;
 /** @type {Array.<CanvasAgent.Call>} */ this.calls;
+/** @type {number|undefined} */ this.startOffset;
+/** @type {boolean|undefined} */ this.alive;
 }
 
 /**
@@ -2829,10 +2864,26 @@ CanvasAgent.captureFrame = function(opt_callback) {}
 CanvasAgent.captureFrame.invoke = function(obj, opt_callback) {}
 
 /**
+ * @param {function(?Protocol.Error, CanvasAgent.TraceLogId):void=} opt_callback
+ */
+CanvasAgent.startCapturing = function(opt_callback) {}
+/** @param {function(?Protocol.Error, CanvasAgent.TraceLogId):void=} opt_callback */
+CanvasAgent.startCapturing.invoke = function(obj, opt_callback) {}
+
+/**
  * @param {CanvasAgent.TraceLogId} traceLogId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+CanvasAgent.stopCapturing = function(traceLogId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+CanvasAgent.stopCapturing.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {CanvasAgent.TraceLogId} traceLogId
+ * @param {number=} opt_startOffset
  * @param {function(?Protocol.Error, CanvasAgent.TraceLog):void=} opt_callback
  */
-CanvasAgent.getTraceLog = function(traceLogId, opt_callback) {}
+CanvasAgent.getTraceLog = function(traceLogId, opt_startOffset, opt_callback) {}
 /** @param {function(?Protocol.Error, CanvasAgent.TraceLog):void=} opt_callback */
 CanvasAgent.getTraceLog.invoke = function(obj, opt_callback) {}
 
@@ -2850,3 +2901,95 @@ CanvasAgent.Dispatcher = function() {};
  * @param {CanvasAgent.Dispatcher} dispatcher
  */
 InspectorBackend.registerCanvasDispatcher = function(dispatcher) {}
+
+
+
+var InputAgent = {};
+
+/**
+ * @param {string} type
+ * @param {number=} opt_modifiers
+ * @param {number=} opt_timestamp
+ * @param {string=} opt_text
+ * @param {string=} opt_unmodifiedText
+ * @param {string=} opt_keyIdentifier
+ * @param {number=} opt_windowsVirtualKeyCode
+ * @param {number=} opt_nativeVirtualKeyCode
+ * @param {number=} opt_macCharCode
+ * @param {boolean=} opt_autoRepeat
+ * @param {boolean=} opt_isKeypad
+ * @param {boolean=} opt_isSystemKey
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+InputAgent.dispatchKeyEvent = function(type, opt_modifiers, opt_timestamp, opt_text, opt_unmodifiedText, opt_keyIdentifier, opt_windowsVirtualKeyCode, opt_nativeVirtualKeyCode, opt_macCharCode, opt_autoRepeat, opt_isKeypad, opt_isSystemKey, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+InputAgent.dispatchKeyEvent.invoke = function(obj, opt_callback) {}
+/** @interface */
+InputAgent.Dispatcher = function() {};
+/**
+ * @param {InputAgent.Dispatcher} dispatcher
+ */
+InspectorBackend.registerInputDispatcher = function(dispatcher) {}
+
+
+
+var LayerTreeAgent = {};
+
+/** @typedef {string} */
+LayerTreeAgent.LayerId;
+
+/** @constructor */
+LayerTreeAgent.IntRect = function()
+{
+/** @type {number} */ this.x;
+/** @type {number} */ this.y;
+/** @type {number} */ this.width;
+/** @type {number} */ this.height;
+}
+
+/** @constructor */
+LayerTreeAgent.Layer = function()
+{
+/** @type {LayerTreeAgent.LayerId} */ this.layerId;
+/** @type {LayerTreeAgent.IntRect} */ this.bounds;
+/** @type {boolean} */ this.isComposited;
+/** @type {number|undefined} */ this.memory;
+/** @type {LayerTreeAgent.IntRect|undefined} */ this.compositedBounds;
+/** @type {Array.<LayerTreeAgent.Layer>|undefined} */ this.childLayers;
+}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+LayerTreeAgent.enable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+LayerTreeAgent.enable.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+LayerTreeAgent.disable = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+LayerTreeAgent.disable.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, LayerTreeAgent.Layer):void=} opt_callback
+ */
+LayerTreeAgent.getLayerTree = function(opt_callback) {}
+/** @param {function(?Protocol.Error, LayerTreeAgent.Layer):void=} opt_callback */
+LayerTreeAgent.getLayerTree.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {LayerTreeAgent.LayerId} layerId
+ * @param {function(?Protocol.Error, DOMAgent.NodeId):void=} opt_callback
+ */
+LayerTreeAgent.nodeIdForLayerId = function(layerId, opt_callback) {}
+/** @param {function(?Protocol.Error, DOMAgent.NodeId):void=} opt_callback */
+LayerTreeAgent.nodeIdForLayerId.invoke = function(obj, opt_callback) {}
+/** @interface */
+LayerTreeAgent.Dispatcher = function() {};
+LayerTreeAgent.Dispatcher.prototype.layerTreeDidChange = function() {};
+/**
+ * @param {LayerTreeAgent.Dispatcher} dispatcher
+ */
+InspectorBackend.registerLayerTreeDispatcher = function(dispatcher) {}
