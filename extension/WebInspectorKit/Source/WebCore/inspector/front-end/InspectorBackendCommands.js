@@ -54,6 +54,7 @@ InspectorBackend.registerCommand("Page.setTouchEmulationEnabled", [{"name": "ena
 InspectorBackend.registerCommand("Page.setEmulatedMedia", [{"name": "media", "type": "string", "optional": false}], []);
 InspectorBackend.registerCommand("Page.getCompositingBordersVisible", [], ["result"]);
 InspectorBackend.registerCommand("Page.setCompositingBordersVisible", [{"name": "visible", "type": "boolean", "optional": false}], []);
+InspectorBackend.registerCommand("Page.captureScreenshot", [], ["data"]);
 
 // Runtime.
 InspectorBackend.registerRuntimeDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Runtime");

@@ -778,8 +778,8 @@ WebInspector.TextEditorChunkedPanel.prototype = {
         this.beginDomUpdates();
 
         var oldChunk = this._textChunks[chunkNumber];
-        var wasExpanded = oldChunk.expanded;
-        oldChunk.expanded = false;
+        var wasExpanded = oldChunk.expanded();
+        oldChunk.collapse();
 
         var insertIndex = chunkNumber + 1;
 
@@ -809,10 +809,11 @@ WebInspector.TextEditorChunkedPanel.prototype = {
 
         if (wasExpanded) {
             if (prefixChunk)
-                prefixChunk.expanded = true;
-            lineChunk.expanded = true;
+                prefixChunk.expand();
+            lineChunk.expand();
             if (suffixChunk)
-                suffixChunk.expanded = true;
+                suffixChunk.expand();
+            this._repaintAll();
         }
 
         this.endDomUpdates();
@@ -910,7 +911,7 @@ WebInspector.TextEditorChunkedPanel.prototype = {
     _findFirstVisibleLineNumber: function(visibleFrom)
     {
         var chunk = this._textChunks[this._findFirstVisibleChunkNumber(visibleFrom)];
-        if (!chunk.expanded)
+        if (!chunk.expanded())
             return chunk.startLine;
 
         var lineNumbers = [];
@@ -932,7 +933,7 @@ WebInspector.TextEditorChunkedPanel.prototype = {
         delete this._repaintAllTimer;
 
         if (this._paintCoalescingLevel)
-            return;
+            return false;
 
         var visibleFrom = this._scrollTop();
         var visibleTo = visibleFrom + this._clientHeight();
@@ -941,6 +942,7 @@ WebInspector.TextEditorChunkedPanel.prototype = {
             var result = this._findVisibleChunks(visibleFrom, visibleTo);
             this._expandChunks(result.start, result.end);
         }
+        return true;
     },
 
     _scrollTop: function()
@@ -961,11 +963,11 @@ WebInspector.TextEditorChunkedPanel.prototype = {
     {
         // First collapse chunks to collect the DOM elements into a cache to reuse them later.
         for (var i = 0; i < fromIndex; ++i)
-            this._textChunks[i].expanded = false;
+            this._textChunks[i].collapse();
         for (var i = toIndex; i < this._textChunks.length; ++i)
-            this._textChunks[i].expanded = false;
+            this._textChunks[i].collapse();
         for (var i = fromIndex; i < toIndex; ++i)
-            this._textChunks[i].expanded = true;
+            this._textChunks[i].expand();
     },
 
     /**
@@ -1052,7 +1054,7 @@ WebInspector.TextEditorGutterPanel.prototype = {
                 var chunk = this._textChunks[chunkNumber];
                 if (chunk.startLine + chunk.linesCount <= this._textModel.linesCount)
                     break;
-                chunk.expanded = false;
+                chunk.collapse();
                 this._container.removeChild(chunk.element);
             }
             this._textChunks.length = chunkNumber + 1;
@@ -1215,52 +1217,68 @@ WebInspector.TextEditorGutterChunk.prototype = {
     /**
      * @return {boolean}
      */
-    get expanded()
+    expanded: function()
     {
         return this._expanded;
     },
 
-    set expanded(expanded)
+    expand: function()
     {
         if (this.linesCount === 1)
             this._textEditor._syncDecorationsForLineListener(this.startLine);
 
-        if (this._expanded === expanded)
+        if (this._expanded)
             return;
 
-        this._expanded = expanded;
+        this._expanded = true;
 
         if (this.linesCount === 1)
             return;
 
         this._textEditor.beginDomUpdates();
 
-        if (expanded) {
-            this._expandedLineRows = [];
-            var parentElement = this.element.parentElement;
-            for (var i = this.startLine; i < this.startLine + this.linesCount; ++i) {
-                var lineRow = this._createRow(i);
-                parentElement.insertBefore(lineRow, this.element);
-                this._expandedLineRows.push(lineRow);
-            }
-            parentElement.removeChild(this.element);
-            this._textEditor._syncLineHeightListener(this._expandedLineRows[0]);
-        } else {
-            var elementInserted = false;
-            for (var i = 0; i < this._expandedLineRows.length; ++i) {
-                var lineRow = this._expandedLineRows[i];
-                var parentElement = lineRow.parentElement;
-                if (parentElement) {
-                    if (!elementInserted) {
-                        elementInserted = true;
-                        parentElement.insertBefore(this.element, lineRow);
-                    }
-                    parentElement.removeChild(lineRow);
-                }
-                this._textEditor._cachedRows.push(lineRow);
-            }
-            delete this._expandedLineRows;
+        this._expandedLineRows = [];
+        var parentElement = this.element.parentElement;
+        for (var i = this.startLine; i < this.startLine + this.linesCount; ++i) {
+            var lineRow = this._createRow(i);
+            parentElement.insertBefore(lineRow, this.element);
+            this._expandedLineRows.push(lineRow);
         }
+        parentElement.removeChild(this.element);
+        this._textEditor._syncLineHeightListener(this._expandedLineRows[0]);
+
+        this._textEditor.endDomUpdates();
+    },
+
+    collapse: function()
+    {
+        if (this.linesCount === 1)
+            this._textEditor._syncDecorationsForLineListener(this.startLine);
+
+        if (!this._expanded)
+            return;
+
+        this._expanded = false;
+
+        if (this.linesCount === 1)
+            return;
+
+        this._textEditor.beginDomUpdates();
+
+        var elementInserted = false;
+        for (var i = 0; i < this._expandedLineRows.length; ++i) {
+            var lineRow = this._expandedLineRows[i];
+            var parentElement = lineRow.parentElement;
+            if (parentElement) {
+                if (!elementInserted) {
+                    elementInserted = true;
+                    parentElement.insertBefore(this.element, lineRow);
+                }
+                parentElement.removeChild(lineRow);
+            }
+            this._textEditor._cachedRows.push(lineRow);
+        }
+        delete this._expandedLineRows;
 
         this._textEditor.endDomUpdates();
     },
@@ -1343,6 +1361,25 @@ WebInspector.TextEditorMainPanel.prototype = {
     {
         this._detachMutationObserver();
         this._isShowing = false;
+    },
+
+    _repaintAll: function()
+    {
+        // calling overridden |_repaintAll| method
+        if (!WebInspector.TextEditorChunkedPanel.prototype._repaintAll.call(this))
+            return false;
+
+        var visibleFrom = this._scrollTop();
+        var visibleTo = visibleFrom + this._clientHeight();
+
+        if (visibleTo) {
+            var result = this._findVisibleChunks(visibleFrom, visibleTo);
+            for(var i = result.start; i < result.end; i++) {
+                var chunk = this._textChunks[i];
+                this._paintLines(chunk.startLine, chunk.startLine + chunk.linesCount, true);
+            }
+        }
+        return true;
     },
 
     _attachMutationObserver: function()
@@ -1452,10 +1489,11 @@ WebInspector.TextEditorMainPanel.prototype = {
             // Remove the marked region immediately.
             this.beginDomUpdates();
             var chunk = this.chunkForLine(markedLine);
-            var wasExpanded = chunk.expanded;
-            chunk.expanded = false;
+            var wasExpanded = chunk.expanded();
+            chunk.collapse();
             chunk.updateCollapsedLineRow();
-            chunk.expanded = wasExpanded;
+            if (wasExpanded)
+                chunk.expand();
             this.endDomUpdates();
         }
 
@@ -2476,7 +2514,7 @@ WebInspector.TextEditorMainPanel.prototype = {
         if (!updated) {
             // Highlights for the chunks below are invalid, so just collapse them.
             for (var i = this._chunkNumberForLine(range.startLine); i < this._textChunks.length; ++i)
-                this._textChunks[i].expanded = false;
+                this._textChunks[i].collapse();
         }
 
         this._repaintAll();
@@ -2629,52 +2667,60 @@ WebInspector.TextEditorMainChunk.prototype = {
     /**
      * @return {boolean}
      */
-    get expanded()
+    expanded: function()
     {
         return this._expanded;
     },
 
-    set expanded(expanded)
+    expand: function()
     {
-        if (this._expanded === expanded)
+        if (this._expanded)
             return;
 
-        this._expanded = expanded;
+        this._expanded = true;
 
-        if (this.linesCount === 1) {
-            if (expanded)
-                this._chunkedPanel._paintLine(this.element);
+        if (this.linesCount === 1)
             return;
-        }
 
         this._chunkedPanel.beginDomUpdates();
 
-        if (expanded) {
-            this._expandedLineRows = [];
-            var parentElement = this.element.parentElement;
-            for (var i = this.startLine; i < this.startLine + this.linesCount; ++i) {
-                var lineRow = this._createRow(i);
-                parentElement.insertBefore(lineRow, this.element);
-                this._expandedLineRows.push(lineRow);
-            }
-            parentElement.removeChild(this.element);
-            this._chunkedPanel._paintLines(this.startLine, this.startLine + this.linesCount);
-        } else {
-            var elementInserted = false;
-            for (var i = 0; i < this._expandedLineRows.length; ++i) {
-                var lineRow = this._expandedLineRows[i];
-                var parentElement = lineRow.parentElement;
-                if (parentElement) {
-                    if (!elementInserted) {
-                        elementInserted = true;
-                        parentElement.insertBefore(this.element, lineRow);
-                    }
-                    parentElement.removeChild(lineRow);
-                }
-                this._chunkedPanel._releaseLinesHighlight(lineRow);
-            }
-            delete this._expandedLineRows;
+        this._expandedLineRows = [];
+        var parentElement = this.element.parentElement;
+        for (var i = this.startLine; i < this.startLine + this.linesCount; ++i) {
+            var lineRow = this._createRow(i);
+            parentElement.insertBefore(lineRow, this.element);
+            this._expandedLineRows.push(lineRow);
         }
+        parentElement.removeChild(this.element);
+
+        this._chunkedPanel.endDomUpdates();
+    },
+
+    collapse: function()
+    {
+        if (!this._expanded)
+            return;
+
+        this._expanded = false;
+        if (this.linesCount === 1)
+            return;
+
+        this._chunkedPanel.beginDomUpdates();
+
+        var elementInserted = false;
+        for (var i = 0; i < this._expandedLineRows.length; ++i) {
+            var lineRow = this._expandedLineRows[i];
+            var parentElement = lineRow.parentElement;
+            if (parentElement) {
+                if (!elementInserted) {
+                    elementInserted = true;
+                    parentElement.insertBefore(this.element, lineRow);
+                }
+                parentElement.removeChild(lineRow);
+            }
+            this._chunkedPanel._releaseLinesHighlight(lineRow);
+        }
+        delete this._expandedLineRows;
 
         this._chunkedPanel.endDomUpdates();
     },

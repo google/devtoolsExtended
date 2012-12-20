@@ -93,10 +93,11 @@ MemoryAgent.getDOMNodeCount = function(opt_callback) {}
 MemoryAgent.getDOMNodeCount.invoke = function(obj, opt_callback) {}
 
 /**
- * @param {function(?Protocol.Error, MemoryAgent.MemoryBlock):void=} opt_callback
+ * @param {boolean=} opt_reportGraph
+ * @param {function(?Protocol.Error, MemoryAgent.MemoryBlock, Object=):void=} opt_callback
  */
-MemoryAgent.getProcessMemoryDistribution = function(opt_callback) {}
-/** @param {function(?Protocol.Error, MemoryAgent.MemoryBlock):void=} opt_callback */
+MemoryAgent.getProcessMemoryDistribution = function(opt_reportGraph, opt_callback) {}
+/** @param {function(?Protocol.Error, MemoryAgent.MemoryBlock, Object=):void=} opt_callback */
 MemoryAgent.getProcessMemoryDistribution.invoke = function(obj, opt_callback) {}
 /** @interface */
 MemoryAgent.Dispatcher = function() {};
@@ -409,6 +410,13 @@ PageAgent.getCompositingBordersVisible.invoke = function(obj, opt_callback) {}
 PageAgent.setCompositingBordersVisible = function(visible, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 PageAgent.setCompositingBordersVisible.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, string):void=} opt_callback
+ */
+PageAgent.captureScreenshot = function(opt_callback) {}
+/** @param {function(?Protocol.Error, string):void=} opt_callback */
+PageAgent.captureScreenshot.invoke = function(obj, opt_callback) {}
 /** @interface */
 PageAgent.Dispatcher = function() {};
 /**
@@ -1419,6 +1427,7 @@ DOMAgent.Node = function()
 /** @type {string|undefined} */ this.xmlVersion;
 /** @type {string|undefined} */ this.name;
 /** @type {string|undefined} */ this.value;
+/** @type {NetworkAgent.FrameId|undefined} */ this.frameId;
 /** @type {DOMAgent.Node|undefined} */ this.contentDocument;
 /** @type {Array.<DOMAgent.Node>|undefined} */ this.shadowRoots;
 }
@@ -2586,6 +2595,7 @@ ProfilerAgent.Profile = function()
 {
 /** @type {Object|undefined} */ this.head;
 /** @type {Object|undefined} */ this.bottomUpHead;
+/** @type {number|undefined} */ this.idleTime;
 }
 
 /** @typedef {string} */
@@ -2924,6 +2934,20 @@ var InputAgent = {};
 InputAgent.dispatchKeyEvent = function(type, opt_modifiers, opt_timestamp, opt_text, opt_unmodifiedText, opt_keyIdentifier, opt_windowsVirtualKeyCode, opt_nativeVirtualKeyCode, opt_macCharCode, opt_autoRepeat, opt_isKeypad, opt_isSystemKey, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 InputAgent.dispatchKeyEvent.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {string} type
+ * @param {number} x
+ * @param {number} y
+ * @param {number=} opt_modifiers
+ * @param {number=} opt_timestamp
+ * @param {string=} opt_button
+ * @param {number=} opt_clickCount
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+InputAgent.dispatchMouseEvent = function(type, x, y, opt_modifiers, opt_timestamp, opt_button, opt_clickCount, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+InputAgent.dispatchMouseEvent.invoke = function(obj, opt_callback) {}
 /** @interface */
 InputAgent.Dispatcher = function() {};
 /**
@@ -2953,6 +2977,7 @@ LayerTreeAgent.Layer = function()
 /** @type {LayerTreeAgent.LayerId} */ this.layerId;
 /** @type {LayerTreeAgent.IntRect} */ this.bounds;
 /** @type {boolean} */ this.isComposited;
+/** @type {number|undefined} */ this.paintCount;
 /** @type {number|undefined} */ this.memory;
 /** @type {LayerTreeAgent.IntRect|undefined} */ this.compositedBounds;
 /** @type {Array.<LayerTreeAgent.Layer>|undefined} */ this.childLayers;
