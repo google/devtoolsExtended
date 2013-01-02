@@ -48,6 +48,7 @@
     <file>DataGrid.js</file>
     <file>DebuggerModel.js</file>
     <file>DebuggerScriptMapping.js</file>
+    <file>DefaultScriptMapping.js</file>
     <file>DefaultTextEditor.js</file>
     <file>Dialog.js</file>
     <file>DirectoryContentView.js</file>
@@ -98,11 +99,13 @@
     <file>InspectorFrontendAPI.js</file>
     <file>InspectorFrontendHostStub.js</file>
     <file>InspectorView.js</file>
+    <file>JSHeapSnapshot.js</file>
     <file>JavaScriptFormatter.js</file>
     <file>JavaScriptSourceFrame.js</file>
     <file>jsdifflib.js</file>
     <file>KeyboardShortcut.js</file>
     <file>Linkifier.js</file>
+    <file>LiveEditSupport.js</file>
     <file>MemoryStatistics.js</file>
     <file>MetricsSidebarPane.js</file>
     <file>NativeBreakpointsSidebarPane.js</file>
@@ -181,6 +184,7 @@
     <file>SourceFrame.js</file>
     <file>SourceHTMLTokenizer.js</file>
     <file>SourceJavaScriptTokenizer.js</file>
+    <file>SourceMap.js</file>
     <file>SourceMapping.js</file>
     <file>SourceTokenizer.js</file>
     <file>Spectrum.js</file>

@@ -2820,11 +2820,12 @@ InspectorBackend.registerWorkerDispatcher = function(dispatcher) {}
 var CanvasAgent = {};
 
 /** @typedef {string} */
-CanvasAgent.TraceLogId;
+CanvasAgent.ContextId;
 
 /** @constructor */
 CanvasAgent.Call = function()
 {
+/** @type {CanvasAgent.ContextId} */ this.contextId;
 /** @type {string|undefined} */ this.functionName;
 /** @type {Array.<string>|undefined} */ this.arguments;
 /** @type {string|undefined} */ this.property;
@@ -2834,6 +2835,9 @@ CanvasAgent.Call = function()
 /** @type {number|undefined} */ this.lineNumber;
 /** @type {number|undefined} */ this.columnNumber;
 }
+
+/** @typedef {string} */
+CanvasAgent.TraceLogId;
 
 /** @constructor */
 CanvasAgent.TraceLog = function()
@@ -2865,6 +2869,13 @@ CanvasAgent.disable.invoke = function(obj, opt_callback) {}
 CanvasAgent.dropTraceLog = function(traceLogId, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 CanvasAgent.dropTraceLog.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+CanvasAgent.hasUninstrumentedCanvases = function(opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+CanvasAgent.hasUninstrumentedCanvases.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {function(?Protocol.Error, CanvasAgent.TraceLogId):void=} opt_callback

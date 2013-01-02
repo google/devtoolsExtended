@@ -318,6 +318,7 @@ InspectorBackend.registerCanvasDispatcher = InspectorBackend.registerDomainDispa
 InspectorBackend.registerCommand("Canvas.enable", [], []);
 InspectorBackend.registerCommand("Canvas.disable", [], []);
 InspectorBackend.registerCommand("Canvas.dropTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}], []);
+InspectorBackend.registerCommand("Canvas.hasUninstrumentedCanvases", [], ["result"]);
 InspectorBackend.registerCommand("Canvas.captureFrame", [], ["traceLogId"]);
 InspectorBackend.registerCommand("Canvas.startCapturing", [], ["traceLogId"]);
 InspectorBackend.registerCommand("Canvas.stopCapturing", [{"name": "traceLogId", "type": "string", "optional": false}], []);
