@@ -45,45 +45,20 @@ InspectorBackend.registerInspectorDispatcher = function(dispatcher) {}
 
 var MemoryAgent = {};
 
-/** @constructor */
-MemoryAgent.NodeCount = function()
-{
-/** @type {string} */ this.nodeName;
-/** @type {number} */ this.count;
-}
+/** @typedef {{nodeName:(string), count:(number)}|null} */
+MemoryAgent.NodeCount;
 
-/** @constructor */
-MemoryAgent.ListenerCount = function()
-{
-/** @type {string} */ this.type;
-/** @type {number} */ this.count;
-}
+/** @typedef {{type:(string), count:(number)}|null} */
+MemoryAgent.ListenerCount;
 
-/** @constructor */
-MemoryAgent.StringStatistics = function()
-{
-/** @type {number} */ this.dom;
-/** @type {number} */ this.js;
-/** @type {number} */ this.shared;
-}
+/** @typedef {{dom:(number), js:(number), shared:(number)}|null} */
+MemoryAgent.StringStatistics;
 
-/** @constructor */
-MemoryAgent.DOMGroup = function()
-{
-/** @type {number} */ this.size;
-/** @type {string} */ this.title;
-/** @type {string|undefined} */ this.documentURI;
-/** @type {Array.<MemoryAgent.NodeCount>} */ this.nodeCount;
-/** @type {Array.<MemoryAgent.ListenerCount>} */ this.listenerCount;
-}
+/** @typedef {{size:(number), title:(string), documentURI:(string|undefined), nodeCount:(Array.<MemoryAgent.NodeCount>), listenerCount:(Array.<MemoryAgent.ListenerCount>)}|null} */
+MemoryAgent.DOMGroup;
 
-/** @constructor */
-MemoryAgent.MemoryBlock = function()
-{
-/** @type {number|undefined} */ this.size;
-/** @type {string} */ this.name;
-/** @type {Array.<MemoryAgent.MemoryBlock>|undefined} */ this.children;
-}
+/** @typedef {{size:(number|undefined), name:(string), children:(Array.<MemoryAgent.MemoryBlock>|undefined)}|null} */
+MemoryAgent.MemoryBlock;
 
 /**
  * @param {function(?Protocol.Error, Array.<MemoryAgent.DOMGroup>, MemoryAgent.StringStatistics):void=} opt_callback
@@ -113,54 +88,20 @@ var PageAgent = {};
 /** @typedef {string} */
 PageAgent.ResourceType;
 
-/** @constructor */
-PageAgent.Frame = function()
-{
-/** @type {string} */ this.id;
-/** @type {string|undefined} */ this.parentId;
-/** @type {NetworkAgent.LoaderId} */ this.loaderId;
-/** @type {string|undefined} */ this.name;
-/** @type {string} */ this.url;
-/** @type {string|undefined} */ this.securityOrigin;
-/** @type {string} */ this.mimeType;
-}
+/** @typedef {{id:(string), parentId:(string|undefined), loaderId:(NetworkAgent.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string|undefined), mimeType:(string)}|null} */
+PageAgent.Frame;
 
-/** @constructor */
-PageAgent.FrameResourceTree = function()
-{
-/** @type {PageAgent.Frame} */ this.frame;
-/** @type {Array.<PageAgent.FrameResourceTree>|undefined} */ this.childFrames;
-/** @type {Array.<Object>} */ this.resources;
-}
+/** @typedef {{frame:(PageAgent.Frame), childFrames:(Array.<PageAgent.FrameResourceTree>|undefined), resources:(Array.<Object>)}|null} */
+PageAgent.FrameResourceTree;
 
-/** @constructor */
-PageAgent.SearchMatch = function()
-{
-/** @type {number} */ this.lineNumber;
-/** @type {string} */ this.lineContent;
-}
+/** @typedef {{lineNumber:(number), lineContent:(string)}|null} */
+PageAgent.SearchMatch;
 
-/** @constructor */
-PageAgent.SearchResult = function()
-{
-/** @type {string} */ this.url;
-/** @type {NetworkAgent.FrameId} */ this.frameId;
-/** @type {number} */ this.matchesCount;
-}
+/** @typedef {{url:(string), frameId:(NetworkAgent.FrameId), matchesCount:(number)}|null} */
+PageAgent.SearchResult;
 
-/** @constructor */
-PageAgent.Cookie = function()
-{
-/** @type {string} */ this.name;
-/** @type {string} */ this.value;
-/** @type {string} */ this.domain;
-/** @type {string} */ this.path;
-/** @type {number} */ this.expires;
-/** @type {number} */ this.size;
-/** @type {boolean} */ this.httpOnly;
-/** @type {boolean} */ this.secure;
-/** @type {boolean} */ this.session;
-}
+/** @typedef {{name:(string), value:(string), domain:(string), path:(string), expires:(number), size:(number), httpOnly:(boolean), secure:(boolean), session:(boolean)}|null} */
+PageAgent.Cookie;
 
 /** @typedef {string} */
 PageAgent.ScriptIdentifier;
@@ -222,10 +163,10 @@ PageAgent.getCookies.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {string} cookieName
- * @param {string} domain
+ * @param {string} url
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-PageAgent.deleteCookie = function(cookieName, domain, opt_callback) {}
+PageAgent.deleteCookie = function(cookieName, url, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 PageAgent.deleteCookie.invoke = function(obj, opt_callback) {}
 
@@ -316,6 +257,21 @@ PageAgent.canShowFPSCounter.invoke = function(obj, opt_callback) {}
 PageAgent.setShowFPSCounter = function(show, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 PageAgent.setShowFPSCounter.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+PageAgent.canContinuouslyPaint = function(opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+PageAgent.canContinuouslyPaint.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} enabled
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+PageAgent.setContinuousPaintingEnabled = function(enabled, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+PageAgent.setContinuousPaintingEnabled.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {function(?Protocol.Error, string):void=} opt_callback
@@ -436,6 +392,23 @@ PageAgent.Dispatcher.prototype.frameNavigated = function(frame) {};
  */
 PageAgent.Dispatcher.prototype.frameDetached = function(frameId) {};
 /**
+ * @param {NetworkAgent.FrameId} frameId
+ */
+PageAgent.Dispatcher.prototype.frameStartedLoading = function(frameId) {};
+/**
+ * @param {NetworkAgent.FrameId} frameId
+ */
+PageAgent.Dispatcher.prototype.frameStoppedLoading = function(frameId) {};
+/**
+ * @param {NetworkAgent.FrameId} frameId
+ * @param {number} delay
+ */
+PageAgent.Dispatcher.prototype.frameScheduledNavigation = function(frameId, delay) {};
+/**
+ * @param {NetworkAgent.FrameId} frameId
+ */
+PageAgent.Dispatcher.prototype.frameClearedScheduledNavigation = function(frameId) {};
+/**
  * @param {PageAgent.Dispatcher} dispatcher
  */
 InspectorBackend.registerPageDispatcher = function(dispatcher) {}
@@ -447,74 +420,29 @@ var RuntimeAgent = {};
 /** @typedef {string} */
 RuntimeAgent.RemoteObjectId;
 
-/** @constructor */
-RuntimeAgent.RemoteObject = function()
-{
-/** @type {string} */ this.type;
-/** @type {string|undefined} */ this.subtype;
-/** @type {string|undefined} */ this.className;
-/** @type {*|undefined} */ this.value;
-/** @type {string|undefined} */ this.description;
-/** @type {RuntimeAgent.RemoteObjectId|undefined} */ this.objectId;
-/** @type {RuntimeAgent.ObjectPreview|undefined} */ this.preview;
-}
+/** @typedef {{type:(string), subtype:(string|undefined), className:(string|undefined), value:(*|undefined), description:(string|undefined), objectId:(RuntimeAgent.RemoteObjectId|undefined), preview:(RuntimeAgent.ObjectPreview|undefined)}|null} */
+RuntimeAgent.RemoteObject;
 
-/** @constructor */
-RuntimeAgent.ObjectPreview = function()
-{
-/** @type {boolean} */ this.lossless;
-/** @type {boolean} */ this.overflow;
-/** @type {Array.<RuntimeAgent.PropertyPreview>} */ this.properties;
-}
+/** @typedef {{lossless:(boolean), overflow:(boolean), properties:(Array.<RuntimeAgent.PropertyPreview>)}|null} */
+RuntimeAgent.ObjectPreview;
 
-/** @constructor */
-RuntimeAgent.PropertyPreview = function()
-{
-/** @type {string} */ this.name;
-/** @type {string} */ this.type;
-/** @type {string|undefined} */ this.value;
-/** @type {string|undefined} */ this.subtype;
-}
+/** @typedef {{name:(string), type:(string), value:(string|undefined), subtype:(string|undefined)}|null} */
+RuntimeAgent.PropertyPreview;
 
-/** @constructor */
-RuntimeAgent.PropertyDescriptor = function()
-{
-/** @type {string} */ this.name;
-/** @type {RuntimeAgent.RemoteObject|undefined} */ this.value;
-/** @type {boolean|undefined} */ this.writable;
-/** @type {RuntimeAgent.RemoteObject|undefined} */ this.get;
-/** @type {RuntimeAgent.RemoteObject|undefined} */ this.set;
-/** @type {boolean} */ this.configurable;
-/** @type {boolean} */ this.enumerable;
-/** @type {boolean|undefined} */ this.wasThrown;
-/** @type {boolean|undefined} */ this.isOwn;
-}
+/** @typedef {{name:(string), value:(RuntimeAgent.RemoteObject|undefined), writable:(boolean|undefined), get:(RuntimeAgent.RemoteObject|undefined), set:(RuntimeAgent.RemoteObject|undefined), configurable:(boolean), enumerable:(boolean), wasThrown:(boolean|undefined), isOwn:(boolean|undefined)}|null} */
+RuntimeAgent.PropertyDescriptor;
 
-/** @constructor */
-RuntimeAgent.InternalPropertyDescriptor = function()
-{
-/** @type {string} */ this.name;
-/** @type {RuntimeAgent.RemoteObject|undefined} */ this.value;
-}
+/** @typedef {{name:(string), value:(RuntimeAgent.RemoteObject|undefined)}|null} */
+RuntimeAgent.InternalPropertyDescriptor;
 
-/** @constructor */
-RuntimeAgent.CallArgument = function()
-{
-/** @type {*|undefined} */ this.value;
-/** @type {RuntimeAgent.RemoteObjectId|undefined} */ this.objectId;
-}
+/** @typedef {{value:(*|undefined), objectId:(RuntimeAgent.RemoteObjectId|undefined)}|null} */
+RuntimeAgent.CallArgument;
 
 /** @typedef {number} */
 RuntimeAgent.ExecutionContextId;
 
-/** @constructor */
-RuntimeAgent.ExecutionContextDescription = function()
-{
-/** @type {RuntimeAgent.ExecutionContextId} */ this.id;
-/** @type {boolean} */ this.isPageContext;
-/** @type {string} */ this.name;
-/** @type {NetworkAgent.FrameId} */ this.frameId;
-}
+/** @typedef {{id:(RuntimeAgent.ExecutionContextId), isPageContext:(boolean), name:(string), frameId:(NetworkAgent.FrameId)}|null} */
+RuntimeAgent.ExecutionContextDescription;
 
 /**
  * @param {string} expression
@@ -603,29 +531,11 @@ InspectorBackend.registerRuntimeDispatcher = function(dispatcher) {}
 
 var ConsoleAgent = {};
 
-/** @constructor */
-ConsoleAgent.ConsoleMessage = function()
-{
-/** @type {string} */ this.source;
-/** @type {string} */ this.level;
-/** @type {string} */ this.text;
-/** @type {string|undefined} */ this.type;
-/** @type {string|undefined} */ this.url;
-/** @type {number|undefined} */ this.line;
-/** @type {number|undefined} */ this.repeatCount;
-/** @type {Array.<RuntimeAgent.RemoteObject>|undefined} */ this.parameters;
-/** @type {ConsoleAgent.StackTrace|undefined} */ this.stackTrace;
-/** @type {NetworkAgent.RequestId|undefined} */ this.networkRequestId;
-}
+/** @typedef {{source:(string), level:(string), text:(string), type:(string|undefined), url:(string|undefined), line:(number|undefined), repeatCount:(number|undefined), parameters:(Array.<RuntimeAgent.RemoteObject>|undefined), stackTrace:(ConsoleAgent.StackTrace|undefined), networkRequestId:(NetworkAgent.RequestId|undefined)}|null} */
+ConsoleAgent.ConsoleMessage;
 
-/** @constructor */
-ConsoleAgent.CallFrame = function()
-{
-/** @type {string} */ this.functionName;
-/** @type {string} */ this.url;
-/** @type {number} */ this.lineNumber;
-/** @type {number} */ this.columnNumber;
-}
+/** @typedef {{functionName:(string), url:(string), lineNumber:(number), columnNumber:(number)}|null} */
+ConsoleAgent.CallFrame;
 
 /** @typedef {Array.<ConsoleAgent.CallFrame>} */
 ConsoleAgent.StackTrace;
@@ -706,95 +616,32 @@ NetworkAgent.RequestId;
 /** @typedef {number} */
 NetworkAgent.Timestamp;
 
-/** @constructor */
-NetworkAgent.Headers = function()
-{
-}
+/** @typedef {Object} */
+NetworkAgent.Headers;
 
-/** @constructor */
-NetworkAgent.ResourceTiming = function()
-{
-/** @type {number} */ this.requestTime;
-/** @type {number} */ this.proxyStart;
-/** @type {number} */ this.proxyEnd;
-/** @type {number} */ this.dnsStart;
-/** @type {number} */ this.dnsEnd;
-/** @type {number} */ this.connectStart;
-/** @type {number} */ this.connectEnd;
-/** @type {number} */ this.sslStart;
-/** @type {number} */ this.sslEnd;
-/** @type {number} */ this.sendStart;
-/** @type {number} */ this.sendEnd;
-/** @type {number} */ this.receiveHeadersEnd;
-}
+/** @typedef {{requestTime:(number), proxyStart:(number), proxyEnd:(number), dnsStart:(number), dnsEnd:(number), connectStart:(number), connectEnd:(number), sslStart:(number), sslEnd:(number), sendStart:(number), sendEnd:(number), receiveHeadersEnd:(number)}|null} */
+NetworkAgent.ResourceTiming;
 
-/** @constructor */
-NetworkAgent.Request = function()
-{
-/** @type {string} */ this.url;
-/** @type {string} */ this.method;
-/** @type {NetworkAgent.Headers} */ this.headers;
-/** @type {string|undefined} */ this.postData;
-}
+/** @typedef {{url:(string), method:(string), headers:(NetworkAgent.Headers), postData:(string|undefined)}|null} */
+NetworkAgent.Request;
 
-/** @constructor */
-NetworkAgent.Response = function()
-{
-/** @type {string} */ this.url;
-/** @type {number} */ this.status;
-/** @type {string} */ this.statusText;
-/** @type {NetworkAgent.Headers} */ this.headers;
-/** @type {string|undefined} */ this.headersText;
-/** @type {string} */ this.mimeType;
-/** @type {NetworkAgent.Headers|undefined} */ this.requestHeaders;
-/** @type {string|undefined} */ this.requestHeadersText;
-/** @type {boolean} */ this.connectionReused;
-/** @type {number} */ this.connectionId;
-/** @type {boolean|undefined} */ this.fromDiskCache;
-/** @type {NetworkAgent.ResourceTiming|undefined} */ this.timing;
-}
+/** @typedef {{url:(string), status:(number), statusText:(string), headers:(NetworkAgent.Headers), headersText:(string|undefined), mimeType:(string), requestHeaders:(NetworkAgent.Headers|undefined), requestHeadersText:(string|undefined), connectionReused:(boolean), connectionId:(number), fromDiskCache:(boolean|undefined), timing:(NetworkAgent.ResourceTiming|undefined)}|null} */
+NetworkAgent.Response;
 
-/** @constructor */
-NetworkAgent.WebSocketRequest = function()
-{
-/** @type {string} */ this.requestKey3;
-/** @type {NetworkAgent.Headers} */ this.headers;
-}
+/** @typedef {{headers:(NetworkAgent.Headers)}|null} */
+NetworkAgent.WebSocketRequest;
 
-/** @constructor */
-NetworkAgent.WebSocketResponse = function()
-{
-/** @type {number} */ this.status;
-/** @type {string} */ this.statusText;
-/** @type {NetworkAgent.Headers} */ this.headers;
-/** @type {string} */ this.challengeResponse;
-}
+/** @typedef {{status:(number), statusText:(string), headers:(NetworkAgent.Headers)}|null} */
+NetworkAgent.WebSocketResponse;
 
-/** @constructor */
-NetworkAgent.WebSocketFrame = function()
-{
-/** @type {number} */ this.opcode;
-/** @type {boolean} */ this.mask;
-/** @type {string} */ this.payloadData;
-}
+/** @typedef {{opcode:(number), mask:(boolean), payloadData:(string)}|null} */
+NetworkAgent.WebSocketFrame;
 
-/** @constructor */
-NetworkAgent.CachedResource = function()
-{
-/** @type {string} */ this.url;
-/** @type {PageAgent.ResourceType} */ this.type;
-/** @type {NetworkAgent.Response|undefined} */ this.response;
-/** @type {number} */ this.bodySize;
-}
+/** @typedef {{url:(string), type:(PageAgent.ResourceType), response:(NetworkAgent.Response|undefined), bodySize:(number)}|null} */
+NetworkAgent.CachedResource;
 
-/** @constructor */
-NetworkAgent.Initiator = function()
-{
-/** @type {string} */ this.type;
-/** @type {ConsoleAgent.StackTrace|undefined} */ this.stackTrace;
-/** @type {string|undefined} */ this.url;
-/** @type {number|undefined} */ this.lineNumber;
-}
+/** @typedef {{type:(string), stackTrace:(ConsoleAgent.StackTrace|undefined), url:(string|undefined), lineNumber:(number|undefined)}|null} */
+NetworkAgent.Initiator;
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
@@ -984,21 +831,11 @@ var DatabaseAgent = {};
 /** @typedef {string} */
 DatabaseAgent.DatabaseId;
 
-/** @constructor */
-DatabaseAgent.Database = function()
-{
-/** @type {DatabaseAgent.DatabaseId} */ this.id;
-/** @type {string} */ this.domain;
-/** @type {string} */ this.name;
-/** @type {string} */ this.version;
-}
+/** @typedef {{id:(DatabaseAgent.DatabaseId), domain:(string), name:(string), version:(string)}|null} */
+DatabaseAgent.Database;
 
-/** @constructor */
-DatabaseAgent.Error = function()
-{
-/** @type {string} */ this.message;
-/** @type {number} */ this.code;
-}
+/** @typedef {{message:(string), code:(number)}|null} */
+DatabaseAgent.Error;
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
@@ -1045,74 +882,29 @@ InspectorBackend.registerDatabaseDispatcher = function(dispatcher) {}
 
 var IndexedDBAgent = {};
 
-/** @constructor */
-IndexedDBAgent.SecurityOriginWithDatabaseNames = function()
-{
-/** @type {string} */ this.securityOrigin;
-/** @type {Array.<string>} */ this.databaseNames;
-}
+/** @typedef {{securityOrigin:(string), databaseNames:(Array.<string>)}|null} */
+IndexedDBAgent.SecurityOriginWithDatabaseNames;
 
-/** @constructor */
-IndexedDBAgent.DatabaseWithObjectStores = function()
-{
-/** @type {string} */ this.name;
-/** @type {string} */ this.version;
-/** @type {number} */ this.intVersion;
-/** @type {Array.<IndexedDBAgent.ObjectStore>} */ this.objectStores;
-}
+/** @typedef {{name:(string), version:(string), intVersion:(number), objectStores:(Array.<IndexedDBAgent.ObjectStore>)}|null} */
+IndexedDBAgent.DatabaseWithObjectStores;
 
-/** @constructor */
-IndexedDBAgent.ObjectStore = function()
-{
-/** @type {string} */ this.name;
-/** @type {IndexedDBAgent.KeyPath} */ this.keyPath;
-/** @type {boolean} */ this.autoIncrement;
-/** @type {Array.<IndexedDBAgent.ObjectStoreIndex>} */ this.indexes;
-}
+/** @typedef {{name:(string), keyPath:(IndexedDBAgent.KeyPath), autoIncrement:(boolean), indexes:(Array.<IndexedDBAgent.ObjectStoreIndex>)}|null} */
+IndexedDBAgent.ObjectStore;
 
-/** @constructor */
-IndexedDBAgent.ObjectStoreIndex = function()
-{
-/** @type {string} */ this.name;
-/** @type {IndexedDBAgent.KeyPath} */ this.keyPath;
-/** @type {boolean} */ this.unique;
-/** @type {boolean} */ this.multiEntry;
-}
+/** @typedef {{name:(string), keyPath:(IndexedDBAgent.KeyPath), unique:(boolean), multiEntry:(boolean)}|null} */
+IndexedDBAgent.ObjectStoreIndex;
 
-/** @constructor */
-IndexedDBAgent.Key = function()
-{
-/** @type {string} */ this.type;
-/** @type {number|undefined} */ this.number;
-/** @type {string|undefined} */ this.string;
-/** @type {number|undefined} */ this.date;
-/** @type {Array.<IndexedDBAgent.Key>|undefined} */ this.array;
-}
+/** @typedef {{type:(string), number:(number|undefined), string:(string|undefined), date:(number|undefined), array:(Array.<IndexedDBAgent.Key>|undefined)}|null} */
+IndexedDBAgent.Key;
 
-/** @constructor */
-IndexedDBAgent.KeyRange = function()
-{
-/** @type {IndexedDBAgent.Key|undefined} */ this.lower;
-/** @type {IndexedDBAgent.Key|undefined} */ this.upper;
-/** @type {boolean} */ this.lowerOpen;
-/** @type {boolean} */ this.upperOpen;
-}
+/** @typedef {{lower:(IndexedDBAgent.Key|undefined), upper:(IndexedDBAgent.Key|undefined), lowerOpen:(boolean), upperOpen:(boolean)}|null} */
+IndexedDBAgent.KeyRange;
 
-/** @constructor */
-IndexedDBAgent.DataEntry = function()
-{
-/** @type {RuntimeAgent.RemoteObject} */ this.key;
-/** @type {RuntimeAgent.RemoteObject} */ this.primaryKey;
-/** @type {RuntimeAgent.RemoteObject} */ this.value;
-}
+/** @typedef {{key:(RuntimeAgent.RemoteObject), primaryKey:(RuntimeAgent.RemoteObject), value:(RuntimeAgent.RemoteObject)}|null} */
+IndexedDBAgent.DataEntry;
 
-/** @constructor */
-IndexedDBAgent.KeyPath = function()
-{
-/** @type {string} */ this.type;
-/** @type {string|undefined} */ this.string;
-/** @type {Array.<string>|undefined} */ this.array;
-}
+/** @typedef {{type:(string), string:(string|undefined), array:(Array.<string>|undefined)}|null} */
+IndexedDBAgent.KeyPath;
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
@@ -1172,13 +964,8 @@ var DOMStorageAgent = {};
 /** @typedef {string} */
 DOMStorageAgent.StorageId;
 
-/** @constructor */
-DOMStorageAgent.Entry = function()
-{
-/** @type {string} */ this.origin;
-/** @type {boolean} */ this.isLocalStorage;
-/** @type {DOMStorageAgent.StorageId} */ this.id;
-}
+/** @typedef {{origin:(string), isLocalStorage:(boolean), id:(DOMStorageAgent.StorageId)}|null} */
+DOMStorageAgent.Entry;
 
 /** @typedef {Array.<string>} */
 DOMStorageAgent.Item;
@@ -1242,31 +1029,14 @@ InspectorBackend.registerDOMStorageDispatcher = function(dispatcher) {}
 
 var ApplicationCacheAgent = {};
 
-/** @constructor */
-ApplicationCacheAgent.ApplicationCacheResource = function()
-{
-/** @type {string} */ this.url;
-/** @type {number} */ this.size;
-/** @type {string} */ this.type;
-}
+/** @typedef {{url:(string), size:(number), type:(string)}|null} */
+ApplicationCacheAgent.ApplicationCacheResource;
 
-/** @constructor */
-ApplicationCacheAgent.ApplicationCache = function()
-{
-/** @type {string} */ this.manifestURL;
-/** @type {number} */ this.size;
-/** @type {number} */ this.creationTime;
-/** @type {number} */ this.updateTime;
-/** @type {Array.<ApplicationCacheAgent.ApplicationCacheResource>} */ this.resources;
-}
+/** @typedef {{manifestURL:(string), size:(number), creationTime:(number), updateTime:(number), resources:(Array.<ApplicationCacheAgent.ApplicationCacheResource>)}|null} */
+ApplicationCacheAgent.ApplicationCache;
 
-/** @constructor */
-ApplicationCacheAgent.FrameWithManifest = function()
-{
-/** @type {NetworkAgent.FrameId} */ this.frameId;
-/** @type {string} */ this.manifestURL;
-/** @type {number} */ this.status;
-}
+/** @typedef {{frameId:(NetworkAgent.FrameId), manifestURL:(string), status:(number)}|null} */
+ApplicationCacheAgent.FrameWithManifest;
 
 /**
  * @param {function(?Protocol.Error, Array.<ApplicationCacheAgent.FrameWithManifest>):void=} opt_callback
@@ -1318,23 +1088,11 @@ InspectorBackend.registerApplicationCacheDispatcher = function(dispatcher) {}
 
 var FileSystemAgent = {};
 
-/** @constructor */
-FileSystemAgent.Entry = function()
-{
-/** @type {string} */ this.url;
-/** @type {string} */ this.name;
-/** @type {boolean} */ this.isDirectory;
-/** @type {string|undefined} */ this.mimeType;
-/** @type {PageAgent.ResourceType|undefined} */ this.resourceType;
-/** @type {boolean|undefined} */ this.isTextFile;
-}
+/** @typedef {{url:(string), name:(string), isDirectory:(boolean), mimeType:(string|undefined), resourceType:(PageAgent.ResourceType|undefined), isTextFile:(boolean|undefined)}|null} */
+FileSystemAgent.Entry;
 
-/** @constructor */
-FileSystemAgent.Metadata = function()
-{
-/** @type {number} */ this.modificationTime;
-/** @type {number} */ this.size;
-}
+/** @typedef {{modificationTime:(number), size:(number)}|null} */
+FileSystemAgent.Metadata;
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
@@ -1408,60 +1166,17 @@ var DOMAgent = {};
 /** @typedef {number} */
 DOMAgent.NodeId;
 
-/** @constructor */
-DOMAgent.Node = function()
-{
-/** @type {DOMAgent.NodeId} */ this.nodeId;
-/** @type {number} */ this.nodeType;
-/** @type {string} */ this.nodeName;
-/** @type {string} */ this.localName;
-/** @type {string} */ this.nodeValue;
-/** @type {number|undefined} */ this.childNodeCount;
-/** @type {Array.<DOMAgent.Node>|undefined} */ this.children;
-/** @type {Array.<string>|undefined} */ this.attributes;
-/** @type {string|undefined} */ this.documentURL;
-/** @type {string|undefined} */ this.baseURL;
-/** @type {string|undefined} */ this.publicId;
-/** @type {string|undefined} */ this.systemId;
-/** @type {string|undefined} */ this.internalSubset;
-/** @type {string|undefined} */ this.xmlVersion;
-/** @type {string|undefined} */ this.name;
-/** @type {string|undefined} */ this.value;
-/** @type {NetworkAgent.FrameId|undefined} */ this.frameId;
-/** @type {DOMAgent.Node|undefined} */ this.contentDocument;
-/** @type {Array.<DOMAgent.Node>|undefined} */ this.shadowRoots;
-}
+/** @typedef {{nodeId:(DOMAgent.NodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(Array.<DOMAgent.Node>|undefined), attributes:(Array.<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), frameId:(NetworkAgent.FrameId|undefined), contentDocument:(DOMAgent.Node|undefined), shadowRoots:(Array.<DOMAgent.Node>|undefined), templateContent:(DOMAgent.Node|undefined)}|null} */
+DOMAgent.Node;
 
-/** @constructor */
-DOMAgent.EventListener = function()
-{
-/** @type {string} */ this.type;
-/** @type {boolean} */ this.useCapture;
-/** @type {boolean} */ this.isAttribute;
-/** @type {DOMAgent.NodeId} */ this.nodeId;
-/** @type {string} */ this.handlerBody;
-/** @type {DebuggerAgent.Location|undefined} */ this.location;
-/** @type {string|undefined} */ this.sourceName;
-}
+/** @typedef {{type:(string), useCapture:(boolean), isAttribute:(boolean), nodeId:(DOMAgent.NodeId), handlerBody:(string), location:(DebuggerAgent.Location|undefined), sourceName:(string|undefined)}|null} */
+DOMAgent.EventListener;
 
-/** @constructor */
-DOMAgent.RGBA = function()
-{
-/** @type {number} */ this.r;
-/** @type {number} */ this.g;
-/** @type {number} */ this.b;
-/** @type {number|undefined} */ this.a;
-}
+/** @typedef {{r:(number), g:(number), b:(number), a:(number|undefined)}|null} */
+DOMAgent.RGBA;
 
-/** @constructor */
-DOMAgent.HighlightConfig = function()
-{
-/** @type {boolean|undefined} */ this.showInfo;
-/** @type {DOMAgent.RGBA|undefined} */ this.contentColor;
-/** @type {DOMAgent.RGBA|undefined} */ this.paddingColor;
-/** @type {DOMAgent.RGBA|undefined} */ this.borderColor;
-/** @type {DOMAgent.RGBA|undefined} */ this.marginColor;
-}
+/** @typedef {{showInfo:(boolean|undefined), contentColor:(DOMAgent.RGBA|undefined), paddingColor:(DOMAgent.RGBA|undefined), borderColor:(DOMAgent.RGBA|undefined), marginColor:(DOMAgent.RGBA|undefined)}|null} */
+DOMAgent.HighlightConfig;
 
 /**
  * @param {function(?Protocol.Error, DOMAgent.Node):void=} opt_callback
@@ -1472,9 +1187,10 @@ DOMAgent.getDocument.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {DOMAgent.NodeId} nodeId
+ * @param {number=} opt_depth
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-DOMAgent.requestChildNodes = function(nodeId, opt_callback) {}
+DOMAgent.requestChildNodes = function(nodeId, opt_depth, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 DOMAgent.requestChildNodes.invoke = function(obj, opt_callback) {}
 
@@ -1788,186 +1504,71 @@ var CSSAgent = {};
 /** @typedef {string} */
 CSSAgent.StyleSheetId;
 
-/** @constructor */
-CSSAgent.CSSStyleId = function()
-{
-/** @type {CSSAgent.StyleSheetId} */ this.styleSheetId;
-/** @type {number} */ this.ordinal;
-}
+/** @typedef {{styleSheetId:(CSSAgent.StyleSheetId), ordinal:(number)}|null} */
+CSSAgent.CSSStyleId;
 
 /** @typedef {string} */
 CSSAgent.StyleSheetOrigin;
 
-/** @constructor */
-CSSAgent.CSSRuleId = function()
-{
-/** @type {CSSAgent.StyleSheetId} */ this.styleSheetId;
-/** @type {number} */ this.ordinal;
-}
+/** @typedef {{styleSheetId:(CSSAgent.StyleSheetId), ordinal:(number)}|null} */
+CSSAgent.CSSRuleId;
 
-/** @constructor */
-CSSAgent.PseudoIdMatches = function()
-{
-/** @type {number} */ this.pseudoId;
-/** @type {Array.<CSSAgent.RuleMatch>} */ this.matches;
-}
+/** @typedef {{pseudoId:(number), matches:(Array.<CSSAgent.RuleMatch>)}|null} */
+CSSAgent.PseudoIdMatches;
 
-/** @constructor */
-CSSAgent.InheritedStyleEntry = function()
-{
-/** @type {CSSAgent.CSSStyle|undefined} */ this.inlineStyle;
-/** @type {Array.<CSSAgent.RuleMatch>} */ this.matchedCSSRules;
-}
+/** @typedef {{inlineStyle:(CSSAgent.CSSStyle|undefined), matchedCSSRules:(Array.<CSSAgent.RuleMatch>)}|null} */
+CSSAgent.InheritedStyleEntry;
 
-/** @constructor */
-CSSAgent.RuleMatch = function()
-{
-/** @type {CSSAgent.CSSRule} */ this.rule;
-/** @type {Array.<number>} */ this.matchingSelectors;
-}
+/** @typedef {{rule:(CSSAgent.CSSRule), matchingSelectors:(Array.<number>)}|null} */
+CSSAgent.RuleMatch;
 
-/** @constructor */
-CSSAgent.SelectorList = function()
-{
-/** @type {Array.<string>} */ this.selectors;
-/** @type {string} */ this.text;
-/** @type {CSSAgent.SourceRange|undefined} */ this.range;
-}
+/** @typedef {{selectors:(Array.<string>), text:(string), range:(CSSAgent.SourceRange|undefined)}|null} */
+CSSAgent.SelectorList;
 
-/** @constructor */
-CSSAgent.CSSStyleAttribute = function()
-{
-/** @type {string} */ this.name;
-/** @type {CSSAgent.CSSStyle} */ this.style;
-}
+/** @typedef {{name:(string), style:(CSSAgent.CSSStyle)}|null} */
+CSSAgent.CSSStyleAttribute;
 
-/** @constructor */
-CSSAgent.CSSStyleSheetHeader = function()
-{
-/** @type {CSSAgent.StyleSheetId} */ this.styleSheetId;
-/** @type {NetworkAgent.FrameId} */ this.frameId;
-/** @type {string} */ this.sourceURL;
-/** @type {CSSAgent.StyleSheetOrigin} */ this.origin;
-/** @type {string} */ this.title;
-/** @type {boolean} */ this.disabled;
-}
+/** @typedef {{styleSheetId:(CSSAgent.StyleSheetId), frameId:(NetworkAgent.FrameId), sourceURL:(string), origin:(CSSAgent.StyleSheetOrigin), title:(string), disabled:(boolean)}|null} */
+CSSAgent.CSSStyleSheetHeader;
 
-/** @constructor */
-CSSAgent.CSSStyleSheetBody = function()
-{
-/** @type {CSSAgent.StyleSheetId} */ this.styleSheetId;
-/** @type {Array.<CSSAgent.CSSRule>} */ this.rules;
-/** @type {string|undefined} */ this.text;
-}
+/** @typedef {{styleSheetId:(CSSAgent.StyleSheetId), rules:(Array.<CSSAgent.CSSRule>), text:(string|undefined)}|null} */
+CSSAgent.CSSStyleSheetBody;
 
-/** @constructor */
-CSSAgent.CSSRule = function()
-{
-/** @type {CSSAgent.CSSRuleId|undefined} */ this.ruleId;
-/** @type {CSSAgent.SelectorList} */ this.selectorList;
-/** @type {string|undefined} */ this.sourceURL;
-/** @type {number} */ this.sourceLine;
-/** @type {CSSAgent.StyleSheetOrigin} */ this.origin;
-/** @type {CSSAgent.CSSStyle} */ this.style;
-/** @type {Array.<CSSAgent.CSSMedia>|undefined} */ this.media;
-}
+/** @typedef {{ruleId:(CSSAgent.CSSRuleId|undefined), selectorList:(CSSAgent.SelectorList), sourceURL:(string|undefined), sourceLine:(number), origin:(CSSAgent.StyleSheetOrigin), style:(CSSAgent.CSSStyle), media:(Array.<CSSAgent.CSSMedia>|undefined)}|null} */
+CSSAgent.CSSRule;
 
-/** @constructor */
-CSSAgent.SourceRange = function()
-{
-/** @type {number} */ this.start;
-/** @type {number} */ this.end;
-}
+/** @typedef {{start:(number), end:(number)}|null} */
+CSSAgent.SourceRange;
 
-/** @constructor */
-CSSAgent.ShorthandEntry = function()
-{
-/** @type {string} */ this.name;
-/** @type {string} */ this.value;
-}
+/** @typedef {{name:(string), value:(string)}|null} */
+CSSAgent.ShorthandEntry;
 
-/** @constructor */
-CSSAgent.CSSPropertyInfo = function()
-{
-/** @type {string} */ this.name;
-/** @type {Array.<string>|undefined} */ this.longhands;
-}
+/** @typedef {{name:(string), longhands:(Array.<string>|undefined)}|null} */
+CSSAgent.CSSPropertyInfo;
 
-/** @constructor */
-CSSAgent.CSSComputedStyleProperty = function()
-{
-/** @type {string} */ this.name;
-/** @type {string} */ this.value;
-}
+/** @typedef {{name:(string), value:(string)}|null} */
+CSSAgent.CSSComputedStyleProperty;
 
-/** @constructor */
-CSSAgent.CSSStyle = function()
-{
-/** @type {CSSAgent.CSSStyleId|undefined} */ this.styleId;
-/** @type {Array.<CSSAgent.CSSProperty>} */ this.cssProperties;
-/** @type {Array.<CSSAgent.ShorthandEntry>} */ this.shorthandEntries;
-/** @type {string|undefined} */ this.cssText;
-/** @type {CSSAgent.SourceRange|undefined} */ this.range;
-/** @type {string|undefined} */ this.width;
-/** @type {string|undefined} */ this.height;
-}
+/** @typedef {{styleId:(CSSAgent.CSSStyleId|undefined), cssProperties:(Array.<CSSAgent.CSSProperty>), shorthandEntries:(Array.<CSSAgent.ShorthandEntry>), cssText:(string|undefined), range:(CSSAgent.SourceRange|undefined), width:(string|undefined), height:(string|undefined)}|null} */
+CSSAgent.CSSStyle;
 
-/** @constructor */
-CSSAgent.CSSProperty = function()
-{
-/** @type {string} */ this.name;
-/** @type {string} */ this.value;
-/** @type {string|undefined} */ this.priority;
-/** @type {boolean|undefined} */ this.implicit;
-/** @type {string|undefined} */ this.text;
-/** @type {boolean|undefined} */ this.parsedOk;
-/** @type {string|undefined} */ this.status;
-/** @type {CSSAgent.SourceRange|undefined} */ this.range;
-}
+/** @typedef {{name:(string), value:(string), priority:(string|undefined), implicit:(boolean|undefined), text:(string|undefined), parsedOk:(boolean|undefined), status:(string|undefined), range:(CSSAgent.SourceRange|undefined)}|null} */
+CSSAgent.CSSProperty;
 
-/** @constructor */
-CSSAgent.CSSMedia = function()
-{
-/** @type {string} */ this.text;
-/** @type {string} */ this.source;
-/** @type {string|undefined} */ this.sourceURL;
-/** @type {number|undefined} */ this.sourceLine;
-}
+/** @typedef {{text:(string), source:(string), sourceURL:(string|undefined), sourceLine:(number|undefined)}|null} */
+CSSAgent.CSSMedia;
 
-/** @constructor */
-CSSAgent.SelectorProfileEntry = function()
-{
-/** @type {string} */ this.selector;
-/** @type {string} */ this.url;
-/** @type {number} */ this.lineNumber;
-/** @type {number} */ this.time;
-/** @type {number} */ this.hitCount;
-/** @type {number} */ this.matchCount;
-}
+/** @typedef {{selector:(string), url:(string), lineNumber:(number), time:(number), hitCount:(number), matchCount:(number)}|null} */
+CSSAgent.SelectorProfileEntry;
 
-/** @constructor */
-CSSAgent.SelectorProfile = function()
-{
-/** @type {number} */ this.totalTime;
-/** @type {Array.<CSSAgent.SelectorProfileEntry>} */ this.data;
-}
+/** @typedef {{totalTime:(number), data:(Array.<CSSAgent.SelectorProfileEntry>)}|null} */
+CSSAgent.SelectorProfile;
 
-/** @constructor */
-CSSAgent.Region = function()
-{
-/** @type {string} */ this.regionOverset;
-/** @type {DOMAgent.NodeId} */ this.nodeId;
-}
+/** @typedef {{regionOverset:(string), nodeId:(DOMAgent.NodeId)}|null} */
+CSSAgent.Region;
 
-/** @constructor */
-CSSAgent.NamedFlow = function()
-{
-/** @type {DOMAgent.NodeId} */ this.documentNodeId;
-/** @type {string} */ this.name;
-/** @type {boolean} */ this.overset;
-/** @type {Array.<DOMAgent.NodeId>} */ this.content;
-/** @type {Array.<CSSAgent.Region>} */ this.regions;
-}
+/** @typedef {{documentNodeId:(DOMAgent.NodeId), name:(string), overset:(boolean), content:(Array.<DOMAgent.NodeId>), regions:(Array.<CSSAgent.Region>)}|null} */
+CSSAgent.NamedFlow;
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
@@ -2146,13 +1747,8 @@ InspectorBackend.registerCSSDispatcher = function(dispatcher) {}
 
 var TimelineAgent = {};
 
-/** @constructor */
-TimelineAgent.TimelineEvent = function()
-{
-/** @type {string} */ this.type;
-/** @type {Object} */ this.data;
-/** @type {Array.<TimelineAgent.TimelineEvent>|undefined} */ this.children;
-}
+/** @typedef {{type:(string), data:(Object), children:(Array.<TimelineAgent.TimelineEvent>|undefined)}|null} */
+TimelineAgent.TimelineEvent;
 
 /**
  * @param {number=} opt_maxCallStackDepth
@@ -2214,40 +1810,17 @@ DebuggerAgent.ScriptId;
 /** @typedef {string} */
 DebuggerAgent.CallFrameId;
 
-/** @constructor */
-DebuggerAgent.Location = function()
-{
-/** @type {DebuggerAgent.ScriptId} */ this.scriptId;
-/** @type {number} */ this.lineNumber;
-/** @type {number|undefined} */ this.columnNumber;
-}
+/** @typedef {{scriptId:(DebuggerAgent.ScriptId), lineNumber:(number), columnNumber:(number|undefined)}|null} */
+DebuggerAgent.Location;
 
-/** @constructor */
-DebuggerAgent.FunctionDetails = function()
-{
-/** @type {DebuggerAgent.Location} */ this.location;
-/** @type {string|undefined} */ this.name;
-/** @type {string|undefined} */ this.displayName;
-/** @type {string|undefined} */ this.inferredName;
-/** @type {Array.<DebuggerAgent.Scope>|undefined} */ this.scopeChain;
-}
+/** @typedef {{location:(DebuggerAgent.Location), name:(string|undefined), displayName:(string|undefined), inferredName:(string|undefined), scopeChain:(Array.<DebuggerAgent.Scope>|undefined)}|null} */
+DebuggerAgent.FunctionDetails;
 
-/** @constructor */
-DebuggerAgent.CallFrame = function()
-{
-/** @type {DebuggerAgent.CallFrameId} */ this.callFrameId;
-/** @type {string} */ this.functionName;
-/** @type {DebuggerAgent.Location} */ this.location;
-/** @type {Array.<DebuggerAgent.Scope>} */ this.scopeChain;
-/** @type {RuntimeAgent.RemoteObject} */ this.this;
-}
+/** @typedef {{callFrameId:(DebuggerAgent.CallFrameId), functionName:(string), location:(DebuggerAgent.Location), scopeChain:(Array.<DebuggerAgent.Scope>), this:(RuntimeAgent.RemoteObject)}|null} */
+DebuggerAgent.CallFrame;
 
-/** @constructor */
-DebuggerAgent.Scope = function()
-{
-/** @type {string} */ this.type;
-/** @type {RuntimeAgent.RemoteObject} */ this.object;
-}
+/** @typedef {{type:(string), object:(RuntimeAgent.RemoteObject)}|null} */
+DebuggerAgent.Scope;
 
 /**
  * @param {function(?Protocol.Error, boolean):void=} opt_callback
@@ -2581,22 +2154,11 @@ InspectorBackend.registerDOMDebuggerDispatcher = function(dispatcher) {}
 
 var ProfilerAgent = {};
 
-/** @constructor */
-ProfilerAgent.ProfileHeader = function()
-{
-/** @type {string} */ this.typeId;
-/** @type {string} */ this.title;
-/** @type {number} */ this.uid;
-/** @type {number|undefined} */ this.maxJSObjectId;
-}
+/** @typedef {{typeId:(string), title:(string), uid:(number), maxJSObjectId:(number|undefined)}|null} */
+ProfilerAgent.ProfileHeader;
 
-/** @constructor */
-ProfilerAgent.Profile = function()
-{
-/** @type {Object|undefined} */ this.head;
-/** @type {Object|undefined} */ this.bottomUpHead;
-/** @type {number|undefined} */ this.idleTime;
-}
+/** @typedef {{head:(Object|undefined), bottomUpHead:(Object|undefined), idleTime:(number|undefined)}|null} */
+ProfilerAgent.CPUProfile;
 
 /** @typedef {string} */
 ProfilerAgent.HeapSnapshotObjectId;
@@ -2658,13 +2220,20 @@ ProfilerAgent.getProfileHeaders = function(opt_callback) {}
 ProfilerAgent.getProfileHeaders.invoke = function(obj, opt_callback) {}
 
 /**
- * @param {string} type
  * @param {number} uid
- * @param {function(?Protocol.Error, ProfilerAgent.Profile):void=} opt_callback
+ * @param {function(?Protocol.Error, ProfilerAgent.CPUProfile):void=} opt_callback
  */
-ProfilerAgent.getProfile = function(type, uid, opt_callback) {}
-/** @param {function(?Protocol.Error, ProfilerAgent.Profile):void=} opt_callback */
-ProfilerAgent.getProfile.invoke = function(obj, opt_callback) {}
+ProfilerAgent.getCPUProfile = function(uid, opt_callback) {}
+/** @param {function(?Protocol.Error, ProfilerAgent.CPUProfile):void=} opt_callback */
+ProfilerAgent.getCPUProfile.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {number} uid
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+ProfilerAgent.getHeapSnapshot = function(uid, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+ProfilerAgent.getHeapSnapshot.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {string} type
@@ -2820,33 +2389,25 @@ InspectorBackend.registerWorkerDispatcher = function(dispatcher) {}
 var CanvasAgent = {};
 
 /** @typedef {string} */
-CanvasAgent.ContextId;
+CanvasAgent.ResourceId;
 
-/** @constructor */
-CanvasAgent.Call = function()
-{
-/** @type {CanvasAgent.ContextId} */ this.contextId;
-/** @type {string|undefined} */ this.functionName;
-/** @type {Array.<string>|undefined} */ this.arguments;
-/** @type {string|undefined} */ this.property;
-/** @type {string|undefined} */ this.value;
-/** @type {string|undefined} */ this.result;
-/** @type {string|undefined} */ this.sourceURL;
-/** @type {number|undefined} */ this.lineNumber;
-/** @type {number|undefined} */ this.columnNumber;
-}
+/** @typedef {{id:(CanvasAgent.ResourceId), description:(string)}|null} */
+CanvasAgent.ResourceInfo;
+
+/** @typedef {{id:(CanvasAgent.ResourceId), traceLogId:(CanvasAgent.TraceLogId), imageURL:(string|undefined)}|null} */
+CanvasAgent.ResourceState;
+
+/** @typedef {{description:(string)}|null} */
+CanvasAgent.CallArgument;
+
+/** @typedef {{contextId:(CanvasAgent.ResourceId), functionName:(string|undefined), arguments:(Array.<CanvasAgent.CallArgument>|undefined), result:(CanvasAgent.CallArgument|undefined), isDrawingCall:(boolean|undefined), property:(string|undefined), value:(CanvasAgent.CallArgument|undefined), sourceURL:(string|undefined), lineNumber:(number|undefined), columnNumber:(number|undefined)}|null} */
+CanvasAgent.Call;
 
 /** @typedef {string} */
 CanvasAgent.TraceLogId;
 
-/** @constructor */
-CanvasAgent.TraceLog = function()
-{
-/** @type {CanvasAgent.TraceLogId} */ this.id;
-/** @type {Array.<CanvasAgent.Call>} */ this.calls;
-/** @type {number|undefined} */ this.startOffset;
-/** @type {boolean|undefined} */ this.alive;
-}
+/** @typedef {{id:(CanvasAgent.TraceLogId), calls:(Array.<CanvasAgent.Call>), startOffset:(number), alive:(boolean), totalAvailableCalls:(number)}|null} */
+CanvasAgent.TraceLog;
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
@@ -2902,20 +2463,38 @@ CanvasAgent.stopCapturing.invoke = function(obj, opt_callback) {}
 /**
  * @param {CanvasAgent.TraceLogId} traceLogId
  * @param {number=} opt_startOffset
+ * @param {number=} opt_maxLength
  * @param {function(?Protocol.Error, CanvasAgent.TraceLog):void=} opt_callback
  */
-CanvasAgent.getTraceLog = function(traceLogId, opt_startOffset, opt_callback) {}
+CanvasAgent.getTraceLog = function(traceLogId, opt_startOffset, opt_maxLength, opt_callback) {}
 /** @param {function(?Protocol.Error, CanvasAgent.TraceLog):void=} opt_callback */
 CanvasAgent.getTraceLog.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {CanvasAgent.TraceLogId} traceLogId
  * @param {number} stepNo
- * @param {function(?Protocol.Error, string):void=} opt_callback
+ * @param {function(?Protocol.Error, CanvasAgent.ResourceState):void=} opt_callback
  */
 CanvasAgent.replayTraceLog = function(traceLogId, stepNo, opt_callback) {}
-/** @param {function(?Protocol.Error, string):void=} opt_callback */
+/** @param {function(?Protocol.Error, CanvasAgent.ResourceState):void=} opt_callback */
 CanvasAgent.replayTraceLog.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {CanvasAgent.ResourceId} resourceId
+ * @param {function(?Protocol.Error, CanvasAgent.ResourceInfo):void=} opt_callback
+ */
+CanvasAgent.getResourceInfo = function(resourceId, opt_callback) {}
+/** @param {function(?Protocol.Error, CanvasAgent.ResourceInfo):void=} opt_callback */
+CanvasAgent.getResourceInfo.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {CanvasAgent.TraceLogId} traceLogId
+ * @param {CanvasAgent.ResourceId} resourceId
+ * @param {function(?Protocol.Error, CanvasAgent.ResourceState):void=} opt_callback
+ */
+CanvasAgent.getResourceState = function(traceLogId, resourceId, opt_callback) {}
+/** @param {function(?Protocol.Error, CanvasAgent.ResourceState):void=} opt_callback */
+CanvasAgent.getResourceState.invoke = function(obj, opt_callback) {}
 /** @interface */
 CanvasAgent.Dispatcher = function() {};
 /**
@@ -2973,26 +2552,11 @@ var LayerTreeAgent = {};
 /** @typedef {string} */
 LayerTreeAgent.LayerId;
 
-/** @constructor */
-LayerTreeAgent.IntRect = function()
-{
-/** @type {number} */ this.x;
-/** @type {number} */ this.y;
-/** @type {number} */ this.width;
-/** @type {number} */ this.height;
-}
+/** @typedef {{x:(number), y:(number), width:(number), height:(number)}|null} */
+LayerTreeAgent.IntRect;
 
-/** @constructor */
-LayerTreeAgent.Layer = function()
-{
-/** @type {LayerTreeAgent.LayerId} */ this.layerId;
-/** @type {LayerTreeAgent.IntRect} */ this.bounds;
-/** @type {boolean} */ this.isComposited;
-/** @type {number|undefined} */ this.paintCount;
-/** @type {number|undefined} */ this.memory;
-/** @type {LayerTreeAgent.IntRect|undefined} */ this.compositedBounds;
-/** @type {Array.<LayerTreeAgent.Layer>|undefined} */ this.childLayers;
-}
+/** @typedef {{layerId:(LayerTreeAgent.LayerId), bounds:(LayerTreeAgent.IntRect), isComposited:(boolean), paintCount:(number|undefined), memory:(number|undefined), compositedBounds:(LayerTreeAgent.IntRect|undefined), childLayers:(Array.<LayerTreeAgent.Layer>|undefined)}|null} */
+LayerTreeAgent.Layer;
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback

@@ -211,11 +211,14 @@ Element.prototype.isScrolledToBottom = function()
     return this.scrollTop + this.clientHeight === this.scrollHeight;
 }
 
-Element.prototype.remove = function()
+Element.prototype.removeSelf = function()
 {
     if (this.parentElement)
         this.parentElement.removeChild(this);
 }
+
+CharacterData.prototype.removeSelf = Element.prototype.removeSelf;
+DocumentType.prototype.removeSelf = Element.prototype.removeSelf;
 
 /**
  * @param {Node} fromNode
@@ -226,7 +229,7 @@ function removeSubsequentNodes(fromNode, toNode)
     for (var node = fromNode; node && node !== toNode; ) {
         var nodeToRemove = node;
         node = node.nextSibling;
-        nodeToRemove.remove();
+        nodeToRemove.removeSelf();
     }
 }
 
@@ -569,8 +572,6 @@ function consumeEvent(e)
 {
     e.consume();
 }
-
-window.isUnderTest = false;
 
 /**
  * Mutation observers leak memory. Keep track of them and disconnect

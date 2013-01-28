@@ -110,6 +110,24 @@ WebInspector.DefaultTextEditor.EditInfo = function(range, text)
 
 WebInspector.DefaultTextEditor.prototype = {
     /**
+     * @param {string} regex
+     * @param {string} cssClass
+     */
+    highlightRegex: function(regex, cssClass)
+    {
+        this._mainPanel.highlightRegex(regex, cssClass);
+    },
+
+    /**
+     * @param {string} regex
+     * @return {boolean}
+     */
+    removeRegexHighlight: function(regex)
+    {
+        return this._mainPanel.removeRegexHighlight(regex);
+    },
+
+    /**
      * @param {string} mimeType
      */
     set mimeType(mimeType)
@@ -876,6 +894,10 @@ WebInspector.TextEditorChunkedPanel.prototype = {
      */
     findVisibleChunks: function(visibleFrom, visibleTo)
     {
+        var span = (visibleTo - visibleFrom) * 0.5;
+        visibleFrom = Math.max(visibleFrom - span, 0);
+        visibleTo = visibleTo + span;
+
         var from = this._findFirstVisibleChunkNumber(visibleFrom);
         for (var to = from + 1; to < this._textChunks.length; ++to) {
             if (this._textChunks[to].offsetTop >= visibleTo)
@@ -1338,11 +1360,54 @@ WebInspector.TextEditorMainPanel = function(delegate, textModel, url, syncScroll
 
     this._container.addEventListener("focus", this._handleFocused.bind(this), false);
 
+    this._highlightRegexs = {};
+
+    this._tokenHighlighter = new WebInspector.TextEditorMainPanel.TokenHighlighter(this, textModel);
+
     this._freeCachedElements();
     this.buildChunks();
 }
 
 WebInspector.TextEditorMainPanel.prototype = {
+    /**
+     * @param {string} regex
+     * @param {string} cssClass
+     */
+    highlightRegex: function(regex, cssClass)
+    {
+        this._highlightRegexs[regex] = {
+            regex: new RegExp(regex, "g"),
+            cssClass: cssClass
+        };
+        this._repaintVisibleChunks();
+    },
+
+    /**
+     * @param {string} regex
+     * @return {boolean}
+     */
+    removeRegexHighlight: function(regex)
+    {
+        var result = delete this._highlightRegexs[regex];
+        this._repaintVisibleChunks();
+        return result;
+    },
+
+    _repaintVisibleChunks: function()
+    {
+        var visibleFrom = this.scrollTop();
+        var visibleTo = visibleFrom + this.clientHeight();
+
+        var visibleChunks = this.findVisibleChunks(visibleFrom, visibleTo);
+        var selection = this.selection();
+
+        for(var i = visibleChunks.start; i < visibleChunks.end; ++i) {
+            var chunk = this._textChunks[i];
+            this._paintLines(chunk._startLine, chunk._startLine + chunk.linesCount);
+        }
+        this._restoreSelection(selection);
+    },
+
     wasShown: function()
     {
         this._boundSelectionChangeListener = this._handleSelectionChange.bind(this);
@@ -1507,7 +1572,7 @@ WebInspector.TextEditorMainPanel.prototype = {
             this._rangeToMark = range;
             this.revealLine(range.startLine);
             var chunk = this.makeLineAChunk(range.startLine);
-            this._paintLine(chunk.element);
+            this._paintLines(chunk.startLine, chunk.startLine + 1);
             if (this._markedRangeElement)
                 this._markedRangeElement.scrollIntoViewIfNeeded();
         }
@@ -1709,9 +1774,7 @@ WebInspector.TextEditorMainPanel.prototype = {
         this._highlighter.highlight(lastVisibleLine);
         delete this._muteHighlightListener;
 
-        this._restorePaintLinesOperationsCredit();
         WebInspector.TextEditorChunkedPanel.prototype.expandChunks.call(this, fromIndex, toIndex);
-        this._adjustPaintLinesOperationsRefreshValue();
 
         this._restoreSelection(selection);
     },
@@ -1724,84 +1787,7 @@ WebInspector.TextEditorMainPanel.prototype = {
     {
         if (this._muteHighlightListener)
             return;
-        this._restorePaintLinesOperationsCredit();
         this._paintLines(fromLine, toLine, true /*restoreSelection*/);
-    },
-
-    /**
-     * @param {number} startLine
-     * @param {number} endLine
-     */
-    _schedulePaintLines: function(startLine, endLine)
-    {
-        if (startLine >= endLine)
-            return;
-
-        if (!this._scheduledPaintLines) {
-            this._scheduledPaintLines = [{ startLine: startLine, endLine: endLine }];
-            this._paintScheduledLinesTimer = setTimeout(this._paintScheduledLines.bind(this), 0);
-        } else {
-            for (var i = 0; i < this._scheduledPaintLines.length; ++i) {
-                var chunk = this._scheduledPaintLines[i];
-                if (chunk.startLine <= endLine && chunk.endLine >= startLine) {
-                    chunk.startLine = Math.min(chunk.startLine, startLine);
-                    chunk.endLine = Math.max(chunk.endLine, endLine);
-                    return;
-                }
-                if (chunk.startLine > endLine) {
-                    this._scheduledPaintLines.splice(i, 0, { startLine: startLine, endLine: endLine });
-                    return;
-                }
-            }
-            this._scheduledPaintLines.push({ startLine: startLine, endLine: endLine });
-        }
-    },
-
-    /**
-     * @param {boolean} skipRestoreSelection
-     */
-    _paintScheduledLines: function(skipRestoreSelection)
-    {
-        if (this._paintScheduledLinesTimer)
-            clearTimeout(this._paintScheduledLinesTimer);
-        delete this._paintScheduledLinesTimer;
-
-        if (!this._scheduledPaintLines)
-            return;
-
-        // Reschedule the timer if we can not paint the lines yet, or the user is scrolling.
-        if (this._repaintAllTimer) {
-            this._paintScheduledLinesTimer = setTimeout(this._paintScheduledLines.bind(this), 50);
-            return;
-        }
-
-        var scheduledPaintLines = this._scheduledPaintLines;
-        delete this._scheduledPaintLines;
-
-        this._restorePaintLinesOperationsCredit();
-        this._paintLineChunks(scheduledPaintLines, !skipRestoreSelection);
-        this._adjustPaintLinesOperationsRefreshValue();
-    },
-
-    _restorePaintLinesOperationsCredit: function()
-    {
-        if (!this._paintLinesOperationsRefreshValue)
-            this._paintLinesOperationsRefreshValue = 250;
-        this._paintLinesOperationsCredit = this._paintLinesOperationsRefreshValue;
-        this._paintLinesOperationsLastRefresh = Date.now();
-    },
-
-    _adjustPaintLinesOperationsRefreshValue: function()
-    {
-        var operationsDone = this._paintLinesOperationsRefreshValue - this._paintLinesOperationsCredit;
-        if (operationsDone <= 0)
-            return;
-        var timePast = Date.now() - this._paintLinesOperationsLastRefresh;
-        if (timePast <= 0)
-            return;
-        // Make the synchronous CPU chunk for painting the lines 50 msec.
-        var value = Math.floor(operationsDone / timePast * 50);
-        this._paintLinesOperationsRefreshValue = Number.constrain(value, 150, 1500);
     },
 
     /**
@@ -1811,112 +1797,180 @@ WebInspector.TextEditorMainPanel.prototype = {
      */
     _paintLines: function(fromLine, toLine, restoreSelection)
     {
-        this._paintLineChunks([{ startLine: fromLine, endLine: toLine }], restoreSelection);
-    },
-
-    /**
-     * @param {boolean=} restoreSelection
-     */
-    _paintLineChunks: function(lineChunks, restoreSelection)
-    {
-        // First, paint visible lines, so that in case of long lines we should start highlighting
-        // the visible area immediately, instead of waiting for the lines above the visible area.
-        var visibleFrom = this.scrollTop();
-        var firstVisibleLineNumber = this.lineNumberAtOffset(visibleFrom);
-
         var chunk;
         var selection;
-        var invisibleLineRows = [];
-        for (var i = 0; i < lineChunks.length; ++i) {
-            var lineChunk = lineChunks[i];
-            if (this._scheduledPaintLines) {
-                this._schedulePaintLines(lineChunk.startLine, lineChunk.endLine);
+        var lineRows = [];
+        for (var lineNumber = fromLine; lineNumber < toLine; ++lineNumber) {
+            if (!chunk || lineNumber < chunk.startLine || lineNumber >= chunk.startLine + chunk.linesCount)
+                chunk = this.chunkForLine(lineNumber);
+            var lineRow = chunk.expandedLineRow(lineNumber);
+            if (!lineRow)
                 continue;
-            }
-            for (var lineNumber = lineChunk.startLine; lineNumber < lineChunk.endLine; ++lineNumber) {
-                if (!chunk || lineNumber < chunk.startLine || lineNumber >= chunk.startLine + chunk.linesCount)
-                    chunk = this.chunkForLine(lineNumber);
-                var lineRow = chunk.expandedLineRow(lineNumber);
-                if (!lineRow)
-                    continue;
-                if (lineNumber < firstVisibleLineNumber) {
-                    invisibleLineRows.push(lineRow);
-                    continue;
-                }
-                if (restoreSelection && !selection)
-                    selection = this.selection();
-                this._paintLine(lineRow);
-                if (this._paintLinesOperationsCredit < 0) {
-                    this._schedulePaintLines(lineNumber + 1, lineChunk.endLine);
-                    break;
-                }
-            }
-        }
-
-        for (var i = 0; i < invisibleLineRows.length; ++i) {
             if (restoreSelection && !selection)
                 selection = this.selection();
-            this._paintLine(invisibleLineRows[i]);
+            lineRows.push(lineRow);
         }
+
+        var highlight = {};
+        this.beginDomUpdates();
+        for(var regexString in this._highlightRegexs) {
+            var regexHighlightDescriptor = this._highlightRegexs[regexString];
+            this._measureRegexHighlight(highlight, lineRows, regexHighlightDescriptor.regex, regexHighlightDescriptor.cssClass);
+        }
+
+        for(var i = 0; i < lineRows.length; ++i)
+            this._paintLine(lineRows[i], highlight[lineRows[i].lineNumber]);
+
+        this.endDomUpdates();
 
         if (restoreSelection)
             this._restoreSelection(selection);
     },
 
     /**
-     * @param {Element} lineRow
+     * @param {string} line
+     * @param {RegExp} regex
+     * @return {Array.<{startColumn: number, endColumn: number}>}
      */
-    _paintLine: function(lineRow)
+    _findRegexOccurrences: function(line, regex)
+    {
+        var ranges = [];
+        var regexResult;
+        while (regexResult = regex.exec(line)) {
+            ranges.push({
+                startColumn: regexResult.index,
+                endColumn: regexResult.index + regexResult[0].length - 1
+            });
+        }
+        return ranges;
+    },
+
+    /**
+     * @param {Object.<number, Array.<WebInspector.TextEditorMainPanel.LineOverlayHighlight>>} highlight
+     * @param {Array.<Element>} lineRows
+     * @param {RegExp} regex
+     * @param {string} cssClass
+     */
+    _measureRegexHighlight: function(highlight, lineRows, regex, cssClass)
+    {
+        var rowsToMeasure = [];
+        for(var i = 0; i < lineRows.length; ++i) {
+            var lineRow = lineRows[i];
+            var line = this._textModel.line(lineRow.lineNumber);
+            var ranges = this._findRegexOccurrences(line, regex);
+            if (ranges.length === 0)
+                continue;
+
+            this._renderRanges(lineRow, line, ranges);
+            rowsToMeasure.push(lineRow);
+        }
+
+        for(var i = 0; i < rowsToMeasure.length; ++i) {
+            var lineRow = rowsToMeasure[i];
+            var lineNumber = lineRow.lineNumber;
+            var metrics = this._measureSpans(lineRow);
+
+            if (!highlight[lineNumber])
+                highlight[lineNumber] = [];
+
+            highlight[lineNumber].push(new WebInspector.TextEditorMainPanel.LineOverlayHighlight(metrics, cssClass));
+        }
+    },
+
+    /**
+     * @param {Element} lineRow
+     * @return {Array.<WebInspector.TextEditorMainPanel.ElementMetrics>}
+     */
+    _measureSpans: function(lineRow)
+    {
+        var spans = lineRow.getElementsByTagName("span");
+        var metrics = [];
+        for(var i = 0; i < spans.length; ++i)
+            metrics.push(new WebInspector.TextEditorMainPanel.ElementMetrics(spans[i]));
+        return metrics;
+    },
+
+    /**
+     * @param {Element} lineRow
+     * @param {WebInspector.TextEditorMainPanel.LineOverlayHighlight} highlight
+     */
+    _appendOverlayHighlight: function(lineRow, highlight)
+    {
+        const extraWidth = 1;
+        var metrics = highlight.metrics;
+        var cssClass = highlight.cssClass;
+        for(var i = 0; i < metrics.length; ++i) {
+            var highlightSpan = document.createElement("span");
+            highlightSpan.addStyleClass(cssClass);
+            highlightSpan.style.left = (metrics[i].left - extraWidth) + "px";
+            highlightSpan.style.width = (metrics[i].width + extraWidth * 2) + "px";
+            highlightSpan.textContent = " ";
+            highlightSpan.addStyleClass("text-editor-overlay-highlight");
+            lineRow.appendChild(highlightSpan);
+        }
+    },
+
+    /**
+     * @param {Element} lineRow
+     * @param {string} line
+     * @param {Array.<{startColumn: number, endColumn: number, token: ?string}>} ranges
+     */
+    _renderRanges: function(lineRow, line, ranges)
+    {
+        var decorationsElement = lineRow.decorationsElement;
+
+        if (!decorationsElement)
+            lineRow.removeChildren();
+        else {
+            while (true) {
+                var child = lineRow.firstChild;
+                if (!child || child === decorationsElement)
+                    break;
+                lineRow.removeChild(child);
+            }
+        }
+
+        if (!line)
+            lineRow.insertBefore(document.createElement("br"), decorationsElement);
+
+        var plainTextStart = 0;
+        for(var i = 0; i < ranges.length; i++) {
+            var rangeStart = ranges[i].startColumn;
+            var rangeEnd = ranges[i].endColumn;
+            var cssClass = ranges[i].token ? "webkit-" + ranges[i].token : "";
+
+            if (plainTextStart < rangeStart) {
+                this._insertTextNodeBefore(lineRow, decorationsElement, line.substring(plainTextStart, rangeStart));
+            }
+            this._insertSpanBefore(lineRow, decorationsElement, line.substring(rangeStart, rangeEnd + 1), cssClass);
+            plainTextStart = rangeEnd + 1;
+        }
+        if (plainTextStart < line.length) {
+            this._insertTextNodeBefore(lineRow, decorationsElement, line.substring(plainTextStart, line.length));
+        }
+    },
+
+    /**
+     * @param {Element} lineRow
+     * @param {Array.<WebInspector.TextEditorMainPanel.LineOverlayHighlight>} overlayHighlight
+     */
+    _paintLine: function(lineRow, overlayHighlight)
     {
         var lineNumber = lineRow.lineNumber;
 
         this.beginDomUpdates();
         try {
-            if (this._scheduledPaintLines || this._paintLinesOperationsCredit < 0) {
-                this._schedulePaintLines(lineNumber, lineNumber + 1);
+            var syntaxHighlight = this._textModel.getAttribute(lineNumber, "highlight");
+            if (!syntaxHighlight)
                 return;
-            }
-
-            var highlight = this._textModel.getAttribute(lineNumber, "highlight");
-            if (!highlight)
-                return;
-
-            var decorationsElement = lineRow.decorationsElement;
-            if (!decorationsElement)
-                lineRow.removeChildren();
-            else {
-                while (true) {
-                    var child = lineRow.firstChild;
-                    if (!child || child === decorationsElement)
-                        break;
-                    lineRow.removeChild(child);
-                }
-            }
 
             var line = this._textModel.line(lineNumber);
-            var ranges = this._highlighter.orderedRangesPerLine(lineNumber);
+            var ranges = syntaxHighlight.ranges;
+            this._renderRanges(lineRow, line, ranges);
 
-            if (!line)
-                lineRow.insertBefore(document.createElement("br"), decorationsElement);
-
-            var plainTextStart = 0;
-            for(var i = 0; i < ranges.length; i++) {
-                var rangeStart = ranges[i].startColumn;
-                var rangeEnd = ranges[i].endColumn;
-                var rangeToken = ranges[i].token;
-
-                if (plainTextStart < rangeStart) {
-                    this._insertTextNodeBefore(lineRow, decorationsElement, line.substring(plainTextStart, rangeStart));
-                    --this._paintLinesOperationsCredit;
-                }
-                this._insertSpanBefore(lineRow, decorationsElement, line.substring(rangeStart, rangeEnd + 1), rangeToken);
-                --this._paintLinesOperationsCredit;
-                plainTextStart = rangeEnd + 1;
-            }
-            if (plainTextStart < line.length) {
-                this._insertTextNodeBefore(lineRow, decorationsElement, line.substring(plainTextStart, line.length));
-                --this._paintLinesOperationsCredit;
-            }
+            if (overlayHighlight)
+                for(var i = 0; i < overlayHighlight.length; ++i)
+                    this._appendOverlayHighlight(lineRow, overlayHighlight[i]);
         } finally {
             if (this._rangeToMark && this._rangeToMark.startLine === lineNumber)
                 this._markedRangeElement = WebInspector.highlightSearchResult(lineRow, this._rangeToMark.startColumn, this._rangeToMark.endColumn - this._rangeToMark.startColumn);
@@ -2123,7 +2177,7 @@ WebInspector.TextEditorMainPanel.prototype = {
         }
 
         var span = this._cachedSpans.pop() || document.createElement("span");
-        span.className = "webkit-" + className;
+        span.className = className;
         if (WebInspector.FALSE) // For paint debugging.
             span.addStyleClass("debug-fadeout");
         span.textContent = content;
@@ -2302,7 +2356,6 @@ WebInspector.TextEditorMainPanel.prototype = {
         }
 
         this._textModel.editRange(editInfo.range, editInfo.text);
-        this._paintScheduledLines(true);
         this._restoreSelection(selection);
     },
 
@@ -2571,6 +2624,8 @@ WebInspector.TextEditorMainPanel.prototype = {
         var textRange = this.selection();
         if (textRange)
             this._lastSelection = textRange;
+
+        this._tokenHighlighter.handleSelectionChange(textRange);
         this._delegate.selectionChanged(textRange);
     },
 
@@ -2611,6 +2666,27 @@ WebInspector.TextEditorMainPanel.prototype = {
     },
 
     __proto__: WebInspector.TextEditorChunkedPanel.prototype
+}
+
+/**
+ * @constructor
+ * @param {Element} element
+ */
+WebInspector.TextEditorMainPanel.ElementMetrics = function(element)
+{
+    this.width = element.offsetWidth;
+    this.left = element.offsetLeft;
+}
+
+/**
+ * @constructor
+ * @param {Array.<WebInspector.TextEditorMainPanel.ElementMetrics>} metrics
+ * @param {string} cssClass
+ */
+WebInspector.TextEditorMainPanel.LineOverlayHighlight = function(metrics, cssClass)
+{
+    this.metrics = metrics;
+    this.cssClass = cssClass;
 }
 
 /**
@@ -2733,7 +2809,7 @@ WebInspector.TextEditorMainChunk.prototype = {
         this._expanded = true;
 
         if (this.linesCount === 1) {
-            this._chunkedPanel._paintLine(this.element);
+            this._chunkedPanel._paintLines(this.startLine, this.startLine + 1);
             return;
         }
 
@@ -2869,6 +2945,94 @@ WebInspector.TextEditorMainChunk.prototype = {
     lastElement: function()
     {
         return this._expandedLineRows ? this._expandedLineRows[this._expandedLineRows.length - 1] : this.element;
+    }
+}
+
+/**
+ * @constructor
+ * @param {WebInspector.TextEditorMainPanel} mainPanel
+ * @param {WebInspector.TextEditorModel} textModel
+ */
+WebInspector.TextEditorMainPanel.TokenHighlighter = function(mainPanel, textModel)
+{
+    this._mainPanel = mainPanel;
+    this._textModel = textModel;
+}
+
+WebInspector.TextEditorMainPanel.TokenHighlighter._NonWordCharRegex = /[^a-zA-Z0-9_]/;
+WebInspector.TextEditorMainPanel.TokenHighlighter._WordRegex = /^[a-zA-Z0-9_]+$/;
+
+WebInspector.TextEditorMainPanel.TokenHighlighter.prototype = {
+    /**
+     * @param {WebInspector.TextRange} range
+     */
+    handleSelectionChange: function(range)
+    {
+        if (!range) {
+            this._removeHighlight();
+            return;
+        }
+
+        if (range.startLine !== range.endLine) {
+            this._removeHighlight();
+            return;
+        }
+
+        range = range.normalize();
+        var selectedText = this._textModel.copyRange(range);
+        if (selectedText === this._selectedWord)
+            return;
+
+        if (selectedText === "") {
+            this._removeHighlight();
+            return;
+        }
+
+        if (this._isWord(range, selectedText))
+            this._highlight(selectedText);
+        else
+            this._removeHighlight();
+    },
+
+    /**
+     * @param {string} word
+     */
+    _regexString: function(word)
+    {
+        return "\\b" + word + "\\b";
+    },
+
+    /**
+     * @param {string} selectedWord
+     */
+    _highlight: function(selectedWord)
+    {
+        this._removeHighlight();
+        this._selectedWord = selectedWord;
+        this._mainPanel.highlightRegex(this._regexString(selectedWord), "text-editor-token-highlight")
+    },
+
+    _removeHighlight: function()
+    {
+        if (this._selectedWord) {
+            this._mainPanel.removeRegexHighlight(this._regexString(this._selectedWord));
+            delete this._selectedWord;
+        }
+    },
+
+    /**
+     * @param {WebInspector.TextRange} range
+     * @param {string} selectedText
+     * @return {boolean}
+     */
+    _isWord: function(range, selectedText)
+    {
+        const NonWordChar = WebInspector.TextEditorMainPanel.TokenHighlighter._NonWordCharRegex;
+        const WordRegex = WebInspector.TextEditorMainPanel.TokenHighlighter._WordRegex;
+        var line = this._textModel.line(range.startLine);
+        var leftBound = range.startColumn === 0 || NonWordChar.test(line.charAt(range.startColumn - 1));
+        var rightBound = range.endColumn === line.length - 1 || NonWordChar.test(line.charAt(range.endColumn));
+        return leftBound && rightBound && WordRegex.test(selectedText);
     }
 }
 

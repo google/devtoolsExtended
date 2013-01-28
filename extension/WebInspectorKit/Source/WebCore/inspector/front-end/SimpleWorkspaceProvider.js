@@ -38,6 +38,7 @@ WebInspector.SimpleWorkspaceProvider = function(workspace)
     this._workspace = workspace;
     /** @type {Object.<string, WebInspector.ContentProvider>} */
     this._contentProviders = {};
+    this._lastUniqueSuffix = 0;
 }
 
 /**
@@ -94,7 +95,7 @@ WebInspector.SimpleWorkspaceProvider.prototype = {
     addFile: function(uri, url, contentProvider, isEditable, isContentScript, isSnippet)
     {
         console.assert(!this._contentProviders[uri]);
-        var fileDescriptor = new WebInspector.FileDescriptor(uri, url, contentProvider.contentType(), isEditable, isContentScript, isSnippet);
+        var fileDescriptor = new WebInspector.FileDescriptor(uri, url, url, contentProvider.contentType(), isEditable, isContentScript, isSnippet);
         this._contentProviders[uri] = contentProvider;
         this.dispatchEventToListeners(WebInspector.WorkspaceProvider.Events.FileAdded, fileDescriptor);
         return this._workspace.uiSourceCodeForURI(uri);
@@ -129,8 +130,8 @@ WebInspector.SimpleWorkspaceProvider.prototype = {
     uniqueURI: function(uri)
     {
         var uniqueURI = uri;
-        for (var i = 1; this._contentProviders[uniqueURI]; ++i)
-            uniqueURI = uri + " (" + i + ")";
+        while (this._contentProviders[uniqueURI])
+            uniqueURI = uri + " (" + (++this._lastUniqueSuffix) + ")";
         return uniqueURI;
     },
 

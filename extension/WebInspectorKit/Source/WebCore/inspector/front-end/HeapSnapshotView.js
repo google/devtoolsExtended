@@ -429,14 +429,6 @@ WebInspector.HeapSnapshotView.prototype = {
         return this.parent.getProfiles(WebInspector.HeapSnapshotProfileType.TypeId);
     },
 
-    processLoadedSnapshot: function(profile, snapshot)
-    {
-        profile.nodes = snapshot.nodes;
-        profile.strings = snapshot.strings;
-        var s = new WebInspector.HeapSnapshot(profile);
-        profile.sidebarElement.subtitle = Number.bytesToString(s.totalSize);
-    },
-
     /**
      * @param {WebInspector.ContextMenu} contextMenu
      * @param {Event} event
@@ -811,7 +803,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileHeader}
- * @param {!WebInspector.HeapSnapshotProfileType} type
+ * @param {!WebInspector.ProfileType} type
  * @param {string} title
  * @param {number=} uid
  * @param {number=} maxJSObjectId
@@ -849,11 +841,6 @@ WebInspector.HeapProfileHeader.prototype = {
         return new WebInspector.HeapSnapshotView(profilesPanel, this);
     },
 
-    snapshotProxy: function()
-    {
-        return this._snapshotProxy;
-    },
-
     /**
      * @override
      * @param {function(WebInspector.HeapSnapshotProxy):void} callback
@@ -872,10 +859,20 @@ WebInspector.HeapProfileHeader.prototype = {
             this._setupWorker();
             this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
             this.sidebarElement.wait = true;
-            ProfilerAgent.getProfile(this.profileType().id, this.uid);
+            this.startSnapshotTransfer();
         }
         var loaderProxy = /** @type {WebInspector.HeapSnapshotLoaderProxy} */ (this._receiver);
         loaderProxy.addConsumer(callback);
+    },
+
+    startSnapshotTransfer: function()
+    {
+        ProfilerAgent.getHeapSnapshot(this.uid);
+    },
+
+    snapshotConstructorName: function()
+    {
+        return "JSHeapSnapshot";
     },
 
     _setupWorker: function()
@@ -886,7 +883,7 @@ WebInspector.HeapProfileHeader.prototype = {
         }
         var worker = new WebInspector.HeapSnapshotWorker();
         worker.addEventListener("wait", setProfileWait, this);
-        var loaderProxy = worker.createObject("WebInspector.HeapSnapshotLoader");
+        var loaderProxy = worker.createLoader(this.snapshotConstructorName());
         loaderProxy.addConsumer(this._snapshotReceived.bind(this));
         this._receiver = loaderProxy;
     },
@@ -977,19 +974,11 @@ WebInspector.HeapProfileHeader.prototype = {
             this._receiver = fileOutputStream;
             this._savedChunks = 0;
             this._updateTransferProgress(0, this._totalNumberOfChunks);
-            ProfilerAgent.getProfile(this.profileType().id, this.uid);
+            ProfilerAgent.getHeapSnapshot(this.uid);
         }
         this._savingToFile = true;
         this._fileName = this._fileName || "Heap-" + new Date().toISO8601Compact() + ".heapsnapshot";
         fileOutputStream.open(this._fileName, onOpen.bind(this));
-    },
-
-    /**
-     * @return {boolean}
-     */
-    canLoadFromFile: function()
-    {
-        return false;
     },
 
     /**

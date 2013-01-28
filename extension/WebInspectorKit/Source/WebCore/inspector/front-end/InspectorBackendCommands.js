@@ -24,6 +24,10 @@ InspectorBackend.registerEvent("Page.domContentEventFired", ["timestamp"]);
 InspectorBackend.registerEvent("Page.loadEventFired", ["timestamp"]);
 InspectorBackend.registerEvent("Page.frameNavigated", ["frame"]);
 InspectorBackend.registerEvent("Page.frameDetached", ["frameId"]);
+InspectorBackend.registerEvent("Page.frameStartedLoading", ["frameId"]);
+InspectorBackend.registerEvent("Page.frameStoppedLoading", ["frameId"]);
+InspectorBackend.registerEvent("Page.frameScheduledNavigation", ["frameId", "delay"]);
+InspectorBackend.registerEvent("Page.frameClearedScheduledNavigation", ["frameId"]);
 InspectorBackend.registerCommand("Page.enable", [], []);
 InspectorBackend.registerCommand("Page.disable", [], []);
 InspectorBackend.registerCommand("Page.addScriptToEvaluateOnLoad", [{"name": "scriptSource", "type": "string", "optional": false}], ["identifier"]);
@@ -42,6 +46,8 @@ InspectorBackend.registerCommand("Page.setDeviceMetricsOverride", [{"name": "wid
 InspectorBackend.registerCommand("Page.setShowPaintRects", [{"name": "result", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Page.canShowFPSCounter", [], ["show"]);
 InspectorBackend.registerCommand("Page.setShowFPSCounter", [{"name": "show", "type": "boolean", "optional": false}], []);
+InspectorBackend.registerCommand("Page.canContinuouslyPaint", [], ["value"]);
+InspectorBackend.registerCommand("Page.setContinuousPaintingEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Page.getScriptExecutionStatus", [], ["result"]);
 InspectorBackend.registerCommand("Page.setScriptExecutionDisabled", [{"name": "value", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Page.setGeolocationOverride", [{"name": "latitude", "type": "number", "optional": true}, {"name": "longitude", "type": "number", "optional": true}, {"name": "accuracy", "type": "number", "optional": true}], []);
@@ -292,7 +298,8 @@ InspectorBackend.registerCommand("Profiler.disable", [], []);
 InspectorBackend.registerCommand("Profiler.start", [], []);
 InspectorBackend.registerCommand("Profiler.stop", [], []);
 InspectorBackend.registerCommand("Profiler.getProfileHeaders", [], ["headers"]);
-InspectorBackend.registerCommand("Profiler.getProfile", [{"name": "type", "type": "string", "optional": false}, {"name": "uid", "type": "number", "optional": false}], ["profile"]);
+InspectorBackend.registerCommand("Profiler.getCPUProfile", [{"name": "uid", "type": "number", "optional": false}], ["profile"]);
+InspectorBackend.registerCommand("Profiler.getHeapSnapshot", [{"name": "uid", "type": "number", "optional": false}], []);
 InspectorBackend.registerCommand("Profiler.removeProfile", [{"name": "type", "type": "string", "optional": false}, {"name": "uid", "type": "number", "optional": false}], []);
 InspectorBackend.registerCommand("Profiler.clearProfiles", [], []);
 InspectorBackend.registerCommand("Profiler.takeHeapSnapshot", [], []);
@@ -322,8 +329,10 @@ InspectorBackend.registerCommand("Canvas.hasUninstrumentedCanvases", [], ["resul
 InspectorBackend.registerCommand("Canvas.captureFrame", [], ["traceLogId"]);
 InspectorBackend.registerCommand("Canvas.startCapturing", [], ["traceLogId"]);
 InspectorBackend.registerCommand("Canvas.stopCapturing", [{"name": "traceLogId", "type": "string", "optional": false}], []);
-InspectorBackend.registerCommand("Canvas.getTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}, {"name": "startOffset", "type": "number", "optional": true}], ["traceLog"]);
-InspectorBackend.registerCommand("Canvas.replayTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}, {"name": "stepNo", "type": "number", "optional": false}], ["screenshotDataUrl"]);
+InspectorBackend.registerCommand("Canvas.getTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}, {"name": "startOffset", "type": "number", "optional": true}, {"name": "maxLength", "type": "number", "optional": true}], ["traceLog"]);
+InspectorBackend.registerCommand("Canvas.replayTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}, {"name": "stepNo", "type": "number", "optional": false}], ["resourceState"]);
+InspectorBackend.registerCommand("Canvas.getResourceInfo", [{"name": "resourceId", "type": "string", "optional": false}], ["resourceInfo"]);
+InspectorBackend.registerCommand("Canvas.getResourceState", [{"name": "traceLogId", "type": "string", "optional": false}, {"name": "resourceId", "type": "string", "optional": false}], ["resourceState"]);
 
 // Input.
 InspectorBackend.registerInputDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Input");

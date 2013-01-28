@@ -36,8 +36,10 @@
 WebInspector.ScriptSnippetModel = function(workspace)
 {
     this._workspace = workspace;
+    /** {Object.<string, WebInspector.UISourceCode>} */
     this._uiSourceCodeForScriptId = {};
     this._scriptForUISourceCode = new Map();
+    /** {Object.<string, WebInspector.UISourceCode>} */
     this._uiSourceCodeForSnippetId = {};
     this._snippetIdForUISourceCode = new Map();
     
@@ -47,6 +49,7 @@ WebInspector.ScriptSnippetModel = function(workspace)
     this._workspaceProvider = new WebInspector.SimpleWorkspaceProvider(this._workspace);
     workspace.addProject(WebInspector.projectNames.Snippets, this._workspaceProvider);
     this.reset();
+    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 }
 
 WebInspector.ScriptSnippetModel.prototype = {
@@ -342,6 +345,14 @@ WebInspector.ScriptSnippetModel.prototype = {
         return script.rawLocationToUILocation(0, 0).uiSourceCode;
     },
 
+    _debuggerReset: function()
+    {
+        for (var snippetId in this._uiSourceCodeForSnippetId) {
+            var uiSourceCode = this._uiSourceCodeForSnippetId[snippetId];
+            this._releaseSnippetScript(uiSourceCode);
+        }
+    },
+
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      * @return {string}
@@ -462,7 +473,7 @@ WebInspector.SnippetScriptMapping.prototype = {
      */
     rawLocationToUILocation: function(rawLocation)
     {
-        var debuggerModelLocation = /** @type {WebInspector.DebuggerModel.Location} */ rawLocation;
+        var debuggerModelLocation = /** @type {WebInspector.DebuggerModel.Location} */(rawLocation);
         return this._scriptSnippetModel._rawLocationToUILocation(debuggerModelLocation);
     },
 

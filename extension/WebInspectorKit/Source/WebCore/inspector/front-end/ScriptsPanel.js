@@ -129,7 +129,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     for (var pane in this.sidebarPanes) {
         if (this.sidebarPanes[pane] === this.sidebarPanes.domBreakpoints)
             continue;
-        this._debugSidebarContentsElement.appendChild(this.sidebarPanes[pane].element);
+        this.sidebarPanes[pane].show(this._debugSidebarContentsElement);
     }
 
     this.sidebarPanes.callstack.expanded = true;
@@ -215,8 +215,7 @@ WebInspector.ScriptsPanel.prototype = {
     wasShown: function()
     {
         WebInspector.Panel.prototype.wasShown.call(this);
-        this._debugSidebarContentsElement.insertBefore(this.sidebarPanes.domBreakpoints.element, this.sidebarPanes.xhrBreakpoints.element);
-        this.sidebarPanes.watchExpressions.show();
+        this.sidebarPanes.domBreakpoints.show(this._debugSidebarContentsElement, this.sidebarPanes.xhrBreakpoints.element);
 
         this._navigatorController.wasShown();
     },
@@ -392,7 +391,7 @@ WebInspector.ScriptsPanel.prototype = {
             return true;
         var uiSourceCodes = this._workspace.project(WebInspector.projectNames.Network).uiSourceCodes();
         for (var i = 0; i < uiSourceCodes.length; ++i) {
-            if (uiSourceCodes[i].url === anchor.href) {
+            if (uiSourceCodes[i].originURL() === anchor.href) {
                 anchor.uiSourceCode = uiSourceCodes[i];
                 return true;
             }
@@ -427,7 +426,7 @@ WebInspector.ScriptsPanel.prototype = {
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.OpenSourceLink,
-            url: uiSourceCode.url,
+            url: uiSourceCode.originURL(),
             lineNumber: lineNumber
         });
     },
@@ -955,7 +954,7 @@ WebInspector.ScriptsPanel.prototype = {
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.TogglePrettyPrint,
             enabled: this._toggleFormatSourceButton.toggled,
-            url: this._editorContainer.currentFile().url
+            url: this._editorContainer.currentFile().originURL()
         });
     },
 
