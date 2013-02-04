@@ -121,6 +121,7 @@ WebInspector.Settings = function()
     this.showToolbarIcons = this.createSetting("showToolbarIcons", false);
     this.workerInspectorWidth = this.createSetting("workerInspectorWidth", 600);
     this.workerInspectorHeight = this.createSetting("workerInspectorHeight", 600);
+    this.messageURLFilters = this.createSetting("messageURLFilters", {});
 
     // If there are too many breakpoints in a storage, it is likely due to a recent bug that caused
     // periodical breakpoints duplication leading to inspector slowness.
@@ -214,7 +215,7 @@ WebInspector.ExperimentsSettings = function()
     this.cssRegions = this._createExperiment("cssRegions", "CSS Regions Support");
     this.showOverridesInDrawer = this._createExperiment("showOverridesInDrawer", "Show Overrides in drawer");
     this.fileSystemProject = this._createExperiment("fileSystemProject", "File system folders in Sources Panel");
-    this.elementsPanelSingleColumn = this._createExperiment("elementsPanelSingleColumn", "Single-column elements panel layout when docked to right");
+    this.elementsPanelSingleColumn = this._createExperiment("elementsPanelSingleColumn", "Split Elements sidebar horizontally when it is too narrow");
 
     this._cleanUpSetting();
 }

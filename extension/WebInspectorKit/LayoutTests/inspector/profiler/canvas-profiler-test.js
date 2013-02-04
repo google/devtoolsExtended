@@ -2,6 +2,14 @@ var initialize_CanvasWebGLProfilerTest = function() {
 
 InspectorTest.enableCanvasAgent = function(callback)
 {
+    var dispatcher = InspectorBackend._domainDispatchers["Canvas"];
+    if (!dispatcher) {
+        InspectorBackend.registerCanvasDispatcher({
+            contextCreated: function() {},
+            traceLogsRemoved: function() {}
+        });
+    }
+
     function canvasAgentEnabled(error)
     {
         if (!error)

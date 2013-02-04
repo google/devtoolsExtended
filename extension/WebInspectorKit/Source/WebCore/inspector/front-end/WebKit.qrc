@@ -113,7 +113,6 @@
     <file>MemoryStatistics.js</file>
     <file>MetricsSidebarPane.js</file>
     <file>NativeBreakpointsSidebarPane.js</file>
-    <file>NativeHeapGraph.js</file>
     <file>NativeHeapSnapshot.js</file>
     <file>NativeMemorySnapshotView.js</file>
     <file>NavigatorOverlayController.js</file>
@@ -224,6 +223,7 @@
     <file>UserMetrics.js</file>
     <file>utilities.js</file>
     <file>View.js</file>
+    <file>ViewportControl.js</file>
     <file>WatchExpressionsSidebarPane.js</file>
     <file>WorkerManager.js</file>
     <file>WorkersSidebarPane.js</file>

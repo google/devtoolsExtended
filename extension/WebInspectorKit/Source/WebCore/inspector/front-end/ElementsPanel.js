@@ -47,13 +47,12 @@ WebInspector.ElementsPanel = function()
     this.registerRequiredCSS("textPrompt.css");
     this.setHideOnDetach();
 
-    WebInspector.dockController.addEventListener(WebInspector.DockController.EventTypes.StateChanged, this._onDockStateChanged.bind(this));
-
     const initialSidebarWidth = 325;
     const minimumContentWidthPercent = 34;
     const initialSidebarHeight = 325;
     const minimumContentHeightPercent = 34;
-    this.createSidebarView(this.element, this._sidebarPosition(), initialSidebarWidth, initialSidebarHeight);
+    this.createSidebarView(this.element, WebInspector.SidebarView.SidebarPosition.End, initialSidebarWidth, initialSidebarHeight);
+    this.splitView.setAutoOrientation(WebInspector.experimentsSettings.elementsPanelSingleColumn.isEnabled());
     this.splitView.setMinimumSidebarWidth(Preferences.minElementsSidebarWidth);
     this.splitView.setMinimumMainWidthPercent(minimumContentWidthPercent);
     this.splitView.setMinimumSidebarHeight(Preferences.minElementsSidebarHeight);
@@ -87,19 +86,21 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane;
     this.sidebarPanes.eventListeners = new WebInspector.EventListenersSidebarPane();
 
-    this.sidebarPanes.styles.onexpand = this.updateStyles.bind(this);
-    this.sidebarPanes.metrics.onexpand = this.updateMetrics.bind(this);
-    this.sidebarPanes.properties.onexpand = this.updateProperties.bind(this);
-    this.sidebarPanes.eventListeners.onexpand = this.updateEventListeners.bind(this);
+    this.sidebarPanes.styles.setShowCallback(this.updateStyles.bind(this));
+    this.sidebarPanes.metrics.setShowCallback(this.updateMetrics.bind(this));
+    this.sidebarPanes.properties.setShowCallback(this.updateProperties.bind(this));
+    this.sidebarPanes.eventListeners.setShowCallback(this.updateEventListeners.bind(this));
 
-    this.sidebarPanes.styles.expanded = true;
+    this.sidebarPanes.styles.expand();
 
     this.sidebarPanes.styles.addEventListener("style edited", this._stylesPaneEdited, this);
     this.sidebarPanes.styles.addEventListener("style property toggled", this._stylesPaneEdited, this);
     this.sidebarPanes.metrics.addEventListener("metrics edited", this._metricsPaneEdited, this);
 
+    this.sidebarPaneView = new WebInspector.SidebarPaneStack();
     for (var pane in this.sidebarPanes)
-        this.sidebarPanes[pane].show(this.sidebarElement);
+        this.sidebarPaneView.addPane(this.sidebarPanes[pane]);
+    this.sidebarPaneView.show(this.sidebarElement);
 
     this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
     this._popoverHelper.setTimeout(0);
@@ -144,8 +145,6 @@ WebInspector.ElementsPanel.prototype = {
 
         if (!this.treeOutline.rootDOMNode)
             WebInspector.domAgent.requestDocument();
-
-        this.sidebarPanes.domBreakpoints.show(this.sidebarElement, this.sidebarPanes.eventListeners.element);
     },
 
     willHide: function()
@@ -164,26 +163,6 @@ WebInspector.ElementsPanel.prototype = {
     {
         this.treeOutline.updateSelection();
         this.updateBreadcrumbSizes();
-        if (WebInspector.dockController.dockSide() !== WebInspector.DockController.State.Undocked)
-            this.splitView.setSidebarPosition(this._sidebarPosition());
-    },
-
-    _onDockStateChanged: function()
-    {
-        if (WebInspector.dockController.dockSide() === WebInspector.DockController.State.Undocked)
-            this.splitView.setSidebarPosition(this._sidebarPosition());
-    },
-
-    /**
-     * @return {string}
-     */
-    _sidebarPosition: function()
-    {
-        if (WebInspector.experimentsSettings.elementsPanelSingleColumn.isEnabled() &&
-            WebInspector.dockController.dockSide() === WebInspector.DockController.State.DockedToRight)
-            return WebInspector.SidebarView.SidebarPosition.Bottom;
-
-        return WebInspector.SidebarView.SidebarPosition.Right;
     },
 
     /**
@@ -994,7 +973,7 @@ WebInspector.ElementsPanel.prototype = {
     {
         var stylesSidebarPane = this.sidebarPanes.styles;
         var computedStylePane = this.sidebarPanes.computedStyle;
-        if ((!stylesSidebarPane.expanded && !computedStylePane.expanded) || !stylesSidebarPane.needsUpdate)
+        if ((!stylesSidebarPane.isShowing() && !computedStylePane.isShowing()) || !stylesSidebarPane.needsUpdate)
             return;
 
         stylesSidebarPane.update(this.selectedDOMNode(), forceUpdate);
@@ -1004,7 +983,7 @@ WebInspector.ElementsPanel.prototype = {
     updateMetrics: function()
     {
         var metricsSidebarPane = this.sidebarPanes.metrics;
-        if (!metricsSidebarPane.expanded || !metricsSidebarPane.needsUpdate)
+        if (!metricsSidebarPane.isShowing() || !metricsSidebarPane.needsUpdate)
             return;
 
         metricsSidebarPane.update(this.selectedDOMNode());
@@ -1014,7 +993,7 @@ WebInspector.ElementsPanel.prototype = {
     updateProperties: function()
     {
         var propertiesSidebarPane = this.sidebarPanes.properties;
-        if (!propertiesSidebarPane.expanded || !propertiesSidebarPane.needsUpdate)
+        if (!propertiesSidebarPane.isShowing() || !propertiesSidebarPane.needsUpdate)
             return;
 
         propertiesSidebarPane.update(this.selectedDOMNode());
@@ -1024,7 +1003,7 @@ WebInspector.ElementsPanel.prototype = {
     updateEventListeners: function()
     {
         var eventListenersSidebarPane = this.sidebarPanes.eventListeners;
-        if (!eventListenersSidebarPane.expanded || !eventListenersSidebarPane.needsUpdate)
+        if (!eventListenersSidebarPane.isShowing() || !eventListenersSidebarPane.needsUpdate)
             return;
 
         eventListenersSidebarPane.update(this.selectedDOMNode());

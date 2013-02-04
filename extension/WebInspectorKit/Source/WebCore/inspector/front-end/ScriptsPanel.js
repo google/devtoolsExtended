@@ -69,7 +69,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
 
     const initialDebugSidebarWidth = 225;
     const minimumDebugSidebarWidthPercent = 50;
-    this.createSidebarView(this.element, WebInspector.SidebarView.SidebarPosition.Right, initialDebugSidebarWidth);
+    this.createSidebarView(this.element, WebInspector.SidebarView.SidebarPosition.End, initialDebugSidebarWidth);
     this.splitView.element.id = "scripts-split-view";
     this.splitView.setMinimumSidebarWidth(Preferences.minScriptsSidebarWidth);
     this.splitView.setMinimumMainWidthPercent(minimumDebugSidebarWidthPercent);
@@ -83,7 +83,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     // Create scripts navigator
     const initialNavigatorWidth = 225;
     const minimumViewsContainerWidthPercent = 50;
-    this.editorView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Left, "scriptsPanelNavigatorSidebarWidth", initialNavigatorWidth);
+    this.editorView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, "scriptsPanelNavigatorSidebarWidth", initialNavigatorWidth);
     this.editorView.element.tabIndex = 0;
 
     this.editorView.setMinimumSidebarWidth(Preferences.minScriptsSidebarWidth);
@@ -122,20 +122,18 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
         this.sidebarPanes.workerList = new WebInspector.WorkersSidebarPane(WebInspector.workerManager);
     }
 
-    this._debugSidebarContentsElement = document.createElement("div");
-    this._debugSidebarContentsElement.id = "scripts-debug-sidebar-contents";
-    this.sidebarElement.appendChild(this._debugSidebarContentsElement);
+    this.sidebarPaneView = new WebInspector.SidebarPaneStack();
+    this.sidebarPaneView.element.id = "scripts-debug-sidebar-contents";
+    for (var pane in this.sidebarPanes)
+        this.sidebarPaneView.addPane(this.sidebarPanes[pane]);
+    this.sidebarPaneView.show(this.sidebarElement);
 
-    for (var pane in this.sidebarPanes) {
-        if (this.sidebarPanes[pane] === this.sidebarPanes.domBreakpoints)
-            continue;
-        this.sidebarPanes[pane].show(this._debugSidebarContentsElement);
-    }
+    if (WebInspector.settings.watchExpressions.get().length > 0)
+        this.sidebarPanes.watchExpressions.expand();
 
-    this.sidebarPanes.callstack.expanded = true;
-
-    this.sidebarPanes.scopechain.expanded = true;
-    this.sidebarPanes.jsBreakpoints.expanded = true;
+    this.sidebarPanes.callstack.expand();
+    this.sidebarPanes.scopechain.expand();
+    this.sidebarPanes.jsBreakpoints.expand();
 
     this.sidebarPanes.callstack.registerShortcuts(this.registerShortcuts.bind(this));
     this.registerShortcuts(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.EvaluateSelectionInConsole, this._evaluateSelectionInConsole.bind(this));
@@ -215,8 +213,6 @@ WebInspector.ScriptsPanel.prototype = {
     wasShown: function()
     {
         WebInspector.Panel.prototype.wasShown.call(this);
-        this.sidebarPanes.domBreakpoints.show(this._debugSidebarContentsElement, this.sidebarPanes.xhrBreakpoints.element);
-
         this._navigatorController.wasShown();
     },
 
@@ -245,8 +241,8 @@ WebInspector.ScriptsPanel.prototype = {
         var projectName = uiSourceCode.project().name();
         if (uiSourceCode.project().isServiceProject())
             return;
-        this._editorContainer.addUISourceCode(uiSourceCode);
         this._navigator.addUISourceCode(uiSourceCode);
+        this._editorContainer.addUISourceCode(uiSourceCode);
         // Replace debugger script-based uiSourceCode with a network-based one.
         var currentUISourceCode = this._currentUISourceCode;
         if (currentUISourceCode && currentUISourceCode.project().isServiceProject() && currentUISourceCode !== uiSourceCode && currentUISourceCode.url === uiSourceCode.url) {

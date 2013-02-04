@@ -28,6 +28,8 @@ InspectorBackend.registerEvent("Page.frameStartedLoading", ["frameId"]);
 InspectorBackend.registerEvent("Page.frameStoppedLoading", ["frameId"]);
 InspectorBackend.registerEvent("Page.frameScheduledNavigation", ["frameId", "delay"]);
 InspectorBackend.registerEvent("Page.frameClearedScheduledNavigation", ["frameId"]);
+InspectorBackend.registerEvent("Page.javascriptDialogOpening", ["message"]);
+InspectorBackend.registerEvent("Page.javascriptDialogClosed", []);
 InspectorBackend.registerCommand("Page.enable", [], []);
 InspectorBackend.registerCommand("Page.disable", [], []);
 InspectorBackend.registerCommand("Page.addScriptToEvaluateOnLoad", [{"name": "scriptSource", "type": "string", "optional": false}], ["identifier"]);
@@ -61,6 +63,7 @@ InspectorBackend.registerCommand("Page.setEmulatedMedia", [{"name": "media", "ty
 InspectorBackend.registerCommand("Page.getCompositingBordersVisible", [], ["result"]);
 InspectorBackend.registerCommand("Page.setCompositingBordersVisible", [{"name": "visible", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Page.captureScreenshot", [], ["data"]);
+InspectorBackend.registerCommand("Page.handleJavaScriptDialog", [{"name": "accept", "type": "boolean", "optional": false}], []);
 
 // Runtime.
 InspectorBackend.registerRuntimeDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Runtime");
@@ -302,7 +305,7 @@ InspectorBackend.registerCommand("Profiler.getCPUProfile", [{"name": "uid", "typ
 InspectorBackend.registerCommand("Profiler.getHeapSnapshot", [{"name": "uid", "type": "number", "optional": false}], []);
 InspectorBackend.registerCommand("Profiler.removeProfile", [{"name": "type", "type": "string", "optional": false}, {"name": "uid", "type": "number", "optional": false}], []);
 InspectorBackend.registerCommand("Profiler.clearProfiles", [], []);
-InspectorBackend.registerCommand("Profiler.takeHeapSnapshot", [], []);
+InspectorBackend.registerCommand("Profiler.takeHeapSnapshot", [{"name": "reportProgress", "type": "boolean", "optional": true}], []);
 InspectorBackend.registerCommand("Profiler.collectGarbage", [], []);
 InspectorBackend.registerCommand("Profiler.getObjectByHeapObjectId", [{"name": "objectId", "type": "string", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}], ["result"]);
 InspectorBackend.registerCommand("Profiler.getHeapObjectId", [{"name": "objectId", "type": "string", "optional": false}], ["heapSnapshotObjectId"]);
@@ -322,12 +325,14 @@ InspectorBackend.registerCommand("Worker.setAutoconnectToWorkers", [{"name": "va
 
 // Canvas.
 InspectorBackend.registerCanvasDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Canvas");
+InspectorBackend.registerEvent("Canvas.contextCreated", ["frameId"]);
+InspectorBackend.registerEvent("Canvas.traceLogsRemoved", ["frameId", "traceLogId"]);
 InspectorBackend.registerCommand("Canvas.enable", [], []);
 InspectorBackend.registerCommand("Canvas.disable", [], []);
 InspectorBackend.registerCommand("Canvas.dropTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}], []);
 InspectorBackend.registerCommand("Canvas.hasUninstrumentedCanvases", [], ["result"]);
-InspectorBackend.registerCommand("Canvas.captureFrame", [], ["traceLogId"]);
-InspectorBackend.registerCommand("Canvas.startCapturing", [], ["traceLogId"]);
+InspectorBackend.registerCommand("Canvas.captureFrame", [{"name": "frameId", "type": "string", "optional": true}], ["traceLogId"]);
+InspectorBackend.registerCommand("Canvas.startCapturing", [{"name": "frameId", "type": "string", "optional": true}], ["traceLogId"]);
 InspectorBackend.registerCommand("Canvas.stopCapturing", [{"name": "traceLogId", "type": "string", "optional": false}], []);
 InspectorBackend.registerCommand("Canvas.getTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}, {"name": "startOffset", "type": "number", "optional": true}, {"name": "maxLength", "type": "number", "optional": true}], ["traceLog"]);
 InspectorBackend.registerCommand("Canvas.replayTraceLog", [{"name": "traceLogId", "type": "string", "optional": false}, {"name": "stepNo", "type": "number", "optional": false}], ["resourceState"]);

@@ -27,6 +27,7 @@ const UserInitiatedProfileName = "org.webkit.profiles.user-initiated";
 
 /**
  * @constructor
+ * @extends {WebInspector.Object}
  * @param {string} id
  * @param {string} name
  */
@@ -38,6 +39,10 @@ WebInspector.ProfileType = function(id, name)
      * @type {WebInspector.SidebarSectionTreeElement}
      */
     this.treeElement = null;
+}
+
+WebInspector.ProfileType.Events = {
+  ViewUpdated: "view-updated",
 }
 
 WebInspector.ProfileType.prototype = {
@@ -109,7 +114,9 @@ WebInspector.ProfileType.prototype = {
     createProfile: function(profile)
     {
         throw new Error("Not supported for " + this._name + " profiles.");
-    }
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 /**
@@ -177,27 +184,45 @@ WebInspector.ProfileHeader.prototype = {
         throw new Error("Not implemented.");
     },
 
+    reset: function()
+    {
+    },
+
     /**
      * @param {Function} callback
      */
-    load: function(callback) { },
+    load: function(callback)
+    {
+    },
 
     /**
      * @return {boolean}
      */
-    canSaveToFile: function() { return false; },
+    canSaveToFile: function()
+    {
+        return false;
+    },
 
-    saveToFile: function() { throw new Error("Needs implemented"); },
+    saveToFile: function()
+    {
+        throw new Error("Needs implemented");
+    },
 
     /**
      * @param {File} file
      */
-    loadFromFile: function(file) { throw new Error("Needs implemented"); },
+    loadFromFile: function(file)
+    {
+        throw new Error("Needs implemented");
+    },
 
     /**
      * @return {boolean}
      */
-    fromFile: function() { return this._fromFile; }
+    fromFile: function()
+    {
+        return this._fromFile;
+    }
 }
 
 /**
@@ -257,6 +282,7 @@ WebInspector.ProfilesPanel = function()
     this._profileViewStatusBarItemsContainer = document.createElement("div");
     this._profileViewStatusBarItemsContainer.className = "status-bar-items";
 
+    /** @type {!Array.<!WebInspector.ProfileHeader>} */
     this._profiles = [];
     this._profilerEnabled = !Capabilities.profilerCausesRecompilation;
 
@@ -366,6 +392,11 @@ WebInspector.ProfilesPanel.prototype = {
     _onProfileTypeSelected: function(event)
     {
         this._selectedProfileType = /** @type {!WebInspector.ProfileType} */ (event.data);
+        this._updateProfileTypeSpecificUI();
+    },
+
+    _updateProfileTypeSpecificUI: function()
+    {
         this.recordButton.title = this._selectedProfileType.buttonTooltip;
 
         this._profileTypeStatusBarItemsContainer.removeChildren();
@@ -388,6 +419,7 @@ WebInspector.ProfilesPanel.prototype = {
                 if ("dispose" in view)
                     view.dispose();
             }
+            this._profiles[i].reset();
         }
         delete this.visibleView;
 
@@ -454,6 +486,7 @@ WebInspector.ProfilesPanel.prototype = {
         profileType.treeElement.hidden = true;
         this.sidebarTree.appendChild(profileType.treeElement);
         profileType.treeElement.childrenListElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
+        profileType.addEventListener(WebInspector.ProfileType.Events.ViewUpdated, this._updateProfileTypeSpecificUI, this);
     },
 
     /**
@@ -581,6 +614,7 @@ WebInspector.ProfilesPanel.prototype = {
             if (this._profiles[i].uid === profile.uid) {
                 profile = this._profiles[i];
                 this._profiles.splice(i, 1);
+                profile.reset();
                 break;
             }
         }
@@ -596,8 +630,11 @@ WebInspector.ProfilesPanel.prototype = {
 
         // No other item will be selected if there aren't any other profiles, so
         // make sure that view gets cleared when the last profile is removed.
-        if (!this._profiles.length)
-            this.closeVisibleView();
+        if (!sidebarParent.children.length) {
+            this.profilesItemTreeElement.select();
+            this._showLauncherView();
+            sidebarParent.hidden = true;
+        }
     },
 
     /**
@@ -1132,7 +1169,7 @@ WebInspector.ProfilesPanel.prototype = {
         function done() {
             this._launcherView.profileFinished();
         }
-        ProfilerAgent.takeHeapSnapshot(done.bind(this));
+        ProfilerAgent.takeHeapSnapshot(true, done.bind(this));
         WebInspector.userMetrics.ProfilesHeapProfileTaken.record();
     },
 
@@ -1401,7 +1438,6 @@ importScript("HeapSnapshotProxy.js");
 importScript("HeapSnapshotView.js");
 importScript("HeapSnapshotWorkerDispatcher.js");
 importScript("JSHeapSnapshot.js");
-importScript("NativeHeapGraph.js");
 importScript("NativeHeapSnapshot.js");
 importScript("NativeMemorySnapshotView.js");
 importScript("ProfileLauncherView.js");
