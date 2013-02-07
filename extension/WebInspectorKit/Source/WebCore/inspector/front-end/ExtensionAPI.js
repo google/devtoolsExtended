@@ -67,13 +67,14 @@ function defineCommonExtensionSymbols(apiPrivate)
         OpenResource: "open-resource",
         PanelSearch: "panel-search-",
         Reload: "Reload",
+        RemoteDebug: "remote-debug-",
         ResourceAdded: "resource-added",
         ResourceContentCommitted: "resource-content-committed",
         TimelineEventRecorded: "timeline-event-recorded",
         ViewShown: "view-shown-",
         ViewHidden: "view-hidden-"
     };
-
+    
     apiPrivate.Commands = {
         AddAuditCategory: "addAuditCategory",
         AddAuditResult: "addAuditResult",
@@ -90,6 +91,7 @@ function defineCommonExtensionSymbols(apiPrivate)
         GetPageResources: "getPageResources",
         GetRequestContent: "getRequestContent",
         GetResourceContent: "getResourceContent",
+        SendCommand: "sendCommand", 
         Subscribe: "subscribe",
         SetOpenResourceHandler: "setOpenResourceHandler",
         SetResourceContent: "setResourceContent",
@@ -105,6 +107,9 @@ function defineCommonExtensionSymbols(apiPrivate)
     };
 }
 
+/**
+ * @return InspectorExtensionAPI 
+ */
 function injectedExtensionAPI(injectedScriptId)
 {
 
@@ -185,6 +190,7 @@ function InspectorExtensionAPI()
     defineDeprecatedProperty(this, "webInspector", "resources", "network");
     this.timeline = new Timeline();
     this.console = new ConsoleAPI();
+    this.remoteDebug = new RemoteDebug();
 }
 
 /**
@@ -759,6 +765,72 @@ ResourceImpl.prototype = {
 /**
  * @constructor
  */
+function RemoteDebugImpl()
+{
+    this._eventParams = {};        // filled by registerEvent
+    this._eventSink = {};  // filled by addDomainListener
+    this._domainListeners = {};  // add/removeDomainListener
+}
+
+RemoteDebugImpl.prototype = 
+{
+    sendCommand: function(domainMethod, params, callback)
+    {
+        return extensionServer.sendRequest({ command: commands.SendCommand, method: domainMethod, params: params }, callback);
+    },
+    /**
+     * @param domainMethod {string} eg 'Page.loadEventFired' 
+     * @param params [strings], eg ['timeStamp'] 
+     */
+    registerEvent: function(domainMethod, paramNames) 
+    {
+        this._eventParams[domainMethod] = paramNames;
+    },
+    
+    addDomainListener: function(domain, obj) 
+    {
+        var eventSink = new EventSink(events.RemoteDebug + domain);
+        this._eventSink[domain] = eventSink;
+        this._domainListeners[domain] = this._dispatchRemoteDebugEvent.bind(this, obj);
+        eventSink.addListener( this._domainListeners[domain] );     
+    },
+    
+    removeDomainListener: function(domain) 
+    {
+        var eventSink = this._eventSink[domain];
+        if (eventSink) 
+        {
+            var domainListener = this._domainListeners[domain];
+            if (domainListener) 
+            {
+                eventSink.removeListener(domainListener);
+                delete this._domainListeners[domain];
+            }
+            delete this._eventSink[domain];
+        }   
+    },
+    
+    _dispatchRemoteDebugEvent: function(domainListener, messageObject)
+    {
+        var domainMethod = messageObject.method;
+        var method = domainMethod.split('.')[1];
+        if (method in domainListener) 
+        {
+            var params = [];
+            var messageArgs = messageObject.params;
+            if (messageArgs) {
+                var paramNames = this._eventParams[domainMethod];
+                for (var i = 0; i < paramNames.length; ++i) {
+                    params.push(messageArgs[paramNames[i]]);
+                }
+            }
+            domainListener[method].apply(domainListener, params);
+        } // else assume client did not want this event
+    }
+}
+/**
+ * @constructor
+ */
 function TimelineImpl()
 {
     this.onEventRecorded = new EventSink(events.TimelineEventRecorded);
@@ -900,6 +972,7 @@ var PanelWithSidebar = declareInterfaceClass(PanelWithSidebarImpl);
 var Request = declareInterfaceClass(RequestImpl);
 var Resource = declareInterfaceClass(ResourceImpl);
 var Timeline = declareInterfaceClass(TimelineImpl);
+var RemoteDebug = declareInterfaceClass(RemoteDebugImpl);
 
 var extensionServer = new ExtensionServerClient();
 

@@ -153,6 +153,11 @@ InspectorBackendClass.prototype = {
     {
         this._domainDispatchers[domain] = dispatcher;
     },
+    
+    registerExtensionDispatcher: function(dispatcher) 
+    {
+        this._extensionDispatcher = dispatcher;
+    },
 
     dispatch: function(message)
     {
@@ -226,6 +231,9 @@ InspectorBackendClass.prototype = {
                 processingStartTime = Date.now();
 
             dispatcher[functionName].apply(dispatcher, params);
+            
+            if (this._extensionDispatcher) 
+                this._extensionDispatcher.call(this._extensionDispatcher, messageObject);
 
             if (this.dumpInspectorTimeStats)
                 console.log("time-stats: " + messageObject.method + " = " + (Date.now() - processingStartTime));
