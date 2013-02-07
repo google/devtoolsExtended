@@ -47,6 +47,7 @@ function platformExtensionAPI(coreAPI)
     chrome.devtools.inspectedWindow.__proto__ = coreAPI.inspectedWindow;
     chrome.devtools.network = coreAPI.network;
     chrome.devtools.panels = coreAPI.panels;
+    chrome.devtools.remoteDebug = coreAPI.remoteDebug;
 
     // default to expose experimental APIs for now.
     if (extensionInfo.exposeExperimentalAPIs !== false) {
