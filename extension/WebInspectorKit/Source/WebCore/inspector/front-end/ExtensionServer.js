@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+importScript("Dialog.js");
+importScript("FilteredItemSelectionDialog.js");
+
 /**
  * @constructor
  */
@@ -50,9 +53,11 @@ WebInspector.ExtensionServer = function()
     this._registerHandler(commands.AddAuditResult, this._onAddAuditResult.bind(this));
     this._registerHandler(commands.AddConsoleMessage, this._onAddConsoleMessage.bind(this));
     this._registerHandler(commands.AddRequestHeaders, this._onAddRequestHeaders.bind(this));
+    this._registerHandler(commands.AddSelectorItems, this._onAddSelectorItems.bind(this));
     this._registerHandler(commands.CreatePanel, this._onCreatePanel.bind(this));
     this._registerHandler(commands.CreateSidebarPane, this._onCreateSidebarPane.bind(this));
     this._registerHandler(commands.CreateStatusBarButton, this._onCreateStatusBarButton.bind(this));
+    this._registerHandler(commands.CreateItemSelector, this._onCreateItemSelector.bind(this));
     this._registerHandler(commands.EvaluateOnInspectedPage, this._onEvaluateOnInspectedPage.bind(this));
     this._registerHandler(commands.GetHAR, this._onGetHAR.bind(this));
     this._registerHandler(commands.GetConsoleMessages, this._onGetConsoleMessages.bind(this));
@@ -100,6 +105,11 @@ WebInspector.ExtensionServer.prototype = {
     notifyButtonClicked: function(identifier)
     {
         this._postNotification(WebInspector.extensionAPI.Events.ButtonClicked + identifier);
+    },
+
+    notifyItemSelected: function(identifier, item, promptValue) 
+    {
+        this._postNotification(WebInspector.extensionAPI.Events.ItemSelected + identifier, item, promptValue);
     },
 
     _inspectedURLChanged: function(event)
@@ -184,6 +194,24 @@ WebInspector.ExtensionServer.prototype = {
         NetworkAgent.setExtraHTTPHeaders(allHeaders);
     },
 
+    _onAddSelectorItems: function(message) 
+    {
+        var id = message.itemSelectorId;
+        if (typeof id !== "string")
+            return this._status.E_BADARGTYPE("itemSelectorId", typeof id, "string");
+
+        if (!WebInspector.Dialog.currentInstance())
+            return; // fail silently, the dialog could exit asynchronously
+
+        var itemsProxy = this._clientObjects[id];
+        if (!itemsProxy)
+            return this._status.E_NOTFOUND(message.itemSelectorId);
+
+        var items = message.items; 
+        itemsProxy.addItems(items);
+        return this._status.OK();
+    },
+
     _onCreatePanel: function(message, port)
     {
         var id = message.id;
@@ -204,6 +232,53 @@ WebInspector.ExtensionServer.prototype = {
     {
         // Note: WebInspector.showPanel already sanitizes input.
         WebInspector.showPanel(message.id);
+    },
+
+    _onCreateItemSelector: function(message, port)
+    {
+        var panel = this._clientObjects[message.panel];
+        if (!panel || !(panel instanceof WebInspector.ExtensionPanel))
+            return this._status.E_NOTFOUND(message.panel);
+            
+        var id = message.id;
+
+        if (id in this._clientObjects || id in WebInspector.panels)
+            return this._status.E_EXISTS(id);
+
+        if (WebInspector.Dialog.currentInstance())
+            WebInspector.Dialog.hide();
+
+        var extensionServer = this;
+        var itemsProxy = {
+            requestItems: function(callback)
+            {
+                this.callback = callback;
+                if (this._items) {
+                    this.addItems(this._items);
+                    delete this._items;
+                }
+            },
+            addItems: function(items)
+            {
+                if (this.callback)
+                    this.callback(items);
+                else 
+                    this._items = (this._items || []), this._items.concat(items);
+            },
+            selectItem: function(item, promptValue) 
+            {
+                extensionServer.notifyItemSelected(id, item, promptValue);
+            }
+        };
+        this._clientObjects[id] = itemsProxy;
+        var delegate = new WebInspector.ExtensionSelectionContentProvider(panel, itemsProxy);
+        var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(delegate);
+        filteredItemSelectionDialog.willHide = function()
+        {
+            extensionServer.notifyItemSelected(id);
+        }
+        WebInspector.Dialog.show(panel.element, filteredItemSelectionDialog);
+        return this._status.OK();
     },
 
     _onCreateStatusBarButton: function(message, port)
@@ -316,7 +391,8 @@ WebInspector.ExtensionServer.prototype = {
             // returns empty object for compatibility with InjectedScriptManager on the backend.
             injectedScript = "((function(){" + options.injectedScript + "})(),function(){return {}})";
         }
-        PageAgent.reload(!!options.ignoreCache, injectedScript);
+        var preprocessingScript = options.preprocessingScript;
+        PageAgent.reload(!!options.ignoreCache, injectedScript, preprocessingScript);
         return this._status.OK();
     },
 
@@ -342,7 +418,10 @@ WebInspector.ExtensionServer.prototype = {
       
             this._dispatchCallback(message.requestId, port, result);
         }
-        return this.evaluate(message.expression, true, true, message.evaluateOptions, port._extensionOrigin, callback.bind(this));
+        var status = this.evaluate(message.expression, true, true, message.evaluateOptions, port._extensionOrigin, callback.bind(this));
+        if (status) {
+            callback.call(this, "Extension server error: " + String.vsprintf(status.description, status.details));
+        }
     },
 
     _onGetConsoleMessages: function()
@@ -784,14 +863,43 @@ WebInspector.ExtensionServer.prototype = {
     evaluate: function(expression, exposeCommandLineAPI, returnByValue, options, securityOrigin, callback) 
     {
         var contextId;
-        if (typeof options === "object" && options["useContentScriptContext"]) {
-            var mainFrame = WebInspector.resourceTreeModel.mainFrame;
-            if (!mainFrame)
-                return this._status.E_FAILED("main frame not available yet");
-            var context = WebInspector.runtimeModel.contextByFrameAndSecurityOrigin(mainFrame, securityOrigin);
-            if (!context)
-                return this._status.E_NOTFOUND(securityOrigin);
-            contextId = context.id;
+        if (typeof options === "object") {
+            var contextSecurityOrigin;
+            if (options["useContentScriptContext"] ) {
+                contextSecurityOrigin = securityOrigin;
+            } else if (options.scriptExecutionContext) {
+                contextSecurityOrigin = options.scriptExecutionContext;
+            } 
+            var url;
+            if (options.frameURL) {
+                var url = options.frameURL;
+                var context;
+                var contextLists = WebInspector.runtimeModel.contextLists();
+                for (var i = 0; i < contextLists.length; i++) {
+                    if (contextLists[i].url === url) {
+                        if (!contextSecurityOrigin || contextSecurityOrigin && url.indexOf(contextSecurityOrigin) === 0) { 
+                            context = contextLists[i].executionContexts()[0]; // the main world context is always the first one
+                        } else {
+                            context = contextLists[i].contextBySecurityOrigin(contextSecurityOrigin);    
+                        }
+                    }
+                }
+                if (!context) {
+                    console.warn("The JS context " + contextSecurityOrigin + " was not found among the contexts with URL " + url)
+                    return this._status.E_NOTFOUND(contextSecurityOrigin);
+                }
+                contextId = context.id;
+            } else if (contextSecurityOrigin) {
+                var mainFrame = WebInspector.resourceTreeModel.mainFrame;
+                if (!mainFrame)
+                    return this._status.E_FAILED("main frame not available yet");
+                var context = WebInspector.runtimeModel.contextByFrameAndSecurityOrigin(mainFrame, contextSecurityOrigin);
+                if (!context) {
+                    console.warn("The JS context " + contextSecurityOrigin + " was not found among the mainframe contexts");
+                    return this._status.E_NOTFOUND(contextSecurityOrigin);
+                }
+                contextId = context.id;
+            }
         }
         RuntimeAgent.evaluate(expression, "extension", exposeCommandLineAPI, true, contextId, returnByValue, false, callback);
     }

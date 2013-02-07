@@ -1741,12 +1741,15 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
             function processColor(text)
             {
-                try {
-                    var color = new WebInspector.Color(text);
-                } catch (e) {
-                    return document.createTextNode(text);
+                
+                var color;
+                if (text !== 'none') {
+                    color = WebInspector.Color.parse(text);
                 }
-
+                if (!color) {
+                    return document.createTextNode(text);
+                }  
+                
                 var format = getFormat();
                 var hasSpectrum = self._parentPane;
                 var spectrumHelper = hasSpectrum ? self._parentPane._spectrumHelper : null;

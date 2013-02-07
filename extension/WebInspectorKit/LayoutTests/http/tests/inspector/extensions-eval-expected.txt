@@ -1,0 +1,28 @@
+Tests WebInspector extension API
+
+
+Started extension.
+Running tests...
+RUNNING TEST: extension_testEvalConsoleAPI
+Evaluate: "function" (exception: undefined)
+RUNNING TEST: extension_testEvalDefinesGlobalSymbols
+Evaluate: {"func":"function","variable":42} (exception: undefined)
+RUNNING TEST: extension_testEvalInIFrame
+log: Extension server error: Object not found: bogus
+Evaluate: "/inspector/resources/extensions-frame-eval.html" (exception: undefined)
+RUNNING TEST: extension_testEvalInIFrameBadOption
+Evaluate: "Extension server error: Object not found: bogus" (exception: true)
+RUNNING TEST: extension_testEvalOk
+Evaluate: {"str":"foo","num":42} (exception: undefined)
+RUNNING TEST: extension_testEvalStatement
+Evaluate: 0 (exception: undefined)
+RUNNING TEST: extension_testEvalStringifyingLoopFailed
+Evaluate: "Object has too long reference chain(must not be longer than 1000)" (exception: true)
+RUNNING TEST: extension_testEvalThrows
+Evaluate: "testExceptionString" (exception: true)
+RUNNING TEST: extension_testEvalUndefined
+Evaluate: undefined (exception: undefined)
+RUNNING TEST: extension_testWithStringifyOverridden
+Evaluate: "OK" (exception: undefined)
+All tests done.
+
