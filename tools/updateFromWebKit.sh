@@ -5,7 +5,7 @@
 
 set -e
 
-export USAGE=" local-path-to-chromium-repo webkit-branch-to-copy local-branch-target"
+export USAGE=" local-path-to-chromium-repo webkit-branch-to-copy webkit-branch-to-build local-branch-target"
 
 . "$(git --exec-path)/git-sh-setup"
 
@@ -22,11 +22,15 @@ fi
 
 WEBKIT_BRANCH=$2
 if [ -z "$WEBKIT_BRANCH" ]; then
-  usage
-  exit -1
+  WEBKIT_BRANCH="master"
 fi
 
-LOCAL_BRANCH=$3
+WEBKIT_BRANCH_BUILT=$3
+if [ -z "$WEBKIT_BRANCH_BUILT" ]; then
+  WEBKIT_BRANCH_BUILT="stgit"
+fi
+
+LOCAL_BRANCH=$4
 if [ -z "$LOCAL_BRANCH" ]; then
   LOCAL_BRANCH="$WEBKIT_BRANCH"
   if [ "$WEBKIT_BRANCH" = "master" ]; then
@@ -49,12 +53,13 @@ git checkout "$LOCAL_BRANCH"
 CWD=$(pwd)
 cd "$CHROMIUM_WEBKIT"
 require_clean_work_tree "$CHROMIUM_WEBKIT"
-git checkout $WEBKIT_BRANCH
+git checkout "$WEBKIT_BRANCH_BUILT"
 WEBKIT_GIT_HEAD=$(git rev-parse HEAD)
 cd "$CHROMIUM_ROOT"
 # We want to be sure that the source and built copies are identical
 rm -r $BUILT_FRONT_END
 cr build
+git checkout "$WEBKIT_BRANCH"
 cd $CWD
 
 copySubDir "Source/WebCore/inspector/front-end"
@@ -65,7 +70,7 @@ copySubDir "LayoutTests/platform/chromium/http/tests/inspector"
 copySubDir "Source/WebKit/chromium/src/js"
 
 
-echo "Copying built files from $BUILT_FRONT_END"
+echo "Copying built files from branch $WEBKIT_BRANCH_BUILT"
 
 LOCAL_FRONT_END="$LOCAL_WEBKIT/Source/WebCore/inspector/front-end/"
 mkdir -p "$LOCAL_FRONT_END"
