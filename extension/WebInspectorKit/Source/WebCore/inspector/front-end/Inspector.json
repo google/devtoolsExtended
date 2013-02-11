@@ -43,45 +43,6 @@
         "hidden": true,
         "types": [
             {
-                "id": "NodeCount",
-                "type": "object",
-                "properties": [
-                    { "name": "nodeName", "type": "string" },
-                    { "name": "count", "type": "integer" }
-                ],
-                "description": "Number of nodes with given name."
-            },
-            {
-                "id": "ListenerCount",
-                "type": "object",
-                "properties": [
-                    { "name": "type", "type": "string" },
-                    { "name": "count", "type": "integer" }
-                ],
-                "description": "Number of JS event listeners by event type."
-            },
-            {
-                "id": "StringStatistics",
-                "type": "object",
-                "properties": [
-                    { "name": "dom", "type": "integer" },
-                    { "name": "js", "type": "integer" },
-                    { "name": "shared", "type": "integer" }
-                ],
-                "description": "Character data statistics for the page."
-            },
-            {
-                "id": "DOMGroup",
-                "type": "object",
-                "properties": [
-                    { "name": "size", "type": "integer" },
-                    { "name": "title", "type": "string" },
-                    { "name": "documentURI", "type": "string", "optional": true },
-                    { "name": "nodeCount", "type": "array", "items": { "$ref": "NodeCount" }},
-                    { "name": "listenerCount", "type": "array", "items": { "$ref": "ListenerCount" }}
-                ]
-            },
-            {
                 "id": "MemoryBlock",
                 "type": "object",
                 "properties": [
@@ -89,14 +50,25 @@
                     { "name": "name", "type": "string", "description": "Unique name used to identify the component that allocated this block" },
                     { "name": "children", "type": "array", "optional": true, "items": { "$ref": "MemoryBlock" }}
                 ]
+            },
+            {
+                "id": "HeapSnapshotChunk",
+                "type": "object",
+                "properties": [
+                    { "name": "strings", "type": "array", "items": { "type": "string" }, "description": "An array of strings that were found since last update." },
+                    { "name": "nodes", "type": "array", "items": { "type": "integer" }, "description": "An array of nodes that were found since last update." },
+                    { "name": "edges", "type": "array", "items": { "type": "integer" }, "description": "An array of edges that were found since last update." },
+                    { "name": "baseToRealNodeId", "type": "array", "items": { "type": "integer" }, "description": "An array of integers for nodeId remapping. Even nodeId has to be mapped to the following odd nodeId." }
+                ]
             }
         ],
         "commands": [
             {
-                "name": "getDOMNodeCount",
+                "name": "getDOMCounters",
                 "returns": [
-                    { "name": "domGroups", "type": "array", "items": { "$ref": "DOMGroup" }},
-                    { "name": "strings", "$ref": "StringStatistics" }
+                    { "name": "documents", "type": "integer" },
+                    { "name": "nodes", "type": "integer" },
+                    { "name": "jsEventListeners", "type": "integer" }
                 ]
             },
             {
@@ -105,8 +77,15 @@
                     { "name": "reportGraph", "type": "boolean", "optional": true, "description": "Whether native memory graph should be reported in addition to aggregated statistics." }
                 ],
                 "returns": [
-                    { "name": "distribution", "$ref": "MemoryBlock", "description": "An object describing all memory allocated by the process"},
-                    { "name": "graph", "type": "object", "optional": true, "description": "Native memory graph."}
+                    { "name": "distribution", "$ref": "MemoryBlock", "description": "An object describing all memory allocated by the process"}
+                ]
+            }
+        ],
+        "events": [
+            {
+                "name": "addNativeSnapshotChunk",
+                "parameters": [
+                    { "name": "chunk", "$ref": "HeapSnapshotChunk", "description": "A chunk of the serialized the snapshot." }
                 ]
             }
         ]
@@ -346,6 +325,22 @@
                 "description": "Requests that backend shows paint rectangles",
                 "parameters": [
                     { "name": "result", "type": "boolean", "description": "True for showing paint rectangles" }
+                ],
+                "hidden": true
+            },
+            {
+                "name": "canShowDebugBorders",
+                "description": "Tells if backend supports debug borders on layers",
+                "returns": [
+                    { "name": "show", "type": "boolean", "description": "True if the debug borders can be shown" }
+                ],
+                "hidden": true
+            },
+            {
+                "name": "setShowDebugBorders",
+                "description": "Requests that backend shows debug borders on layers",
+                "parameters": [
+                    { "name": "show", "type": "boolean", "description": "True for showing debug borders" }
                 ],
                 "hidden": true
             },
@@ -796,22 +791,22 @@
         "commands": [
             {
                 "name": "enable",
-                "description": "Enables console domain, sends the messages collected so far to the client by means of the <code>messageAdded</code> notification." 
+                "description": "Enables console domain, sends the messages collected so far to the client by means of the <code>messageAdded</code> notification."
             },
             {
                 "name": "disable",
-                "description": "Disables console domain, prevents further console messages from being reported to the client." 
+                "description": "Disables console domain, prevents further console messages from being reported to the client."
             },
             {
                 "name": "clearMessages",
-                "description": "Clears console messages collected in the browser." 
+                "description": "Clears console messages collected in the browser."
             },
             {
                 "name": "setMonitoringXHREnabled",
                 "parameters": [
                     { "name": "enabled", "type": "boolean", "description": "Monitoring enabled state." }
                 ],
-                "description": "Toggles monitoring of XMLHttpRequest. If <code>true</code>, console will receive messages upon each XHR issued.", 
+                "description": "Toggles monitoring of XMLHttpRequest. If <code>true</code>, console will receive messages upon each XHR issued.",
                 "hidden": true
             },
             {
@@ -1052,7 +1047,7 @@
                 "parameters": [
                     { "name": "cacheDisabled", "type": "boolean", "description": "Cache disabled state." }
                 ],
-                "description": "Toggles ignoring cache for each request. If <code>true</code>, cache will not be used." 
+                "description": "Toggles ignoring cache for each request. If <code>true</code>, cache will not be used."
             }
         ],
         "events": [
@@ -1492,9 +1487,33 @@
                 ]
             },
             {
-                "name": "domStorageUpdated",
+                "name": "domStorageItemsCleared",
                 "parameters": [
                     { "name": "storageId",  "$ref": "StorageId" }
+                ]
+            },
+            {
+                "name": "domStorageItemRemoved",
+                "parameters": [
+                    { "name": "storageId",  "$ref": "StorageId" },
+                    { "name": "key", "type": "string" }
+                ]
+            },
+            {
+                "name": "domStorageItemAdded",
+                "parameters": [
+                    { "name": "storageId",  "$ref": "StorageId" },
+                    { "name": "key", "type": "string" },
+                    { "name": "newValue", "type": "string" }
+                ]
+            },
+            {
+                "name": "domStorageItemUpdated",
+                "parameters": [
+                    { "name": "storageId",  "$ref": "StorageId" },
+                    { "name": "key", "type": "string" },
+                    { "name": "oldValue", "type": "string" },
+                    { "name": "newValue", "type": "string" }
                 ]
             }
         ]
@@ -2908,6 +2927,18 @@
                 ],
                 "hidden": true,
                 "description": "Sets overlay message."
+            },
+            {
+                "name": "setVariableValue",
+                "parameters": [
+                    { "name": "callFrameId", "$ref": "CallFrameId", "optional": true, "description": "Id of callframe that holds variable." },
+                    { "name": "functionObjectId", "$ref": "Runtime.RemoteObjectId", "optional": true, "description": "Object id of closure (function) that holds variable." },
+                    { "name": "scopeNumber", "type": "integer", "description": "0-based number of scope as was listed in scope chain. Only 'local', 'closure' and 'catch' scope types are allowed. Other scopes could be manipulated manually." },
+                    { "name": "variableName", "type": "string", "description": "Variable name." },
+                    { "name": "newValue", "$ref": "Runtime.CallArgument", "description": "New variable value." }
+                ],
+                "hidden": true,
+                "description": "Changes value of variable in a callframe or a closure. Either callframe or function must be specified. Object-based scopes are not supported and must be mutated manually."
             }
         ],
         "events": [
@@ -3200,6 +3231,115 @@
                 "name": "setRecordingProfile",
                 "parameters": [
                     { "name": "isProfiling", "type": "boolean" }
+                ]
+            },
+            {
+                "name": "resetProfiles"
+            },
+            {
+                "name": "reportHeapSnapshotProgress",
+                "parameters": [
+                    { "name": "done", "type": "integer" },
+                    { "name": "total", "type": "integer" }
+                ]
+            }
+        ]
+    },
+    {
+        "domain": "HeapProfiler",
+        "hidden": true,
+        "types": [
+            {
+                "id": "ProfileHeader",
+                "type": "object",
+                "description": "Profile header.",
+                "properties": [
+                    { "name": "title", "type": "string", "description": "Profile title." },
+                    { "name": "uid", "type": "integer", "description": "Unique identifier of the profile." },
+                    { "name": "maxJSObjectId", "type": "integer", "optional": true, "description": "Last seen JS object Id." }
+                ]
+            },
+            {
+                "id": "HeapSnapshotObjectId",
+                "type": "string",
+                "description": "Heap snashot object id."
+            }
+        ],
+        "commands": [
+            {
+                "name": "hasHeapProfiler",
+                "returns": [
+                    { "name": "result", "type": "boolean" }
+                ]
+            },
+            {
+                "name": "getProfileHeaders",
+                "returns": [
+                    { "name": "headers", "type": "array", "items": { "$ref": "ProfileHeader"} }
+                ]
+            },
+            {
+                "name": "getHeapSnapshot",
+                "parameters": [
+                    { "name": "uid", "type": "integer" }
+                ]
+            },
+            {
+                "name": "removeProfile",
+                "parameters": [
+                    { "name": "uid", "type": "integer" }
+                ]
+            },
+            {
+                "name": "clearProfiles"
+            },
+            {
+                "name": "takeHeapSnapshot",
+                "parameters": [
+                    { "name": "reportProgress", "type": "boolean", "optional": true, "description": "If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken." }
+                ]
+            },
+            {
+                "name": "collectGarbage"
+            },
+            {
+                "name": "getObjectByHeapObjectId",
+                "parameters": [
+                    { "name": "objectId", "$ref": "HeapSnapshotObjectId" },
+                    { "name": "objectGroup", "type": "string", "optional": true, "description": "Symbolic group name that can be used to release multiple objects." }
+                ],
+                "returns": [
+                    { "name": "result", "$ref": "Runtime.RemoteObject", "description": "Evaluation result." }
+                ]
+            },
+            {
+                "name": "getHeapObjectId",
+                "parameters": [
+                    { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "description": "Identifier of the object to get heap object id for." }
+                ],
+                "returns": [
+                    { "name": "heapSnapshotObjectId", "$ref": "HeapSnapshotObjectId", "description": "Id of the heap snapshot object corresponding to the passed remote object id." }
+                ]
+            }
+        ],
+        "events": [
+            {
+                "name": "addProfileHeader",
+                "parameters": [
+                    { "name": "header", "$ref": "ProfileHeader" }
+                ]
+            },
+            {
+                "name": "addHeapSnapshotChunk",
+                "parameters": [
+                    { "name": "uid", "type": "integer" },
+                    { "name": "chunk", "type": "string" }
+                ]
+            },
+            {
+                "name": "finishHeapSnapshot",
+                "parameters": [
+                    { "name": "uid", "type": "integer" }
                 ]
             },
             {

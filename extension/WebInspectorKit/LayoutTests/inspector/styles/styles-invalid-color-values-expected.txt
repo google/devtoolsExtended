@@ -72,5 +72,8 @@ color: rgba(255, 0, 0, 5)
   rgba: rgba(255, 0, 0, 1)
   hsl: hsl(0, 100%, 50%)
   hsla: hsla(0, 100%, 50%, 1)
-FAIL: Error parsing color 'none'.
+
+Running: testInvalidColors
+
+SUCCESS: parsed invalid color none to null
 

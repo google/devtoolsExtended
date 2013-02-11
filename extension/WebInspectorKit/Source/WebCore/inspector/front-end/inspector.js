@@ -368,9 +368,10 @@ WebInspector.doLoadedDone = function()
     DebuggerAgent.supportsSeparateScriptCompilationAndExecution(WebInspector._initializeCapability.bind(WebInspector, "separateScriptCompilationAndExecutionEnabled", null));
     ProfilerAgent.causesRecompilation(WebInspector._initializeCapability.bind(WebInspector, "profilerCausesRecompilation", null));
     ProfilerAgent.isSampling(WebInspector._initializeCapability.bind(WebInspector, "samplingCPUProfiler", null));
-    ProfilerAgent.hasHeapProfiler(WebInspector._initializeCapability.bind(WebInspector, "heapProfilerPresent", null));
+    HeapProfilerAgent.hasHeapProfiler(WebInspector._initializeCapability.bind(WebInspector, "heapProfilerPresent", null));
     TimelineAgent.supportsFrameInstrumentation(WebInspector._initializeCapability.bind(WebInspector, "timelineSupportsFrameInstrumentation", null));
     TimelineAgent.canMonitorMainThread(WebInspector._initializeCapability.bind(WebInspector, "timelineCanMonitorMainThread", null));
+    PageAgent.canShowDebugBorders(WebInspector._initializeCapability.bind(WebInspector, "canShowDebugBorders", null));
     PageAgent.canShowFPSCounter(WebInspector._initializeCapability.bind(WebInspector, "canShowFPSCounter", null));
     PageAgent.canContinuouslyPaint(WebInspector._initializeCapability.bind(WebInspector, "canContinuouslyPaint", null));
     PageAgent.canOverrideDeviceMetrics(WebInspector._initializeCapability.bind(WebInspector, "canOverrideDeviceMetrics", null));
@@ -412,7 +413,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     InspectorBackend.registerInspectorDispatcher(this);
 
-    this.cssModel = new WebInspector.CSSStyleModel();
+    this.workspace = new WebInspector.Workspace();
+
+    this.cssModel = new WebInspector.CSSStyleModel(this.workspace);
     this.timelineManager = new WebInspector.TimelineManager();
     this.userAgentSupport = new WebInspector.UserAgentSupport();
 
@@ -431,16 +434,14 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.openAnchorLocationRegistry = new WebInspector.HandlerRegistry(openAnchorLocationSetting);
     this.openAnchorLocationRegistry.registerHandler(autoselectPanel, function() { return false; });
 
-    this.workspace = new WebInspector.Workspace();
     this.workspaceController = new WebInspector.WorkspaceController(this.workspace);
 
     this.isolatedFileSystemModel = new WebInspector.IsolatedFileSystemModel(this.workspace);
     this.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(this.isolatedFileSystemModel);
     this.fileMapping = new WebInspector.FileMapping(this.isolatedFileSystemModel.mapping());
 
-    this.networkWorkspaceProvider = new WebInspector.SimpleWorkspaceProvider(this.workspace);
-    this.workspace.addProject(WebInspector.projectNames.Network, this.networkWorkspaceProvider);
-    new WebInspector.NetworkUISourceCodeProvider(this.workspace, this.networkWorkspaceProvider);
+    this.networkWorkspaceProvider = new WebInspector.SimpleWorkspaceProvider(this.workspace, WebInspector.projectTypes.Network);
+    new WebInspector.NetworkUISourceCodeProvider(this.networkWorkspaceProvider);
 
     this.breakpointManager = new WebInspector.BreakpointManager(WebInspector.settings.breakpoints, this.debuggerModel, this.workspace);
 
@@ -449,9 +450,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     new WebInspector.DebuggerScriptMapping(this.workspace, this.networkWorkspaceProvider);
     this.liveEditSupport = new WebInspector.LiveEditSupport(this.workspace);
     this.styleContentBinding = new WebInspector.StyleContentBinding(this.cssModel);
-    new WebInspector.StylesSourceMapping(this.workspace);
+    new WebInspector.StylesSourceMapping(this.cssModel, this.workspace);
     if (WebInspector.experimentsSettings.sass.isEnabled())
-        new WebInspector.SASSSourceMapping(this.workspace, this.networkWorkspaceProvider);
+        new WebInspector.SASSSourceMapping(this.cssModel, this.workspace, this.networkWorkspaceProvider);
 
     new WebInspector.PresentationConsoleMessageHelper(this.workspace);
 
@@ -491,6 +492,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     if (WebInspector.settings.showPaintRects.get())
         PageAgent.setShowPaintRects(true);
+
+    if (WebInspector.settings.showDebugBorders.get())
+        PageAgent.setShowDebugBorders(true);
 
     if (WebInspector.settings.continuousPainting.get())
         PageAgent.setContinuousPaintingEnabled(true);
@@ -576,7 +580,7 @@ WebInspector.close = function(event)
 WebInspector.documentClick = function(event)
 {
     var anchor = event.target.enclosingNodeOrSelfWithNodeName("a");
-    if (!anchor || anchor.target === "_blank")
+    if (!anchor || (anchor.target === "_blank" && !WebInspector.ProfileURLRegExp.exec(anchor.href)))
         return;
 
     // Prevent the link from navigating, since we don't do any navigation by following links normally.

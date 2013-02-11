@@ -799,10 +799,25 @@ WebInspector.ComputedStyleSidebarPane = function()
 }
 
 WebInspector.ComputedStyleSidebarPane.prototype = {
+    wasShown: function()
+    {
+        WebInspector.SidebarPane.prototype.wasShown.call(this);
+        if (!this._hasFreshContent)
+            this.prepareContent();
+    },
 
+    /**
+     * @param {function()=} callback
+     */
     prepareContent: function(callback)
     {
-        this._stylesSidebarPane._refreshUpdate(null, true, callback);
+        function wrappedCallback() {
+            this._hasFreshContent = true;
+            if (callback)
+                callback();
+            delete this._hasFreshContent;
+        }
+        this._stylesSidebarPane._refreshUpdate(null, true, wrappedCallback.bind(this));
     },
 
     __proto__: WebInspector.SidebarPane.prototype
@@ -1741,14 +1756,11 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
             function processColor(text)
             {
-                
-                var color;
-                if (text !== 'none') {
-                    color = WebInspector.Color.parse(text);
-                }
-                if (!color) {
+                var color = WebInspector.Color.parse(text);
+
+                // We can be called with valid non-color values of |text| (like 'none' from border style) 
+                if (!color) 
                     return document.createTextNode(text);
-                }  
                 
                 var format = getFormat();
                 var hasSpectrum = self._parentPane;

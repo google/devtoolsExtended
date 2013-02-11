@@ -493,7 +493,6 @@ ExtensionSidebarPaneImpl.prototype = {
 
     setExpression: function(expression, rootTitle, evaluateOptions)
     {
-        var callback = extractCallbackArgument(arguments);
         var request = {
             command: commands.SetSidebarContent,
             id: this._id,
@@ -503,7 +502,7 @@ ExtensionSidebarPaneImpl.prototype = {
         };
         if (typeof evaluateOptions === "object")
             request.evaluateOptions = evaluateOptions;
-        extensionServer.sendRequest(request, callback);
+        extensionServer.sendRequest(request, extractCallbackArgument(arguments));
     },
 
     setObject: function(jsonObject, rootTitle, callback)
@@ -701,7 +700,10 @@ InspectedWindow.prototype = {
         var callback = extractCallbackArgument(arguments);
         function callbackWrapper(result)
         {
-            callback(result.value, result.isException);
+            if (result.isError || result.isException)
+                callback(undefined, result);
+            else
+                callback(result.value);
         }
         var request = {
             command: commands.EvaluateOnInspectedPage,
@@ -974,7 +976,8 @@ var Resource = declareInterfaceClass(ResourceImpl);
 var Timeline = declareInterfaceClass(TimelineImpl);
 var RemoteDebug = declareInterfaceClass(RemoteDebugImpl);
 
-var extensionServer = new ExtensionServerClient();
+// Closure variable defined by the glue below.
+extensionServer = new ExtensionServerClient();
 
 return new InspectorExtensionAPI();
 }
@@ -993,6 +996,7 @@ function buildPlatformExtensionAPI(extensionInfo)
 function buildExtensionAPIInjectedScript(extensionInfo)
 {
     return "(function(injectedScriptHost, inspectedWindow, injectedScriptId){ " +
+        "var extensionServer;" +
         defineCommonExtensionSymbols.toString() + ";" +
         injectedExtensionAPI.toString() + ";" +
         buildPlatformExtensionAPI(extensionInfo) + ";" +

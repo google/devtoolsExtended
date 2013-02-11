@@ -234,6 +234,18 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
+     * @return {Array.<WebInspector.ResourceTreeFrame>}
+     */
+     frames: function() 
+     {
+        var frames = [];
+        Object.keys(this._frames).forEach(function(frameId){
+            frames.push(this._frames[frameId]);
+        }.bind(this));
+        return frames;
+     },
+
+    /**
      * @param {WebInspector.Event} event
      */
     _consoleMessageAdded: function(event)

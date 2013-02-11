@@ -292,6 +292,10 @@ WebInspector.GenericSettingsTab = function()
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show paint rectangles"), WebInspector.settings.showPaintRects));
     WebInspector.settings.showPaintRects.addChangeListener(this._showPaintRectsChanged, this);
 
+    if (Capabilities.canShowDebugBorders) {
+        p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show composited layer borders"), WebInspector.settings.showDebugBorders));
+        WebInspector.settings.showDebugBorders.addChangeListener(this._showDebugBordersChanged, this);
+    }
     if (Capabilities.canShowFPSCounter) {
         p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show FPS meter"), WebInspector.settings.showFPSCounter));
         WebInspector.settings.showFPSCounter.addChangeListener(this._showFPSCounterChanged, this);
@@ -302,8 +306,8 @@ WebInspector.GenericSettingsTab = function()
     }
 
     p = this._appendSection(WebInspector.UIString("Sources"));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show folders"), WebInspector.settings.showScriptFolders));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Search in content scripts"), WebInspector.settings.searchInContentScripts));
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show whitespace"), WebInspector.settings.showWhitespaceInEditor));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable source maps"), WebInspector.settings.sourceMapsEnabled));
     if (WebInspector.experimentsSettings.isEnabled("sass"))
         p.appendChild(this._createCSSAutoReloadControls());
@@ -341,6 +345,11 @@ WebInspector.GenericSettingsTab.prototype = {
     _showPaintRectsChanged: function()
     {
         PageAgent.setShowPaintRects(WebInspector.settings.showPaintRects.get());
+    },
+
+    _showDebugBordersChanged: function()
+    {
+        PageAgent.setShowDebugBorders(WebInspector.settings.showDebugBorders.get());
     },
 
     _showFPSCounterChanged: function()
@@ -616,10 +625,16 @@ WebInspector.WorkspaceSettingsTab.prototype = {
 
     _addFileMappingClicked: function()
     {
-        if (!this._urlInputElement.value || !this._pathInputElement.value)
+        var url = this._urlInputElement.value;
+        var path = this._pathInputElement.value;
+        if (!url || !path)
             return;
         var mappingEntries = WebInspector.fileMapping.mappingEntries();
-        var mappingEntry = new WebInspector.FileMapping.Entry(this._urlInputElement.value, this._pathInputElement.value);
+        if (url[url.length - 1] !== "/")
+            url += "/";
+        if (path[path.length - 1] !== "/")
+            path += "/";
+        var mappingEntry = new WebInspector.FileMapping.Entry(url, path);
         mappingEntries.push(mappingEntry);
         WebInspector.fileMapping.setMappingEntries(mappingEntries);
         this._addMappingRow(mappingEntry);

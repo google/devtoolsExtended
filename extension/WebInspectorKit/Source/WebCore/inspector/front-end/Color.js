@@ -28,7 +28,8 @@
  */
 
 /**
- * @constructor
+ * Don't call directly, use WebInspector.Color.parse(). 
+ * @constructor 
  */
 WebInspector.Color = function(str)
 {

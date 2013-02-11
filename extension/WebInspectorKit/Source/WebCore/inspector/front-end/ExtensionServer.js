@@ -406,23 +406,17 @@ WebInspector.ExtensionServer.prototype = {
          */
         function callback(error, resultPayload, wasThrown)
         {
-            var result = {};
-            if (error) {
-                result.isException = true;
-                result.value = error.toString();
-            }  else if (wasThrown) {
-                result.isException = true;
-                result.value = resultPayload.description;
-            } else {
-                result.value = resultPayload.value;
-            }
+            var result;
+            if (error)
+                result = this._status.E_PROTOCOLERROR(error.toString());
+            else if (wasThrown)
+                result = { isException: true, value: resultPayload.description };
+            else
+                result = { value: resultPayload.value };
       
             this._dispatchCallback(message.requestId, port, result);
         }
-        var status = this.evaluate(message.expression, true, true, message.evaluateOptions, port._extensionOrigin, callback.bind(this));
-        if (status) {
-            callback.call(this, "Extension server error: " + String.vsprintf(status.description, status.details));
-        }
+        return this.evaluate(message.expression, true, true, message.evaluateOptions, port._extensionOrigin, callback.bind(this));
     },
 
     _onGetConsoleMessages: function()
@@ -522,7 +516,7 @@ WebInspector.ExtensionServer.prototype = {
             if (!resources[contentProvider.contentURL()])
                 resources[contentProvider.contentURL()] = this._makeResource(contentProvider);
         }
-        var uiSourceCodes = WebInspector.workspace.project(WebInspector.projectNames.Network).uiSourceCodes();
+        var uiSourceCodes = WebInspector.workspace.uiSourceCodesForProjectType(WebInspector.projectTypes.Network);
         uiSourceCodes.forEach(pushResourceData.bind(this));
         WebInspector.resourceTreeModel.forAllResources(pushResourceData.bind(this));
         return Object.values(resources);
@@ -881,42 +875,47 @@ WebInspector.ExtensionServer.prototype = {
     {
         var contextId;
         if (typeof options === "object") {
-            var contextSecurityOrigin;
-            if (options["useContentScriptContext"] ) {
-                contextSecurityOrigin = securityOrigin;
-            } else if (options.scriptExecutionContext) {
-                contextSecurityOrigin = options.scriptExecutionContext;
-            } 
-            var url;
-            if (options.frameURL) {
-                var url = options.frameURL;
-                var context;
-                var contextLists = WebInspector.runtimeModel.contextLists();
-                for (var i = 0; i < contextLists.length; i++) {
-                    if (contextLists[i].url === url) {
-                        if (!contextSecurityOrigin || contextSecurityOrigin && url.indexOf(contextSecurityOrigin) === 0) { 
-                            context = contextLists[i].executionContexts()[0]; // the main world context is always the first one
-                        } else {
-                            context = contextLists[i].contextBySecurityOrigin(contextSecurityOrigin);    
-                        }
-                    }
-                }
-                if (!context) {
-                    console.warn("The JS context " + contextSecurityOrigin + " was not found among the contexts with URL " + url)
-                    return this._status.E_NOTFOUND(contextSecurityOrigin);
-                }
-                contextId = context.id;
-            } else if (contextSecurityOrigin) {
-                var mainFrame = WebInspector.resourceTreeModel.mainFrame;
-                if (!mainFrame)
-                    return this._status.E_FAILED("main frame not available yet");
-                var context = WebInspector.runtimeModel.contextByFrameAndSecurityOrigin(mainFrame, contextSecurityOrigin);
-                if (!context) {
-                    console.warn("The JS context " + contextSecurityOrigin + " was not found among the mainframe contexts");
-                    return this._status.E_NOTFOUND(contextSecurityOrigin);
-                }
-                contextId = context.id;
+
+            function resolveURLToFrame(url)
+            {
+                var found;
+                WebInspector.resourceTreeModel.frames().some(function(frame) {
+                    found = (frame.url === url) ? frame : null;
+                    return found;
+                });
+                return found;
             }
+
+            var frame = options.frameURL ? resolveURLToFrame(options.frameURL) : WebInspector.resourceTreeModel.mainFrame;
+            if (!frame) {
+                if (options.frameURL)
+                    console.warn("evaluate: there is no frame with URL " + options.frameURL);
+                else
+                    console.warn("evaluate: the main frame is not yet available");
+                return this._status.E_NOTFOUND(options.frameURL || "<top>");
+            }
+
+            var contextSecurityOrigin;
+            if (options["useContentScriptContext"] )
+                contextSecurityOrigin = securityOrigin;
+            else if (options.scriptExecutionContext && frame.url.indexOf(options.scriptExecutionContext) !== 0)
+                contextSecurityOrigin = options.scriptExecutionContext;
+
+            var frameContextList = WebInspector.runtimeModel.contextListByFrame(frame);
+            var context; 
+            if (contextSecurityOrigin) {
+                context = frameContextList.contextBySecurityOrigin(contextSecurityOrigin);
+                if (!context) {
+                    console.warn("The JS context " + contextSecurityOrigin + " was not found in the frame " + frame.url)
+                    return this._status.E_NOTFOUND(contextSecurityOrigin)
+                }
+            } else {
+                context = frameContextList.mainWorldContext();
+                if (!context) 
+                    return this._status.E_FAILED(frame.url + " has no execution context");
+            }
+
+            contextId = context.id;
         }
         RuntimeAgent.evaluate(expression, "extension", exposeCommandLineAPI, true, contextId, returnByValue, false, callback);
     }
@@ -944,6 +943,7 @@ WebInspector.ExtensionStatus = function()
     this.E_BADARGTYPE = makeStatus.bind(null, "E_BADARGTYPE", "Invalid type for argument %s: got %s, expected %s");
     this.E_NOTFOUND = makeStatus.bind(null, "E_NOTFOUND", "Object not found: %s");
     this.E_NOTSUPPORTED = makeStatus.bind(null, "E_NOTSUPPORTED", "Object does not support requested operation: %s");
+    this.E_PROTOCOLERROR = makeStatus.bind(null, "E_PROTOCOLERROR", "Inspector protocol error: %s");
     this.E_FAILED = makeStatus.bind(null, "E_FAILED", "Operation failed: %s");
 }
 
