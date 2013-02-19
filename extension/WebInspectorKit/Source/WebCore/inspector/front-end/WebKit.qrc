@@ -54,6 +54,7 @@
     <file>DirectoryContentView.js</file>
     <file>DOMAgent.js</file>
     <file>DOMBreakpointsSidebarPane.js</file>
+    <file>DOMCountersGraph.js</file>
     <file>DOMExtension.js</file>
     <file>DOMPresentationUtils.js</file>
     <file>DOMStorage.js</file>
@@ -103,7 +104,8 @@
     <file>InspectorFrontendHostStub.js</file>
     <file>InspectorView.js</file>
     <file>JSHeapSnapshot.js</file>
-    <file>IsolatedFileSystemModel.js</file>
+    <file>IsolatedFileSystem.js</file>
+    <file>IsolatedFileSystemManager.js</file>
     <file>JavaScriptFormatter.js</file>
     <file>JavaScriptSourceFrame.js</file>
     <file>jsdifflib.js</file>
@@ -114,6 +116,7 @@
     <file>MetricsSidebarPane.js</file>
     <file>NativeBreakpointsSidebarPane.js</file>
     <file>NativeHeapSnapshot.js</file>
+    <file>NativeMemoryGraph.js</file>
     <file>NativeMemorySnapshotView.js</file>
     <file>NavigatorOverlayController.js</file>
     <file>NavigatorView.js</file>
@@ -137,6 +140,7 @@
     <file>ProfileDataGridTree.js</file>
     <file>ProfileLauncherView.js</file>
     <file>ProfilesPanel.js</file>
+    <file>ProfilesPanelDescriptor.js</file>
     <file>Progress.js</file>
     <file>ProgressIndicator.js</file>
     <file>PropertiesSection.js</file>
@@ -197,6 +201,7 @@
     <file>StyleSheetOutlineDialog.js</file>
     <file>StylesSourceMapping.js</file>
     <file>StylesSidebarPane.js</file>
+    <file>SuggestBox.js</file>
     <file>TabbedEditorContainer.js</file>
     <file>TabbedPane.js</file>
     <file>TestController.js</file>

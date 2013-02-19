@@ -977,8 +977,9 @@ var Resource = declareInterfaceClass(ResourceImpl);
 var Timeline = declareInterfaceClass(TimelineImpl);
 var RemoteDebug = declareInterfaceClass(RemoteDebugImpl);
 
-// Closure variable defined by the glue below.
-extensionServer = new ExtensionServerClient();
+// extensionServer is a closure variable defined by the glue below -- make sure we fail if it's not there.
+if (!extensionServer)
+    extensionServer = new ExtensionServerClient();
 
 return new InspectorExtensionAPI();
 }

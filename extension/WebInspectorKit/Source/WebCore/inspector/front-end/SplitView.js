@@ -42,8 +42,8 @@ WebInspector.SplitView = function(isVertical, sidebarSizeSettingName, defaultSid
 
     this.element.className = "split-view";
 
-    this._firstElement = this.element.createChild("div", "split-view-contents");
-    this._secondElement = this.element.createChild("div", "split-view-contents");
+    this._firstElement = this.element.createChild("div", "split-view-contents scroll-target split-view-contents-first");
+    this._secondElement = this.element.createChild("div", "split-view-contents scroll-target split-view-contents-second");
 
     this._resizerElement = this.element.createChild("div", "split-view-resizer");
     this.installResizer(this._resizerElement);
@@ -58,7 +58,7 @@ WebInspector.SplitView = function(isVertical, sidebarSizeSettingName, defaultSid
     
     this._sidebarSizeSettingName = sidebarSizeSettingName;
 
-    this._secondIsSidebar = true;
+    this.setSecondIsSidebar(true);
 
     this._innerSetVertical(isVertical);
 }
@@ -91,33 +91,9 @@ WebInspector.SplitView.prototype = {
      */
     _innerSetVertical: function(isVertical)
     {
+        this.element.removeStyleClass(this._isVertical ? "split-view-vertical" : "split-view-horizontal");
         this._isVertical = isVertical;
-
-        this._removeAllLayoutProperties();
-
-        if (isVertical) {
-            this._firstElement.style.left = 0;
-            this._secondElement.style.right = 0;
-            this._firstElement.style.removeProperty("top");
-            this._secondElement.style.removeProperty("bottom");
-        } else {
-            this._firstElement.style.top = 0;
-            this._secondElement.style.bottom = 0;
-            this._firstElement.style.removeProperty("left");
-            this._secondElement.style.removeProperty("right");
-        }
-
-        var oldDirection = (isVertical ? "horizontal" : "vertical");
-        var newDirection = (isVertical ? "vertical" : "horizontal");
-
-        this._firstElement.removeStyleClass("split-view-contents-" + oldDirection);
-        this._firstElement.addStyleClass("split-view-contents-" + newDirection);
-
-        this._secondElement.removeStyleClass("split-view-contents-" + oldDirection);
-        this._secondElement.addStyleClass("split-view-contents-" + newDirection);
-
-        this._resizerElement.removeStyleClass("split-view-resizer-" + oldDirection);
-        this._resizerElement.addStyleClass("split-view-resizer-" + newDirection);
+        this.element.addStyleClass(this._isVertical ? "split-view-vertical" : "split-view-horizontal");
     },
   
     _updateLayout: function()
@@ -145,6 +121,22 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
+     * @return {Element}
+     */
+    get mainElement()
+    {
+        return this.isSidebarSecond() ? this.firstElement() : this.secondElement();
+    },
+
+    /**
+     * @return {Element}
+     */
+    get sidebarElement()
+    {
+        return this.isSidebarSecond() ? this.secondElement() : this.firstElement();
+    },
+
+    /**
      * @return {boolean}
      */
     isSidebarSecond: function()
@@ -157,7 +149,9 @@ WebInspector.SplitView.prototype = {
      */
     setSecondIsSidebar: function(secondIsSidebar)
     {
+        this.sidebarElement.removeStyleClass("split-view-sidebar");
         this._secondIsSidebar = secondIsSidebar;
+        this.sidebarElement.addStyleClass("split-view-sidebar");
     },
 
     /**
@@ -190,16 +184,6 @@ WebInspector.SplitView.prototype = {
         sideB.removeStyleClass("maximized");
         this._removeAllLayoutProperties();
 
-        this._firstElement.style.right = 0;
-        this._firstElement.style.bottom = 0;
-        this._firstElement.style.width = "100%";
-        this._firstElement.style.height = "100%";
-
-        this._secondElement.style.left = 0;
-        this._secondElement.style.top = 0;
-        this._secondElement.style.width = "100%";
-        this._secondElement.style.height = "100%";
-
         this._isShowingOne = true;
         this.setResizable(false);
         this.doResize();
@@ -211,7 +195,7 @@ WebInspector.SplitView.prototype = {
         this._firstElement.style.removeProperty("bottom");
         this._firstElement.style.removeProperty("width");
         this._firstElement.style.removeProperty("height");
-  
+
         this._secondElement.style.removeProperty("left");
         this._secondElement.style.removeProperty("top");
         this._secondElement.style.removeProperty("width");

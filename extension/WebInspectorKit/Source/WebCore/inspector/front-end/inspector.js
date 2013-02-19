@@ -42,7 +42,7 @@ var WebInspector = {
         var network = new WebInspector.NetworkPanelDescriptor();
         var scripts = new WebInspector.ScriptsPanelDescriptor();
         var timeline = new WebInspector.TimelinePanelDescriptor();
-        var profiles = new WebInspector.PanelDescriptor("profiles", WebInspector.UIString("Profiles"), "ProfilesPanel", "ProfilesPanel.js");
+        var profiles = new WebInspector.ProfilesPanelDescriptor();
         var audits = new WebInspector.PanelDescriptor("audits", WebInspector.UIString("Audits"), "AuditsPanel", "AuditsPanel.js");
         var console = new WebInspector.PanelDescriptor("console", WebInspector.UIString("Console"), "ConsolePanel");
         var allDescriptors = [elements, resources, network, scripts, timeline, profiles, audits, console];
@@ -274,7 +274,7 @@ var WebInspector = {
 
     _profilesLinkifier: function(title)
     {
-        var profileStringMatches = WebInspector.ProfileURLRegExp.exec(title);
+        var profileStringMatches = WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp.exec(title);
         if (profileStringMatches) {
             var profilesPanel = /** @ type {WebInspector.ProfilesPanel} */ WebInspector.panel("profiles");
             title = WebInspector.ProfilesPanel._instance.displayTitleForProfileLink(profileStringMatches[2], profileStringMatches[1]);
@@ -381,6 +381,8 @@ WebInspector.doLoadedDone = function()
 
 WebInspector._doLoadedDoneWithCapabilities = function()
 {
+    new WebInspector.VersionController().updateVersion();
+
     WebInspector.shortcutsScreen = new WebInspector.ShortcutsScreen();
     this._registerShortcuts();
 
@@ -436,9 +438,10 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.workspaceController = new WebInspector.WorkspaceController(this.workspace);
 
-    this.isolatedFileSystemModel = new WebInspector.IsolatedFileSystemModel(this.workspace);
-    this.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(this.isolatedFileSystemModel);
-    this.fileMapping = new WebInspector.FileMapping(this.isolatedFileSystemModel.mapping());
+    this.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
+    this.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(this.isolatedFileSystemManager);
+    this.fileMapping = new WebInspector.FileMapping(this.isolatedFileSystemManager.mapping());
+    this.fileSystemWorkspaceProvider = new WebInspector.FileSystemWorkspaceProvider(this.isolatedFileSystemManager, this.workspace, this.fileMapping);
 
     this.networkWorkspaceProvider = new WebInspector.SimpleWorkspaceProvider(this.workspace, WebInspector.projectTypes.Network);
     new WebInspector.NetworkUISourceCodeProvider(this.networkWorkspaceProvider);
@@ -580,7 +583,7 @@ WebInspector.close = function(event)
 WebInspector.documentClick = function(event)
 {
     var anchor = event.target.enclosingNodeOrSelfWithNodeName("a");
-    if (!anchor || (anchor.target === "_blank" && !WebInspector.ProfileURLRegExp.exec(anchor.href)))
+    if (!anchor || (anchor.target === "_blank" && !WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp.exec(anchor.href)))
         return;
 
     // Prevent the link from navigating, since we don't do any navigation by following links normally.
@@ -591,7 +594,7 @@ WebInspector.documentClick = function(event)
         if (WebInspector.isBeingEdited(event.target) || WebInspector._showAnchorLocation(anchor))
             return;
 
-        const profileMatch = WebInspector.ProfileURLRegExp.exec(anchor.href);
+        const profileMatch = WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp.exec(anchor.href);
         if (profileMatch) {
             WebInspector.showProfileForURL(anchor.href);
             return;
@@ -1001,8 +1004,6 @@ WebInspector.addMainEventListeners = function(doc)
     doc.addEventListener("contextmenu", this.contextMenuEventFired.bind(this), true);
     doc.addEventListener("click", this.documentClick.bind(this), true);
 }
-
-WebInspector.ProfileURLRegExp = /webkit-profile:\/\/(.+)\/(.+)#([0-9]+)/;
 
 WebInspector.Zoom = {
     Table: [0.25, 0.33, 0.5, 0.66, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5],

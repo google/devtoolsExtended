@@ -77,7 +77,8 @@
                     { "name": "reportGraph", "type": "boolean", "optional": true, "description": "Whether native memory graph should be reported in addition to aggregated statistics." }
                 ],
                 "returns": [
-                    { "name": "distribution", "$ref": "MemoryBlock", "description": "An object describing all memory allocated by the process"}
+                    { "name": "distribution", "$ref": "MemoryBlock", "description": "An object describing all memory allocated by the process"},
+                    { "name": "graphMetaInformation", "type": "object", "optional": true, "description": "An object describing structures of nodes and edges in the graph."}
                 ]
             }
         ],
@@ -559,6 +560,14 @@
                 "name": "javascriptDialogClosed",
                 "description": "Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed.",
                 "hidden": true
+            },
+            {
+                "name": "scriptsEnabled",
+                "description": "Fired when the JavaScript is enabled/disabled on the page",
+                "parameters": [
+                    { "name": "isEnabled", "type": "boolean", "description": "Whether script execution is enabled or disabled on the page." }
+                ],
+                "hidden": true
             }
         ]
     },
@@ -604,6 +613,7 @@
                     { "name": "name", "type": "string", "description": "Property name." },
 	                { "name": "type", "type": "string", "enum": ["object", "function", "undefined", "string", "number", "boolean"], "description": "Object type." },
 	                { "name": "value", "type": "string", "optional": true, "description": "User-friendly property value string." },
+	                { "name": "valuePreview", "$ref": "ObjectPreview", "optional": true, "description": "Nested value preview." },
 	                { "name": "subtype", "type": "string", "optional": true, "enum": ["array", "null", "node", "regexp", "date"], "description": "Object subtype hint. Specified for <code>object</code> type values only." }
                 ]
             },
@@ -761,7 +771,7 @@
                     { "name": "source", "type": "string", "enum": ["html", "wml", "xml", "javascript", "network", "console-api", "other"], "description": "Message source." },
                     { "name": "level", "type": "string", "enum": ["tip", "log", "warning", "error", "debug"], "description": "Message severity." },
                     { "name": "text", "type": "string", "description": "Message text." },
-                    { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "timing"], "description": "Console message type." },
+                    { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "timing"], "description": "Console message type." },
                     { "name": "url", "type": "string", "optional": true, "description": "URL of the message origin." },
                     { "name": "line", "type": "integer", "optional": true, "description": "Line number in the resource that generated this message." },
                     { "name": "repeatCount", "type": "integer", "optional": true, "description": "Repeat count for repeated messages." },
@@ -1755,7 +1765,8 @@
                     { "name": "nodeId", "$ref": "NodeId", "description": "Target <code>DOMNode</code> id." },
                     { "name": "handlerBody", "type": "string", "description": "Event handler function body." },
                     { "name": "location", "$ref": "Debugger.Location", "optional": true, "description": "Handler code location." },
-                    { "name": "sourceName", "type": "string", "optional": true, "description": "Source script URL." }
+                    { "name": "sourceName", "type": "string", "optional": true, "description": "Source script URL." },
+                    { "name": "handler", "$ref": "Runtime.RemoteObject", "optional": true, "description": "Event handler function value." }
                 ],
                 "description": "DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes. DOMNode is a base node mirror type."
             },
@@ -1876,7 +1887,8 @@
             {
                 "name": "getEventListenersForNode",
                 "parameters": [
-                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to get listeners for." }
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to get listeners for." },
+                    { "name": "objectGroup", "type": "string", "optional": true, "description": "Symbolic group name for handler value. Handler value is not returned without this parameter specified." }
                 ],
                 "returns": [
                     { "name": "listeners", "type": "array", "items": { "$ref": "EventListener"}, "description": "Array of relevant listeners." }
@@ -2611,12 +2623,20 @@
                 "description": "Stops capturing instrumentation events."
             },
             {
-                "name": "setIncludeMemoryDetails",
+                "name": "setIncludeDomCounters",
                 "parameters": [
-                    { "name": "enabled", "type": "boolean", "description": "True to start collecting DOM counters." }
+                    { "name": "enabled", "type": "boolean", "description": "Whether DOM counters data should be included into timeline events." }
                 ],
                 "hidden": true,
-                "description": "Starts calculating various DOM statistics and sending them as part of timeline events."
+                "description": "Controls if DOM counters should be send as part of timeline events."
+            },
+            {
+                "name": "setIncludeNativeMemoryStatistics",
+                "parameters": [
+                    { "name": "enabled", "type": "boolean", "description": "Whether native memory usage statistics should be reported as part of timeline events." }
+                ],
+                "hidden": true,
+                "description": "Controls whether statistics on native memory usage is sent with timeline events."
             },
             {
                 "name": "supportsFrameInstrumentation",
@@ -2931,11 +2951,11 @@
             {
                 "name": "setVariableValue",
                 "parameters": [
-                    { "name": "callFrameId", "$ref": "CallFrameId", "optional": true, "description": "Id of callframe that holds variable." },
-                    { "name": "functionObjectId", "$ref": "Runtime.RemoteObjectId", "optional": true, "description": "Object id of closure (function) that holds variable." },
                     { "name": "scopeNumber", "type": "integer", "description": "0-based number of scope as was listed in scope chain. Only 'local', 'closure' and 'catch' scope types are allowed. Other scopes could be manipulated manually." },
                     { "name": "variableName", "type": "string", "description": "Variable name." },
-                    { "name": "newValue", "$ref": "Runtime.CallArgument", "description": "New variable value." }
+                    { "name": "newValue", "$ref": "Runtime.CallArgument", "description": "New variable value." },
+                    { "name": "callFrameId", "$ref": "CallFrameId", "optional": true, "description": "Id of callframe that holds variable." },
+                    { "name": "functionObjectId", "$ref": "Runtime.RemoteObjectId", "optional": true, "description": "Object id of closure (function) that holds variable." }
                 ],
                 "hidden": true,
                 "description": "Changes value of variable in a callframe or a closure. Either callframe or function must be specified. Object-based scopes are not supported and must be mutated manually."
@@ -3460,6 +3480,7 @@
                     { "name": "arguments", "type": "array", "items": { "$ref": "CallArgument" }, "optional": true },
                     { "name": "result", "$ref": "CallArgument", "optional": true },
                     { "name": "isDrawingCall", "type": "boolean", "optional": true },
+                    { "name": "isFrameEndCall", "type": "boolean", "optional": true },
                     { "name": "property", "type": "string", "optional": true },
                     { "name": "value", "$ref": "CallArgument", "optional": true },
                     { "name": "sourceURL", "type": "string", "optional": true },

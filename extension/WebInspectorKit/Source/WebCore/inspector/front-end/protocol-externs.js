@@ -45,27 +45,18 @@ InspectorBackend.registerInspectorDispatcher = function(dispatcher) {}
 
 var MemoryAgent = {};
 
-/** @typedef {{nodeName:(string), count:(number)}|null} */
-MemoryAgent.NodeCount;
-
-/** @typedef {{type:(string), count:(number)}|null} */
-MemoryAgent.ListenerCount;
-
-/** @typedef {{dom:(number), js:(number), shared:(number)}|null} */
-MemoryAgent.StringStatistics;
-
-/** @typedef {{size:(number), title:(string), documentURI:(string|undefined), nodeCount:(Array.<MemoryAgent.NodeCount>), listenerCount:(Array.<MemoryAgent.ListenerCount>)}|null} */
-MemoryAgent.DOMGroup;
-
 /** @typedef {{size:(number|undefined), name:(string), children:(Array.<MemoryAgent.MemoryBlock>|undefined)}|null} */
 MemoryAgent.MemoryBlock;
 
+/** @typedef {{strings:(Array.<string>), nodes:(Array.<number>), edges:(Array.<number>), baseToRealNodeId:(Array.<number>)}|null} */
+MemoryAgent.HeapSnapshotChunk;
+
 /**
- * @param {function(?Protocol.Error, Array.<MemoryAgent.DOMGroup>, MemoryAgent.StringStatistics):void=} opt_callback
+ * @param {function(?Protocol.Error, number, number, number):void=} opt_callback
  */
-MemoryAgent.getDOMNodeCount = function(opt_callback) {}
-/** @param {function(?Protocol.Error, Array.<MemoryAgent.DOMGroup>, MemoryAgent.StringStatistics):void=} opt_callback */
-MemoryAgent.getDOMNodeCount.invoke = function(obj, opt_callback) {}
+MemoryAgent.getDOMCounters = function(opt_callback) {}
+/** @param {function(?Protocol.Error, number, number, number):void=} opt_callback */
+MemoryAgent.getDOMCounters.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {boolean=} opt_reportGraph
@@ -76,6 +67,10 @@ MemoryAgent.getProcessMemoryDistribution = function(opt_reportGraph, opt_callbac
 MemoryAgent.getProcessMemoryDistribution.invoke = function(obj, opt_callback) {}
 /** @interface */
 MemoryAgent.Dispatcher = function() {};
+/**
+ * @param {MemoryAgent.HeapSnapshotChunk} chunk
+ */
+MemoryAgent.Dispatcher.prototype.addNativeSnapshotChunk = function(chunk) {};
 /**
  * @param {MemoryAgent.Dispatcher} dispatcher
  */
@@ -246,6 +241,21 @@ PageAgent.setShowPaintRects.invoke = function(obj, opt_callback) {}
 /**
  * @param {function(?Protocol.Error, boolean):void=} opt_callback
  */
+PageAgent.canShowDebugBorders = function(opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+PageAgent.canShowDebugBorders.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} show
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+PageAgent.setShowDebugBorders = function(show, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+PageAgent.setShowDebugBorders.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
 PageAgent.canShowFPSCounter = function(opt_callback) {}
 /** @param {function(?Protocol.Error, boolean):void=} opt_callback */
 PageAgent.canShowFPSCounter.invoke = function(obj, opt_callback) {}
@@ -373,6 +383,14 @@ PageAgent.setCompositingBordersVisible.invoke = function(obj, opt_callback) {}
 PageAgent.captureScreenshot = function(opt_callback) {}
 /** @param {function(?Protocol.Error, string):void=} opt_callback */
 PageAgent.captureScreenshot.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} accept
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+PageAgent.handleJavaScriptDialog = function(accept, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+PageAgent.handleJavaScriptDialog.invoke = function(obj, opt_callback) {}
 /** @interface */
 PageAgent.Dispatcher = function() {};
 /**
@@ -409,6 +427,15 @@ PageAgent.Dispatcher.prototype.frameScheduledNavigation = function(frameId, dela
  */
 PageAgent.Dispatcher.prototype.frameClearedScheduledNavigation = function(frameId) {};
 /**
+ * @param {string} message
+ */
+PageAgent.Dispatcher.prototype.javascriptDialogOpening = function(message) {};
+PageAgent.Dispatcher.prototype.javascriptDialogClosed = function() {};
+/**
+ * @param {boolean} isEnabled
+ */
+PageAgent.Dispatcher.prototype.scriptsEnabled = function(isEnabled) {};
+/**
  * @param {PageAgent.Dispatcher} dispatcher
  */
 InspectorBackend.registerPageDispatcher = function(dispatcher) {}
@@ -426,7 +453,7 @@ RuntimeAgent.RemoteObject;
 /** @typedef {{lossless:(boolean), overflow:(boolean), properties:(Array.<RuntimeAgent.PropertyPreview>)}|null} */
 RuntimeAgent.ObjectPreview;
 
-/** @typedef {{name:(string), type:(string), value:(string|undefined), subtype:(string|undefined)}|null} */
+/** @typedef {{name:(string), type:(string), value:(string|undefined), valuePreview:(RuntimeAgent.ObjectPreview|undefined), subtype:(string|undefined)}|null} */
 RuntimeAgent.PropertyPreview;
 
 /** @typedef {{name:(string), value:(RuntimeAgent.RemoteObject|undefined), writable:(boolean|undefined), get:(RuntimeAgent.RemoteObject|undefined), set:(RuntimeAgent.RemoteObject|undefined), configurable:(boolean), enumerable:(boolean), wasThrown:(boolean|undefined), isOwn:(boolean|undefined)}|null} */
@@ -1019,7 +1046,25 @@ DOMStorageAgent.Dispatcher.prototype.addDOMStorage = function(storage) {};
 /**
  * @param {DOMStorageAgent.StorageId} storageId
  */
-DOMStorageAgent.Dispatcher.prototype.domStorageUpdated = function(storageId) {};
+DOMStorageAgent.Dispatcher.prototype.domStorageItemsCleared = function(storageId) {};
+/**
+ * @param {DOMStorageAgent.StorageId} storageId
+ * @param {string} key
+ */
+DOMStorageAgent.Dispatcher.prototype.domStorageItemRemoved = function(storageId, key) {};
+/**
+ * @param {DOMStorageAgent.StorageId} storageId
+ * @param {string} key
+ * @param {string} newValue
+ */
+DOMStorageAgent.Dispatcher.prototype.domStorageItemAdded = function(storageId, key, newValue) {};
+/**
+ * @param {DOMStorageAgent.StorageId} storageId
+ * @param {string} key
+ * @param {string} oldValue
+ * @param {string} newValue
+ */
+DOMStorageAgent.Dispatcher.prototype.domStorageItemUpdated = function(storageId, key, oldValue, newValue) {};
 /**
  * @param {DOMStorageAgent.Dispatcher} dispatcher
  */
@@ -1169,7 +1214,7 @@ DOMAgent.NodeId;
 /** @typedef {{nodeId:(DOMAgent.NodeId), nodeType:(number), nodeName:(string), localName:(string), nodeValue:(string), childNodeCount:(number|undefined), children:(Array.<DOMAgent.Node>|undefined), attributes:(Array.<string>|undefined), documentURL:(string|undefined), baseURL:(string|undefined), publicId:(string|undefined), systemId:(string|undefined), internalSubset:(string|undefined), xmlVersion:(string|undefined), name:(string|undefined), value:(string|undefined), frameId:(NetworkAgent.FrameId|undefined), contentDocument:(DOMAgent.Node|undefined), shadowRoots:(Array.<DOMAgent.Node>|undefined), templateContent:(DOMAgent.Node|undefined)}|null} */
 DOMAgent.Node;
 
-/** @typedef {{type:(string), useCapture:(boolean), isAttribute:(boolean), nodeId:(DOMAgent.NodeId), handlerBody:(string), location:(DebuggerAgent.Location|undefined), sourceName:(string|undefined)}|null} */
+/** @typedef {{type:(string), useCapture:(boolean), isAttribute:(boolean), nodeId:(DOMAgent.NodeId), handlerBody:(string), location:(DebuggerAgent.Location|undefined), sourceName:(string|undefined), handler:(RuntimeAgent.RemoteObject|undefined)}|null} */
 DOMAgent.EventListener;
 
 /** @typedef {{r:(number), g:(number), b:(number), a:(number|undefined)}|null} */
@@ -1269,9 +1314,10 @@ DOMAgent.removeAttribute.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {DOMAgent.NodeId} nodeId
+ * @param {string=} opt_objectGroup
  * @param {function(?Protocol.Error, Array.<DOMAgent.EventListener>):void=} opt_callback
  */
-DOMAgent.getEventListenersForNode = function(nodeId, opt_callback) {}
+DOMAgent.getEventListenersForNode = function(nodeId, opt_objectGroup, opt_callback) {}
 /** @param {function(?Protocol.Error, Array.<DOMAgent.EventListener>):void=} opt_callback */
 DOMAgent.getEventListenersForNode.invoke = function(obj, opt_callback) {}
 
@@ -1769,9 +1815,17 @@ TimelineAgent.stop.invoke = function(obj, opt_callback) {}
  * @param {boolean} enabled
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-TimelineAgent.setIncludeMemoryDetails = function(enabled, opt_callback) {}
+TimelineAgent.setIncludeDomCounters = function(enabled, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
-TimelineAgent.setIncludeMemoryDetails.invoke = function(obj, opt_callback) {}
+TimelineAgent.setIncludeDomCounters.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean} enabled
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+TimelineAgent.setIncludeNativeMemoryStatistics = function(enabled, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+TimelineAgent.setIncludeNativeMemoryStatistics.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {function(?Protocol.Error, boolean):void=} opt_callback
@@ -2031,6 +2085,18 @@ DebuggerAgent.runScript.invoke = function(obj, opt_callback) {}
 DebuggerAgent.setOverlayMessage = function(opt_message, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 DebuggerAgent.setOverlayMessage.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {number} scopeNumber
+ * @param {string} variableName
+ * @param {RuntimeAgent.CallArgument} newValue
+ * @param {DebuggerAgent.CallFrameId=} opt_callFrameId
+ * @param {RuntimeAgent.RemoteObjectId=} opt_functionObjectId
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+DebuggerAgent.setVariableValue = function(scopeNumber, variableName, newValue, opt_callFrameId, opt_functionObjectId, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+DebuggerAgent.setVariableValue.invoke = function(obj, opt_callback) {}
 /** @interface */
 DebuggerAgent.Dispatcher = function() {};
 DebuggerAgent.Dispatcher.prototype.globalObjectCleared = function() {};
@@ -2157,7 +2223,10 @@ var ProfilerAgent = {};
 /** @typedef {{typeId:(string), title:(string), uid:(number), maxJSObjectId:(number|undefined)}|null} */
 ProfilerAgent.ProfileHeader;
 
-/** @typedef {{head:(Object|undefined), bottomUpHead:(Object|undefined), idleTime:(number|undefined)}|null} */
+/** @typedef {{functionName:(string), url:(string), lineNumber:(number), totalTime:(number), selfTime:(number), numberOfCalls:(number), visible:(boolean), callUID:(number), children:(Array.<ProfilerAgent.CPUProfileNode>)}|null} */
+ProfilerAgent.CPUProfileNode;
+
+/** @typedef {{head:(ProfilerAgent.CPUProfileNode|undefined), bottomUpHead:(ProfilerAgent.CPUProfileNode|undefined), idleTime:(number|undefined)}|null} */
 ProfilerAgent.CPUProfile;
 
 /** @typedef {string} */
@@ -2252,9 +2321,10 @@ ProfilerAgent.clearProfiles = function(opt_callback) {}
 ProfilerAgent.clearProfiles.invoke = function(obj, opt_callback) {}
 
 /**
+ * @param {boolean=} opt_reportProgress
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-ProfilerAgent.takeHeapSnapshot = function(opt_callback) {}
+ProfilerAgent.takeHeapSnapshot = function(opt_reportProgress, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 ProfilerAgent.takeHeapSnapshot.invoke = function(obj, opt_callback) {}
 
@@ -2310,6 +2380,110 @@ ProfilerAgent.Dispatcher.prototype.reportHeapSnapshotProgress = function(done, t
  * @param {ProfilerAgent.Dispatcher} dispatcher
  */
 InspectorBackend.registerProfilerDispatcher = function(dispatcher) {}
+
+
+
+var HeapProfilerAgent = {};
+
+/** @typedef {{title:(string), uid:(number), maxJSObjectId:(number|undefined)}|null} */
+HeapProfilerAgent.ProfileHeader;
+
+/** @typedef {string} */
+HeapProfilerAgent.HeapSnapshotObjectId;
+
+/**
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+HeapProfilerAgent.hasHeapProfiler = function(opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+HeapProfilerAgent.hasHeapProfiler.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, Array.<HeapProfilerAgent.ProfileHeader>):void=} opt_callback
+ */
+HeapProfilerAgent.getProfileHeaders = function(opt_callback) {}
+/** @param {function(?Protocol.Error, Array.<HeapProfilerAgent.ProfileHeader>):void=} opt_callback */
+HeapProfilerAgent.getProfileHeaders.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {number} uid
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+HeapProfilerAgent.getHeapSnapshot = function(uid, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+HeapProfilerAgent.getHeapSnapshot.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {number} uid
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+HeapProfilerAgent.removeProfile = function(uid, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+HeapProfilerAgent.removeProfile.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+HeapProfilerAgent.clearProfiles = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+HeapProfilerAgent.clearProfiles.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {boolean=} opt_reportProgress
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+HeapProfilerAgent.takeHeapSnapshot = function(opt_reportProgress, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+HeapProfilerAgent.takeHeapSnapshot.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+HeapProfilerAgent.collectGarbage = function(opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+HeapProfilerAgent.collectGarbage.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {HeapProfilerAgent.HeapSnapshotObjectId} objectId
+ * @param {string=} opt_objectGroup
+ * @param {function(?Protocol.Error, RuntimeAgent.RemoteObject):void=} opt_callback
+ */
+HeapProfilerAgent.getObjectByHeapObjectId = function(objectId, opt_objectGroup, opt_callback) {}
+/** @param {function(?Protocol.Error, RuntimeAgent.RemoteObject):void=} opt_callback */
+HeapProfilerAgent.getObjectByHeapObjectId.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {RuntimeAgent.RemoteObjectId} objectId
+ * @param {function(?Protocol.Error, HeapProfilerAgent.HeapSnapshotObjectId):void=} opt_callback
+ */
+HeapProfilerAgent.getHeapObjectId = function(objectId, opt_callback) {}
+/** @param {function(?Protocol.Error, HeapProfilerAgent.HeapSnapshotObjectId):void=} opt_callback */
+HeapProfilerAgent.getHeapObjectId.invoke = function(obj, opt_callback) {}
+/** @interface */
+HeapProfilerAgent.Dispatcher = function() {};
+/**
+ * @param {HeapProfilerAgent.ProfileHeader} header
+ */
+HeapProfilerAgent.Dispatcher.prototype.addProfileHeader = function(header) {};
+/**
+ * @param {number} uid
+ * @param {string} chunk
+ */
+HeapProfilerAgent.Dispatcher.prototype.addHeapSnapshotChunk = function(uid, chunk) {};
+/**
+ * @param {number} uid
+ */
+HeapProfilerAgent.Dispatcher.prototype.finishHeapSnapshot = function(uid) {};
+HeapProfilerAgent.Dispatcher.prototype.resetProfiles = function() {};
+/**
+ * @param {number} done
+ * @param {number} total
+ */
+HeapProfilerAgent.Dispatcher.prototype.reportHeapSnapshotProgress = function(done, total) {};
+/**
+ * @param {HeapProfilerAgent.Dispatcher} dispatcher
+ */
+InspectorBackend.registerHeapProfilerDispatcher = function(dispatcher) {}
 
 
 
@@ -2400,7 +2574,7 @@ CanvasAgent.ResourceState;
 /** @typedef {{description:(string)}|null} */
 CanvasAgent.CallArgument;
 
-/** @typedef {{contextId:(CanvasAgent.ResourceId), functionName:(string|undefined), arguments:(Array.<CanvasAgent.CallArgument>|undefined), result:(CanvasAgent.CallArgument|undefined), isDrawingCall:(boolean|undefined), property:(string|undefined), value:(CanvasAgent.CallArgument|undefined), sourceURL:(string|undefined), lineNumber:(number|undefined), columnNumber:(number|undefined)}|null} */
+/** @typedef {{contextId:(CanvasAgent.ResourceId), functionName:(string|undefined), arguments:(Array.<CanvasAgent.CallArgument>|undefined), result:(CanvasAgent.CallArgument|undefined), isDrawingCall:(boolean|undefined), isFrameEndCall:(boolean|undefined), property:(string|undefined), value:(CanvasAgent.CallArgument|undefined), sourceURL:(string|undefined), lineNumber:(number|undefined), columnNumber:(number|undefined)}|null} */
 CanvasAgent.Call;
 
 /** @typedef {string} */
@@ -2439,16 +2613,18 @@ CanvasAgent.hasUninstrumentedCanvases = function(opt_callback) {}
 CanvasAgent.hasUninstrumentedCanvases.invoke = function(obj, opt_callback) {}
 
 /**
+ * @param {NetworkAgent.FrameId=} opt_frameId
  * @param {function(?Protocol.Error, CanvasAgent.TraceLogId):void=} opt_callback
  */
-CanvasAgent.captureFrame = function(opt_callback) {}
+CanvasAgent.captureFrame = function(opt_frameId, opt_callback) {}
 /** @param {function(?Protocol.Error, CanvasAgent.TraceLogId):void=} opt_callback */
 CanvasAgent.captureFrame.invoke = function(obj, opt_callback) {}
 
 /**
+ * @param {NetworkAgent.FrameId=} opt_frameId
  * @param {function(?Protocol.Error, CanvasAgent.TraceLogId):void=} opt_callback
  */
-CanvasAgent.startCapturing = function(opt_callback) {}
+CanvasAgent.startCapturing = function(opt_frameId, opt_callback) {}
 /** @param {function(?Protocol.Error, CanvasAgent.TraceLogId):void=} opt_callback */
 CanvasAgent.startCapturing.invoke = function(obj, opt_callback) {}
 
@@ -2497,6 +2673,15 @@ CanvasAgent.getResourceState = function(traceLogId, resourceId, opt_callback) {}
 CanvasAgent.getResourceState.invoke = function(obj, opt_callback) {}
 /** @interface */
 CanvasAgent.Dispatcher = function() {};
+/**
+ * @param {NetworkAgent.FrameId} frameId
+ */
+CanvasAgent.Dispatcher.prototype.contextCreated = function(frameId) {};
+/**
+ * @param {NetworkAgent.FrameId=} opt_frameId
+ * @param {CanvasAgent.TraceLogId=} opt_traceLogId
+ */
+CanvasAgent.Dispatcher.prototype.traceLogsRemoved = function(opt_frameId, opt_traceLogId) {};
 /**
  * @param {CanvasAgent.Dispatcher} dispatcher
  */

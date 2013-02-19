@@ -30,6 +30,8 @@
  */
 
 importScript("MemoryStatistics.js");
+importScript("DOMCountersGraph.js");
+importScript("NativeMemoryGraph.js");
 importScript("TimelineModel.js");
 importScript("TimelineOverviewPane.js");
 importScript("TimelinePresentationModel.js");
@@ -58,8 +60,10 @@ WebInspector.TimelinePanel = function()
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
     this.element.tabIndex = 0;
 
+    this.element.addStyleClass("split-view-vertical");
+
     this._sidebarBackgroundElement = document.createElement("div");
-    this._sidebarBackgroundElement.className = "sidebar split-view-sidebar-left timeline-sidebar-background";
+    this._sidebarBackgroundElement.className = "sidebar split-view-sidebar split-view-contents-first timeline-sidebar-background";
     this.element.appendChild(this._sidebarBackgroundElement);
 
     this.createSidebarViewWithTree();
@@ -73,7 +77,10 @@ WebInspector.TimelinePanel = function()
     this._timelineMemorySplitter.id = "timeline-memory-splitter";
     WebInspector.installDragHandle(this._timelineMemorySplitter, this._startSplitterDragging.bind(this), this._splitterDragging.bind(this), this._endSplitterDragging.bind(this), "ns-resize");
     this._timelineMemorySplitter.addStyleClass("hidden");
-    this._memoryStatistics = new WebInspector.MemoryStatistics(this, this._model, this.splitView.sidebarWidth());
+    if (WebInspector.experimentsSettings.nativeMemoryTimeline.isEnabled())
+        this._memoryStatistics = new WebInspector.NativeMemoryGraph(this, this._model, this.splitView.sidebarWidth());
+    else
+        this._memoryStatistics = new WebInspector.DOMCountersGraph(this, this._model, this.splitView.sidebarWidth());
     WebInspector.settings.memoryCounterGraphsHeight = WebInspector.settings.createSetting("memoryCounterGraphsHeight", 150);
 
     var itemsTreeElement = new WebInspector.SidebarSectionTreeElement(WebInspector.UIString("RECORDS"), {}, true);
@@ -810,6 +817,7 @@ WebInspector.TimelinePanel.prototype = {
     _revealRecord: function(recordToReveal)
     {
         // Expand all ancestors.
+        this._recordToHighlight = recordToReveal;
         var treeUpdated = false;
         for (var parent = recordToReveal.parent; parent !== this._rootRecord(); parent = parent.parent) {
             treeUpdated = treeUpdated || parent.collapsed;
@@ -861,6 +869,10 @@ WebInspector.TimelinePanel.prototype = {
         this._itemsGraphsElement.removeChild(this._expandElements);
         this._expandElements.removeChildren();
 
+        this._clearRecordHighlight();
+        var highlightedRecord = this._recordToHighlight;
+        delete this._recordToHighlight;
+
         for (var i = 0; i < endIndex; ++i) {
             var record = recordsInWindow[i];
             var isEven = !(i % 2);
@@ -880,6 +892,11 @@ WebInspector.TimelinePanel.prototype = {
                 if (!graphRowElement) {
                     graphRowElement = new WebInspector.TimelineRecordGraphRow(this._itemsGraphsElement, scheduleRefreshCallback).element;
                     this._graphRowsElement.appendChild(graphRowElement);
+                }
+
+                if (highlightedRecord === record) {
+                    this._highlightedListRowElement = listRowElement;
+                    this._highlightedGraphRowElement = graphRowElement;
                 }
 
                 listRowElement.row.update(record, isEven, visibleTop);
@@ -907,7 +924,22 @@ WebInspector.TimelinePanel.prototype = {
         this._adjustScrollPosition((recordsInWindow.length + this._headerLineCount) * rowHeight);
         this._updateSearchHighlight(false);
 
+        if (this._highlightedListRowElement) {
+            this._highlightedListRowElement.addStyleClass("highlighted-timeline-record");
+            this._highlightedGraphRowElement.addStyleClass("highlighted-timeline-record");
+        }
+
         return recordsInWindow.length;
+    },
+
+    _clearRecordHighlight: function()
+    {
+        if (!this._highlightedListRowElement)
+            return;
+        this._highlightedListRowElement.removeStyleClass("highlighted-timeline-record");
+        delete this._highlightedListRowElement;
+        this._highlightedGraphRowElement.removeStyleClass("highlighted-timeline-record");
+        delete this._highlightedGraphRowElement;
     },
 
     _refreshMainThreadBars: function()

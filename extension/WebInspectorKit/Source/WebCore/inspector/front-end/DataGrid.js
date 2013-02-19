@@ -26,6 +26,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
+ * @param {Object.<string, WebInspector.DataGrid.ColumnDescriptor>} columns
  * @param {?function(WebInspector.DataGridNode, string, string, string)=} editCallback
  * @param {?function(WebInspector.DataGridNode)=} deleteCallback
  * @param {?function()=} refreshCallback
@@ -151,6 +152,9 @@ WebInspector.DataGrid = function(columns, editCallback, deleteCallback, refreshC
     this._columnWidthsInitialized = false;
 }
 
+/** @typedef {{editable:boolean, sort:string, sortable:boolean, aligned:string}} */
+WebInspector.DataGrid.ColumnDescriptor;
+
 WebInspector.DataGrid.Events = {
     SelectedNode: "SelectedNode",
     DeselectedNode: "DeselectedNode"
@@ -169,19 +173,17 @@ WebInspector.DataGrid.createSortableDataGrid = function(columnNames, values)
     var columns = {};
 
     for (var i = 0; i < columnNames.length; ++i) {
-        var column = {};
-        column.width = columnNames[i].length;
-        column.title = columnNames[i];
-        column.sortable = true;
-
-        columns[columnNames[i]] = column;
+        columns[i] = {};
+        columns[i].width = columnNames[i].length;
+        columns[i].title = columnNames[i];
+        columns[i].sortable = true;
     }
 
     var nodes = [];
     for (var i = 0; i < values.length / numColumns; ++i) {
         var data = {};
         for (var j = 0; j < columnNames.length; ++j)
-            data[columnNames[j]] = values[numColumns * i + j];
+            data[j] = values[numColumns * i + j];
 
         var node = new WebInspector.DataGridNode(data, false);
         node.selectable = false;
@@ -211,6 +213,8 @@ WebInspector.DataGrid.createSortableDataGrid = function(columnNames, values)
         {
             var item1 = dataGridNode1.data[sortColumnIdentifier];
             var item2 = dataGridNode2.data[sortColumnIdentifier];
+            item1 = item1 instanceof Node ? item1.textContent : String(item1);
+            item2 = item2 instanceof Node ? item2.textContent : String(item2);
 
             var comparison;
             if (columnIsNumeric) {
@@ -310,6 +314,10 @@ WebInspector.DataGrid.prototype = {
         window.getSelection().setBaseAndExtent(element, 0, element, 1);
     },
 
+    renderInline: function()
+    {
+        this.element.addStyleClass("inline");
+    },
 
     _startEditingConfig: function(element)
     {
@@ -624,10 +632,7 @@ WebInspector.DataGrid.prototype = {
             return;
 
         this.columns[columnIdentifier].hidden = !visible;
-        if (visible)
-            this.element.removeStyleClass("hide-" + columnIdentifier + "-column");
-        else
-            this.element.addStyleClass("hide-" + columnIdentifier + "-column");
+        this.element.enableStyleClass("hide-" + columnIdentifier + "-column", !visible);
     },
 
     get scrollContainer()
@@ -1145,17 +1150,8 @@ WebInspector.DataGridNode.prototype = {
         if (!this._element)
             return;
 
-        if (this._hasChildren)
-        {
-            this._element.addStyleClass("parent");
-            if (this.expanded)
-                this._element.addStyleClass("expanded");
-        }
-        else
-        {
-            this._element.removeStyleClass("parent");
-            this._element.removeStyleClass("expanded");
-        }
+        this._element.enableStyleClass("parent", this._hasChildren);
+        this._element.enableStyleClass("expanded", this._hasChildren && this.expanded);
     },
 
     get hasChildren()
@@ -1170,12 +1166,8 @@ WebInspector.DataGridNode.prototype = {
 
         this._revealed = x;
 
-        if (this._element) {
-            if (this._revealed)
-                this._element.addStyleClass("revealed");
-            else
-                this._element.removeStyleClass("revealed");
-        }
+        if (this._element)
+            this._element.enableStyleClass("revealed", this._revealed);
 
         for (var i = 0; i < this.children.length; ++i)
             this.children[i].revealed = x && this.expanded;
@@ -1194,7 +1186,7 @@ WebInspector.DataGridNode.prototype = {
 
     get leftPadding()
     {
-        if (typeof(this._leftPadding) === "number")
+        if (typeof this._leftPadding === "number")
             return this._leftPadding;
         
         this._leftPadding = this.depth * this.dataGrid.indentWidth;
@@ -1630,6 +1622,9 @@ WebInspector.DataGridNode.prototype = {
         return this.parent;
     },
 
+    /**
+     * @return {boolean}
+     */
     isEventWithinDisclosureTriangle: function(event)
     {
         if (!this.hasChildren)

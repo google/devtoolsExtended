@@ -47,7 +47,8 @@ WebInspector.CanvasProfileView = function(profile)
     var replayImageContainer = this._splitView.firstElement();
     replayImageContainer.id = "canvas-replay-image-container";
     this._replayImageElement = replayImageContainer.createChild("image", "canvas-replay-image");
-    this._debugInfoElement = replayImageContainer.createChild("div");
+    this._debugInfoElement = replayImageContainer.createChild("div", "canvas-debug-info hidden");
+    this._spinnerIcon = replayImageContainer.createChild("img", "canvas-spinner-icon hidden");
 
     var replayInfoContainer = this._splitView.secondElement();
     var controlsContainer = replayInfoContainer.createChild("div", "status-bar");
@@ -76,6 +77,7 @@ WebInspector.CanvasProfileView = function(profile)
     columns[1].title = WebInspector.UIString("Call");
     columns[1].sortable = true;
     columns[1].width = "75%";
+    columns[1].disclosure = true;
     columns[2].title = WebInspector.UIString("Location");
     columns[2].sortable = true;
     columns[2].width = "20%";
@@ -87,6 +89,10 @@ WebInspector.CanvasProfileView = function(profile)
 
     /** @type {!Array.<WebInspector.DataGridNode>} */
     this._logGridNodes = [];
+    /** @type {!Array.<WebInspector.DataGridNode>} */
+    this._drawCallGroups = [];
+    /** @type {!Array.<WebInspector.DataGridNode>} */
+    this._frameGroups = [];
 
     this._splitView.show(this.element);
     this._requestTraceLog();
@@ -102,6 +108,8 @@ WebInspector.CanvasProfileView.prototype = {
     dispose: function()
     {
         this._logGridNodes = [];
+        this._drawCallGroupNodes = [];
+        this._frameGroups = [];
         this._linkifier.reset();
     },
 
@@ -178,10 +186,7 @@ WebInspector.CanvasProfileView.prototype = {
         if (!selectedNode)
             return;
         var nextNode = forward ? selectedNode.traverseNextNode(false) : selectedNode.traversePreviousNode(false);
-        if (nextNode)
-            nextNode.revealAndSelect();
-        else
-            selectedNode.reveal();
+        (nextNode || selectedNode).revealAndSelect();
     },
 
     /**
@@ -189,19 +194,23 @@ WebInspector.CanvasProfileView.prototype = {
      */
     _onReplayDrawingCallClick: function(forward)
     {
-        var callNode = this._logGrid.selectedNode;
-        if (!callNode)
+        var selectedNode = this._logGrid.selectedNode;
+        if (!selectedNode)
             return;
-        var index = callNode.index;
-        do {
-            var nextIndex = forward ? index + 1 : index - 1;
-            var nextCallNode = this._logGridNodes[nextIndex];
-            if (!nextCallNode)
-                break;
-            index = nextIndex;
-            callNode = nextCallNode;
-        } while (!callNode.call.isDrawingCall);
-        callNode.revealAndSelect();
+        var nextNode = selectedNode;
+        while (nextNode) {
+            var sibling = forward ? nextNode.nextSibling : nextNode.previousSibling;
+            if (sibling) {
+                nextNode = sibling;
+                if (nextNode.hasChildren)
+                    break;
+            } else {
+                nextNode = nextNode.parent;
+                if (!forward)
+                    break;
+            }
+        }
+        (nextNode || selectedNode).revealAndSelect();
     },
 
     _onReplayFirstStepClick: function()
@@ -213,10 +222,16 @@ WebInspector.CanvasProfileView.prototype = {
 
     _onReplayLastStepClick: function()
     {
-        var children = this._logGrid.rootNode().children;
-        var lastNode = children[children.length - 1];
-        if (lastNode)
-            lastNode.revealAndSelect();
+        var lastNode = this._logGrid.rootNode().children.peekLast();
+        if (!lastNode)
+            return;
+        while (lastNode.expanded) {
+            var lastChild = lastNode.children.peekLast();
+            if (!lastChild)
+                break;
+            lastNode = lastChild;
+        }
+        lastNode.revealAndSelect();
     },
 
     /**
@@ -224,30 +239,16 @@ WebInspector.CanvasProfileView.prototype = {
      */
     _enableWaitIcon: function(enable)
     {
-        function showWaitIcon()
-        {
-            this._replayImageElement.addStyleClass("wait");
-            this._debugInfoElement.addStyleClass("hidden");
-            delete this._showWaitIconTimer;
-        }
-
-        if (enable && this._replayImageElement.src && !this._showWaitIconTimer)
-            this._showWaitIconTimer = setTimeout(showWaitIcon.bind(this), 250);
-        else {
-            if (this._showWaitIconTimer) {
-                clearTimeout(this._showWaitIconTimer);
-                delete this._showWaitIconTimer;
-            }
-            this._replayImageElement.enableStyleClass("wait", enable);
-            this._debugInfoElement.enableStyleClass("hidden", enable);
-        }
+        this._spinnerIcon.enableStyleClass("hidden", !enable);
+        this._debugInfoElement.enableStyleClass("hidden", enable);
     },
 
     _replayTraceLog: function()
     {
-        var callNode = this._logGrid.selectedNode;
-        if (!callNode)
+        var index = this._selectedCallIndex();
+        if (index === -1 || index === this._lastReplayCallIndex)
             return;
+        this._lastReplayCallIndex = index;
         var time = Date.now();
         /**
          * @param {?Protocol.Error} error
@@ -255,7 +256,7 @@ WebInspector.CanvasProfileView.prototype = {
          */
         function didReplayTraceLog(error, resourceState)
         {
-            if (callNode !== this._logGrid.selectedNode)
+            if (index !== this._selectedCallIndex())
                 return;
 
             this._enableWaitIcon(false);
@@ -270,7 +271,7 @@ WebInspector.CanvasProfileView.prototype = {
             this._onReplayContextChanged();
         }
         this._enableWaitIcon(true);
-        CanvasAgent.replayTraceLog(this._traceLogId, callNode.index, didReplayTraceLog.bind(this));
+        CanvasAgent.replayTraceLog(this._traceLogId, index, didReplayTraceLog.bind(this));
     },
 
     /**
@@ -282,21 +283,18 @@ WebInspector.CanvasProfileView.prototype = {
         this._enableWaitIcon(false);
         if (error || !traceLog)
             return;
-        var lastNode = null;
         var calls = traceLog.calls;
         for (var i = 0, n = calls.length; i < n; ++i) {
             var call = calls[i];
             this._requestReplayContextInfo(call.contextId);
             var index = traceLog.startOffset + i;
             var gridNode = this._createCallNode(index, call);
-            this._logGrid.rootNode().appendChild(gridNode);
-            lastNode = gridNode;
+            this._appendCallNode(gridNode);
         }
-        if (lastNode)
-            lastNode.revealAndSelect();
         if (traceLog.alive)
             setTimeout(this._requestTraceLog.bind(this), WebInspector.CanvasProfileView.TraceLogPollingInterval);
         this._profile._updateCapturingStatus(traceLog);
+        this._onReplayLastStepClick(); // Automatically replay the last step.
     },
 
     _requestTraceLog: function()
@@ -326,6 +324,111 @@ WebInspector.CanvasProfileView.prototype = {
             this._replayContextSelector.createOption(resourceInfo.description, WebInspector.UIString("Show screenshot of this context's canvas."), contextId);
         }
         CanvasAgent.getResourceInfo(contextId, didReceiveResourceInfo.bind(this));
+    },
+
+    /**
+     * @return {number}
+     */
+    _selectedCallIndex: function()
+    {
+        var node = this._logGrid.selectedNode;
+        while (node) {
+            if (typeof node.index === "number")
+                return node.index;
+            node = node.children.peekLast();
+        }
+        return -1;
+    },
+
+    /**
+     * @return {number}
+     */
+    _selectedDrawCallGroupIndex: function()
+    {
+        for (var node = this._logGrid.selectedNode; node; node = node.children.peekLast()) {
+            if (typeof node.drawCallGroupIndex === "number")
+                return node.drawCallGroupIndex;
+        }
+        for (var node = this._logGrid.selectedNode; node; node = node.parent) {
+            if (typeof node.drawCallGroupIndex === "number")
+                return node.drawCallGroupIndex;
+        }
+        return -1;
+    },
+
+    /**
+     * @param {!WebInspector.DataGridNode} gridNode
+     */
+    _appendCallNode: function(gridNode)
+    {
+        var drawCallGroup = this._drawCallGroups.peekLast();
+        if (drawCallGroup) {
+            var lastNode = drawCallGroup.children.peekLast();
+            if (lastNode && (lastNode.call.isDrawingCall || lastNode.call.isFrameEndCall))
+                drawCallGroup = null;
+        }
+        if (!drawCallGroup) {
+            var index = this._drawCallGroups.length;
+            var data = {};
+            data[0] = "";
+            data[1] = "Draw call group #" + (index + 1);
+            data[2] = "";
+            drawCallGroup = new WebInspector.DataGridNode(data);
+            drawCallGroup.selectable = true;
+            drawCallGroup.drawCallGroupIndex = index;
+            this._drawCallGroups.push(drawCallGroup);
+            this._appendDrawCallGroup(drawCallGroup);
+        }
+        drawCallGroup.appendChild(gridNode);
+        if (gridNode.call.isFrameEndCall)
+            this._maybeMergeLastDrawCallGroups();
+    },
+
+    /**
+     * @param {!WebInspector.DataGridNode} drawCallGroup
+     */
+    _appendDrawCallGroup: function(drawCallGroup)
+    {
+        var frameGroup = this._frameGroups.peekLast();
+        if (frameGroup) {
+            var lastDrawCallGroup = frameGroup.children.peekLast();
+            var lastNode = lastDrawCallGroup && lastDrawCallGroup.children.peekLast();
+            if (lastNode && lastNode.call.isFrameEndCall)
+                frameGroup = null;
+        }
+        if (!frameGroup) {
+            var index = this._frameGroups.length;
+            var data = {};
+            data[0] = "";
+            data[1] = "Frame #" + (index + 1);
+            data[2] = "";
+            frameGroup = new WebInspector.DataGridNode(data);
+            frameGroup.selectable = true;
+            frameGroup.frameGroupIndex = index;
+            this._frameGroups.push(frameGroup);
+            this._logGrid.rootNode().appendChild(frameGroup);
+        }
+        frameGroup.appendChild(drawCallGroup);
+    },
+
+    _maybeMergeLastDrawCallGroups: function()
+    {
+        var frameGroup = this._frameGroups.peekLast();
+        if (!frameGroup)
+            return;
+        var groups = frameGroup.children.length;
+        if (groups < 2)
+            return;
+        var src = frameGroup.children[groups - 1]
+        for (var i = 0, n = src.children.length; i < n; ++i) {
+            if (src.children[i].call.isDrawingCall)
+                return;
+        }
+        var dst = frameGroup.children[groups - 2];
+        while (src.children.length)
+            dst.appendChild(src.children[0]);
+        frameGroup.removeChild(src);
+        this._drawCallGroups.pop();
     },
 
     /**
