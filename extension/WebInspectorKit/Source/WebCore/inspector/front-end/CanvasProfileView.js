@@ -87,15 +87,8 @@ WebInspector.CanvasProfileView = function(profile)
     this._logGrid.show(logGridContainer);
     this._logGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._replayTraceLog.bind(this));
 
-    /** @type {!Array.<WebInspector.DataGridNode>} */
-    this._logGridNodes = [];
-    /** @type {!Array.<WebInspector.DataGridNode>} */
-    this._drawCallGroups = [];
-    /** @type {!Array.<WebInspector.DataGridNode>} */
-    this._frameGroups = [];
-
     this._splitView.show(this.element);
-    this._requestTraceLog();
+    this._requestTraceLog(0);
 }
 
 /**
@@ -107,9 +100,6 @@ WebInspector.CanvasProfileView.TraceLogPollingInterval = 500;
 WebInspector.CanvasProfileView.prototype = {
     dispose: function()
     {
-        this._logGridNodes = [];
-        this._drawCallGroupNodes = [];
-        this._frameGroups = [];
         this._linkifier.reset();
     },
 
@@ -202,7 +192,7 @@ WebInspector.CanvasProfileView.prototype = {
             var sibling = forward ? nextNode.nextSibling : nextNode.previousSibling;
             if (sibling) {
                 nextNode = sibling;
-                if (nextNode.hasChildren)
+                if (nextNode.hasChildren || nextNode.call.isDrawingCall)
                     break;
             } else {
                 nextNode = nextNode.parent;
@@ -210,7 +200,10 @@ WebInspector.CanvasProfileView.prototype = {
                     break;
             }
         }
-        (nextNode || selectedNode).revealAndSelect();
+        if (!nextNode && forward)
+            this._onReplayLastStepClick();
+        else
+            (nextNode || selectedNode).revealAndSelect();
     },
 
     _onReplayFirstStepClick: function()
@@ -245,10 +238,13 @@ WebInspector.CanvasProfileView.prototype = {
 
     _replayTraceLog: function()
     {
+        if (this._pendingReplayTraceLogEvent)
+            return;
         var index = this._selectedCallIndex();
         if (index === -1 || index === this._lastReplayCallIndex)
             return;
         this._lastReplayCallIndex = index;
+        this._pendingReplayTraceLogEvent = true;
         var time = Date.now();
         /**
          * @param {?Protocol.Error} error
@@ -256,8 +252,12 @@ WebInspector.CanvasProfileView.prototype = {
          */
         function didReplayTraceLog(error, resourceState)
         {
-            if (index !== this._selectedCallIndex())
+            delete this._pendingReplayTraceLogEvent;
+
+            if (index !== this._selectedCallIndex()) {
+                this._replayTraceLog();
                 return;
+            }
 
             this._enableWaitIcon(false);
             if (error)
@@ -283,24 +283,31 @@ WebInspector.CanvasProfileView.prototype = {
         this._enableWaitIcon(false);
         if (error || !traceLog)
             return;
+        var callNodes = [];
         var calls = traceLog.calls;
+        var index = traceLog.startOffset;
         for (var i = 0, n = calls.length; i < n; ++i) {
             var call = calls[i];
             this._requestReplayContextInfo(call.contextId);
-            var index = traceLog.startOffset + i;
-            var gridNode = this._createCallNode(index, call);
-            this._appendCallNode(gridNode);
+            var gridNode = this._createCallNode(index++, call);
+            callNodes.push(gridNode);
         }
+        this._appendCallNodes(callNodes);
         if (traceLog.alive)
-            setTimeout(this._requestTraceLog.bind(this), WebInspector.CanvasProfileView.TraceLogPollingInterval);
+            setTimeout(this._requestTraceLog.bind(this, index), WebInspector.CanvasProfileView.TraceLogPollingInterval);
+        else
+            this._flattenSingleFrameNode();
         this._profile._updateCapturingStatus(traceLog);
         this._onReplayLastStepClick(); // Automatically replay the last step.
     },
 
-    _requestTraceLog: function()
+    /**
+     * @param {number} offset
+     */
+    _requestTraceLog: function(offset)
     {
         this._enableWaitIcon(true);
-        CanvasAgent.getTraceLog(this._traceLogId, this._logGridNodes.length, undefined, this._didReceiveTraceLog.bind(this));
+        CanvasAgent.getTraceLog(this._traceLogId, offset, undefined, this._didReceiveTraceLog.bind(this));
     },
 
     /**
@@ -332,103 +339,111 @@ WebInspector.CanvasProfileView.prototype = {
     _selectedCallIndex: function()
     {
         var node = this._logGrid.selectedNode;
-        while (node) {
-            if (typeof node.index === "number")
-                return node.index;
-            node = node.children.peekLast();
-        }
-        return -1;
+        return node ? this._peekLastRecursively(node).index : -1;
     },
 
     /**
-     * @return {number}
+     * @param {!WebInspector.DataGridNode} node
+     * @return {!WebInspector.DataGridNode}
      */
-    _selectedDrawCallGroupIndex: function()
+    _peekLastRecursively: function(node)
     {
-        for (var node = this._logGrid.selectedNode; node; node = node.children.peekLast()) {
-            if (typeof node.drawCallGroupIndex === "number")
-                return node.drawCallGroupIndex;
-        }
-        for (var node = this._logGrid.selectedNode; node; node = node.parent) {
-            if (typeof node.drawCallGroupIndex === "number")
-                return node.drawCallGroupIndex;
-        }
-        return -1;
+        var lastChild;
+        while ((lastChild = node.children.peekLast()))
+            node = /** @type {!WebInspector.DataGridNode} */ (lastChild);
+        return node;
     },
 
     /**
-     * @param {!WebInspector.DataGridNode} gridNode
+     * @param {!Array.<!WebInspector.DataGridNode>} callNodes
      */
-    _appendCallNode: function(gridNode)
+    _appendCallNodes: function(callNodes)
     {
-        var drawCallGroup = this._drawCallGroups.peekLast();
-        if (drawCallGroup) {
-            var lastNode = drawCallGroup.children.peekLast();
-            if (lastNode && (lastNode.call.isDrawingCall || lastNode.call.isFrameEndCall))
-                drawCallGroup = null;
+        var rootNode = this._logGrid.rootNode();
+        var frameNode = /** @type {WebInspector.DataGridNode} */ (rootNode.children.peekLast());
+        if (frameNode && this._peekLastRecursively(frameNode).call.isFrameEndCall)
+            frameNode = null;
+        for (var i = 0, n = callNodes.length; i < n; ++i) {
+            if (!frameNode) {
+                var index = rootNode.children.length;
+                var data = {};
+                data[0] = "";
+                data[1] = "Frame #" + (index + 1);
+                data[2] = "";
+                frameNode = new WebInspector.DataGridNode(data);
+                frameNode.selectable = true;
+                rootNode.appendChild(frameNode);
+            }
+            var nextFrameCallIndex = i + 1;
+            while (nextFrameCallIndex < n && !callNodes[nextFrameCallIndex - 1].call.isFrameEndCall)
+                ++nextFrameCallIndex;
+            this._appendCallNodesToFrameNode(frameNode, callNodes, i, nextFrameCallIndex);
+            i = nextFrameCallIndex - 1;
+            frameNode = null;
         }
-        if (!drawCallGroup) {
-            var index = this._drawCallGroups.length;
+    },
+
+    /**
+     * @param {!WebInspector.DataGridNode} frameNode
+     * @param {!Array.<!WebInspector.DataGridNode>} callNodes
+     * @param {number} fromIndex
+     * @param {number} toIndex not inclusive
+     */
+    _appendCallNodesToFrameNode: function(frameNode, callNodes, fromIndex, toIndex)
+    {
+        var self = this;
+        function appendDrawCallGroup()
+        {
+            var index = self._drawCallGroupsCount || 0;
             var data = {};
             data[0] = "";
             data[1] = "Draw call group #" + (index + 1);
             data[2] = "";
-            drawCallGroup = new WebInspector.DataGridNode(data);
-            drawCallGroup.selectable = true;
-            drawCallGroup.drawCallGroupIndex = index;
-            this._drawCallGroups.push(drawCallGroup);
-            this._appendDrawCallGroup(drawCallGroup);
+            var node = new WebInspector.DataGridNode(data);
+            node.selectable = true;
+            self._drawCallGroupsCount = index + 1;
+            frameNode.appendChild(node);
+            return node;
         }
-        drawCallGroup.appendChild(gridNode);
-        if (gridNode.call.isFrameEndCall)
-            this._maybeMergeLastDrawCallGroups();
-    },
 
-    /**
-     * @param {!WebInspector.DataGridNode} drawCallGroup
-     */
-    _appendDrawCallGroup: function(drawCallGroup)
-    {
-        var frameGroup = this._frameGroups.peekLast();
-        if (frameGroup) {
-            var lastDrawCallGroup = frameGroup.children.peekLast();
-            var lastNode = lastDrawCallGroup && lastDrawCallGroup.children.peekLast();
-            if (lastNode && lastNode.call.isFrameEndCall)
-                frameGroup = null;
+        function splitDrawCallGroup(drawCallGroup)
+        {
+            var splitIndex = 0;
+            var splitNode;
+            while ((splitNode = drawCallGroup.children[splitIndex])) {
+                if (splitNode.call.isDrawingCall)
+                    break;
+                ++splitIndex;
+            }
+            var newDrawCallGroup = appendDrawCallGroup();
+            var lastNode;
+            while ((lastNode = drawCallGroup.children[splitIndex + 1]))
+                newDrawCallGroup.appendChild(lastNode);
+            return newDrawCallGroup;
         }
-        if (!frameGroup) {
-            var index = this._frameGroups.length;
-            var data = {};
-            data[0] = "";
-            data[1] = "Frame #" + (index + 1);
-            data[2] = "";
-            frameGroup = new WebInspector.DataGridNode(data);
-            frameGroup.selectable = true;
-            frameGroup.frameGroupIndex = index;
-            this._frameGroups.push(frameGroup);
-            this._logGrid.rootNode().appendChild(frameGroup);
-        }
-        frameGroup.appendChild(drawCallGroup);
-    },
 
-    _maybeMergeLastDrawCallGroups: function()
-    {
-        var frameGroup = this._frameGroups.peekLast();
-        if (!frameGroup)
-            return;
-        var groups = frameGroup.children.length;
-        if (groups < 2)
-            return;
-        var src = frameGroup.children[groups - 1]
-        for (var i = 0, n = src.children.length; i < n; ++i) {
-            if (src.children[i].call.isDrawingCall)
-                return;
+        var drawCallGroup = frameNode.children.peekLast();
+        var groupHasDrawCall = false;
+        if (drawCallGroup) {
+            for (var i = 0, n = drawCallGroup.children.length; i < n; ++i) {
+                if (drawCallGroup.children[i].call.isDrawingCall) {
+                    groupHasDrawCall = true;
+                    break;
+                }
+            }
+        } else
+            drawCallGroup = appendDrawCallGroup();
+
+        for (var i = fromIndex; i < toIndex; ++i) {
+            var node = callNodes[i];
+            drawCallGroup.appendChild(node);
+            if (node.call.isDrawingCall) {
+                if (groupHasDrawCall)
+                    drawCallGroup = splitDrawCallGroup(drawCallGroup);
+                else
+                    groupHasDrawCall = true;
+            }
         }
-        var dst = frameGroup.children[groups - 2];
-        while (src.children.length)
-            dst.appendChild(src.children[0]);
-        frameGroup.removeChild(src);
-        this._drawCallGroups.pop();
     },
 
     /**
@@ -464,8 +479,18 @@ WebInspector.CanvasProfileView.prototype = {
         node.index = index;
         node.selectable = true;
         node.call = call;
-        this._logGridNodes[index] = node;
         return node;
+    },
+
+    _flattenSingleFrameNode: function()
+    {
+        var rootNode = this._logGrid.rootNode();
+        if (rootNode.children.length !== 1)
+            return;
+        var frameNode = rootNode.children[0];
+        while (frameNode.children[0])
+            rootNode.appendChild(frameNode.children[0]);
+        rootNode.removeChild(frameNode);
     },
 
     __proto__: WebInspector.View.prototype
@@ -534,41 +559,33 @@ WebInspector.CanvasProfileType.prototype = {
 
     /**
      * @override
-     * @param {WebInspector.ProfilesPanel} profilesPanel
      * @return {boolean}
      */
-    buttonClicked: function(profilesPanel)
+    buttonClicked: function()
     {
         if (this._recording) {
             this._recording = false;
             this._stopFrameCapturing();
         } else if (this._isSingleFrameMode()) {
             this._recording = false;
-            this._runSingleFrameCapturing(profilesPanel);
+            this._runSingleFrameCapturing();
         } else {
             this._recording = true;
-            this._startFrameCapturing(profilesPanel);
+            this._startFrameCapturing();
         }
-        profilesPanel.setRecordingProfile(WebInspector.CanvasProfileType.TypeId, this._recording);
         return this._recording;
     },
 
-    /**
-     * @param {WebInspector.ProfilesPanel} profilesPanel
-     */
-    _runSingleFrameCapturing: function(profilesPanel)
+    _runSingleFrameCapturing: function()
     {
         var frameId = this._selectedFrameId();
-        CanvasAgent.captureFrame(frameId, this._didStartCapturingFrame.bind(this, profilesPanel, frameId));
+        CanvasAgent.captureFrame(frameId, this._didStartCapturingFrame.bind(this, frameId));
     },
 
-    /**
-     * @param {WebInspector.ProfilesPanel} profilesPanel
-     */
-    _startFrameCapturing: function(profilesPanel)
+    _startFrameCapturing: function()
     {
         var frameId = this._selectedFrameId();
-        CanvasAgent.startCapturing(frameId, this._didStartCapturingFrame.bind(this, profilesPanel, frameId));
+        CanvasAgent.startCapturing(frameId, this._didStartCapturingFrame.bind(this, frameId));
     },
 
     _stopFrameCapturing: function()
@@ -586,19 +603,18 @@ WebInspector.CanvasProfileType.prototype = {
     },
 
     /**
-     * @param {WebInspector.ProfilesPanel} profilesPanel
      * @param {string|undefined} frameId
      * @param {?Protocol.Error} error
      * @param {CanvasAgent.TraceLogId} traceLogId
      */
-    _didStartCapturingFrame: function(profilesPanel, frameId, error, traceLogId)
+    _didStartCapturingFrame: function(frameId, error, traceLogId)
     {
         if (error || this._lastProfileHeader && this._lastProfileHeader.traceLogId() === traceLogId)
             return;
         var profileHeader = new WebInspector.CanvasProfileHeader(this, WebInspector.UIString("Trace Log %d", this._nextProfileUid), this._nextProfileUid, traceLogId, frameId);
         ++this._nextProfileUid;
         this._lastProfileHeader = profileHeader;
-        profilesPanel.addProfileHeader(profileHeader);
+        this.addProfile(profileHeader);
         profileHeader._updateCapturingStatus();
     },
 
@@ -624,9 +640,21 @@ WebInspector.CanvasProfileType.prototype = {
     /**
      * @override
      */
-    reset: function()
+    _reset: function()
     {
+        WebInspector.ProfileType.prototype._reset.call(this);
         this._nextProfileUid = 1;
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.ProfileHeader} profile
+     */
+    removeProfile: function(profile)
+    {
+        WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
+        if (this._recording && profile === this._lastProfileHeader)
+            this._recording = false;
     },
 
     setRecordingProfile: function(isProfiling)
@@ -637,7 +665,7 @@ WebInspector.CanvasProfileType.prototype = {
     /**
      * @override
      * @param {string=} title
-     * @return {WebInspector.ProfileHeader}
+     * @return {!WebInspector.ProfileHeader}
      */
     createTemporaryProfile: function(title)
     {
@@ -648,7 +676,7 @@ WebInspector.CanvasProfileType.prototype = {
     /**
      * @override
      * @param {ProfilerAgent.ProfileHeader} profile
-     * @return {WebInspector.ProfileHeader}
+     * @return {!WebInspector.ProfileHeader}
      */
     createProfile: function(profile)
     {
@@ -870,15 +898,12 @@ WebInspector.CanvasProfileHeader.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.ProfilesPanel} profilesPanel
      */
-    dispose: function(profilesPanel)
+    dispose: function()
     {
         if (this._traceLogId) {
             CanvasAgent.dropTraceLog(this._traceLogId);
             clearTimeout(this._requestStatusTimer);
-            if (this._alive)
-                profilesPanel.setRecordingProfile(WebInspector.CanvasProfileType.TypeId, false);
             this._alive = false;
         }
     },

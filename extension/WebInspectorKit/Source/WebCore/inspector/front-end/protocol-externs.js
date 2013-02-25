@@ -988,11 +988,8 @@ InspectorBackend.registerIndexedDBDispatcher = function(dispatcher) {}
 
 var DOMStorageAgent = {};
 
-/** @typedef {string} */
+/** @typedef {{securityOrigin:(string), isLocalStorage:(boolean)}|null} */
 DOMStorageAgent.StorageId;
-
-/** @typedef {{origin:(string), isLocalStorage:(boolean), id:(DOMStorageAgent.StorageId)}|null} */
-DOMStorageAgent.Entry;
 
 /** @typedef {Array.<string>} */
 DOMStorageAgent.Item;
@@ -1015,34 +1012,30 @@ DOMStorageAgent.disable.invoke = function(obj, opt_callback) {}
  * @param {DOMStorageAgent.StorageId} storageId
  * @param {function(?Protocol.Error, Array.<DOMStorageAgent.Item>):void=} opt_callback
  */
-DOMStorageAgent.getDOMStorageEntries = function(storageId, opt_callback) {}
+DOMStorageAgent.getDOMStorageItems = function(storageId, opt_callback) {}
 /** @param {function(?Protocol.Error, Array.<DOMStorageAgent.Item>):void=} opt_callback */
-DOMStorageAgent.getDOMStorageEntries.invoke = function(obj, opt_callback) {}
+DOMStorageAgent.getDOMStorageItems.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {DOMStorageAgent.StorageId} storageId
  * @param {string} key
  * @param {string} value
- * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ * @param {function(?Protocol.Error):void=} opt_callback
  */
 DOMStorageAgent.setDOMStorageItem = function(storageId, key, value, opt_callback) {}
-/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+/** @param {function(?Protocol.Error):void=} opt_callback */
 DOMStorageAgent.setDOMStorageItem.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {DOMStorageAgent.StorageId} storageId
  * @param {string} key
- * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ * @param {function(?Protocol.Error):void=} opt_callback
  */
 DOMStorageAgent.removeDOMStorageItem = function(storageId, key, opt_callback) {}
-/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+/** @param {function(?Protocol.Error):void=} opt_callback */
 DOMStorageAgent.removeDOMStorageItem.invoke = function(obj, opt_callback) {}
 /** @interface */
 DOMStorageAgent.Dispatcher = function() {};
-/**
- * @param {DOMStorageAgent.Entry} storage
- */
-DOMStorageAgent.Dispatcher.prototype.addDOMStorage = function(storage) {};
 /**
  * @param {DOMStorageAgent.StorageId} storageId
  */
@@ -1484,6 +1477,15 @@ DOMAgent.markUndoableState.invoke = function(obj, opt_callback) {}
 DOMAgent.focus = function(nodeId, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 DOMAgent.focus.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {DOMAgent.NodeId} nodeId
+ * @param {Array.<string>} files
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+DOMAgent.setFileInputFiles = function(nodeId, files, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+DOMAgent.setFileInputFiles.invoke = function(obj, opt_callback) {}
 /** @interface */
 DOMAgent.Dispatcher = function() {};
 DOMAgent.Dispatcher.prototype.documentUpdated = function() {};

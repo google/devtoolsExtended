@@ -771,7 +771,7 @@
                     { "name": "source", "type": "string", "enum": ["html", "wml", "xml", "javascript", "network", "console-api", "other"], "description": "Message source." },
                     { "name": "level", "type": "string", "enum": ["tip", "log", "warning", "error", "debug"], "description": "Message severity." },
                     { "name": "text", "type": "string", "description": "Message text." },
-                    { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "timing"], "description": "Console message type." },
+                    { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "timing", "profile", "profileEnd"], "description": "Console message type." },
                     { "name": "url", "type": "string", "optional": true, "description": "URL of the message origin." },
                     { "name": "line", "type": "integer", "optional": true, "description": "Line number in the resource that generated this message." },
                     { "name": "repeatCount", "type": "integer", "optional": true, "description": "Repeat count for repeated messages." },
@@ -1423,22 +1423,16 @@
     {
         "domain": "DOMStorage",
         "hidden": true,
+        "description": "Query and modify DOM storage.",
         "types": [
             {
                 "id": "StorageId",
-                "type": "string",
-                "description": "Unique identifier of DOM storage entry.",
-                "hidden": true
-            },
-            {
-                "id": "Entry",
                 "type": "object",
-                "description": "DOM Storage entry.",
+                "description": "DOM Storage identifier.",
                 "hidden": true,
                 "properties": [
-                    { "name": "origin", "type": "string", "description": "Document origin." },
-                    { "name": "isLocalStorage", "type": "boolean", "description": "True for local storage." },
-                    { "name": "id", "$ref": "StorageId", "description": "Entry id for further reference." }
+                    { "name": "securityOrigin", "type": "string", "description": "Security origin for the storage." },
+                    { "name": "isLocalStorage", "type": "boolean", "description": "Whether the storage is local storage (not session storage)." }
                 ]
             },
             {
@@ -1459,7 +1453,7 @@
                 "description": "Disables storage tracking, prevents storage events from being sent to the client."
             },
             {
-                "name": "getDOMStorageEntries",
+                "name": "getDOMStorageItems",
                 "parameters": [
                     { "name": "storageId", "$ref": "StorageId" }
                 ],
@@ -1473,9 +1467,6 @@
                     { "name": "storageId", "$ref": "StorageId" },
                     { "name": "key", "type": "string" },
                     { "name": "value", "type": "string" }
-                ],
-                "returns": [
-                    { "name": "success", "type": "boolean" }
                 ]
             },
             {
@@ -1483,19 +1474,10 @@
                 "parameters": [
                     { "name": "storageId", "$ref": "StorageId" },
                     { "name": "key", "type": "string" }
-                ],
-                "returns": [
-                    { "name": "success", "type": "boolean" }
                 ]
             }
         ],
         "events": [
-            {
-                "name": "addDOMStorage",
-                "parameters": [
-                    { "name": "storage", "$ref": "Entry" }
-                ]
-            },
             {
                 "name": "domStorageItemsCleared",
                 "parameters": [
@@ -2063,9 +2045,18 @@
             {
                 "name": "focus",
                 "parameters": [
-                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "Id of the node to focus." }
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to focus." }
                 ],
                 "description": "Focuses the given element.",
+                "hidden": true
+            },
+            {
+                "name": "setFileInputFiles",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the file input node to set files for." },
+                    { "name": "files", "type": "array", "items": { "type": "string" }, "description": "Array of file paths to set." }
+                ],
+                "description": "Sets files for the given file input element.",
                 "hidden": true
             }
         ],
@@ -2333,7 +2324,7 @@
                     { "name": "implicit", "type": "boolean", "optional": true, "description": "Whether the property is implicit (implies <code>false</code> if absent)." },
                     { "name": "text", "type": "string", "optional": true, "description": "The full property text as specified in the style." },
                     { "name": "parsedOk", "type": "boolean", "optional": true, "description": "Whether the property is understood by the browser (implies <code>true</code> if absent)." },
-                    { "name": "status", "type": "string", "enum": ["active", "inactive", "disabled", "style"], "optional": true, "description": "The property status: \"active\" (implied if absent) if the property is effective in the style, \"inactive\" if the property is overridden by a same-named property in this style later on, \"disabled\" if the property is disabled by the user, \"style\" if the property is reported by the browser rather than by the CSS source parser." },
+                    { "name": "status", "type": "string", "enum": ["active", "inactive", "disabled", "style"], "optional": true, "description": "The property status: \"active\" if the property is effective in the style, \"inactive\" if the property is overridden by a same-named property in this style later on, \"disabled\" if the property is disabled by the user, \"style\" (implied if absent) if the property is reported by the browser rather than by the CSS source parser." },
                     { "name": "range", "$ref": "SourceRange", "optional": true, "description": "The entire property range in the enclosing style declaration (if available)." }
                 ],
                 "description": "CSS style effective visual dimensions and source offsets."

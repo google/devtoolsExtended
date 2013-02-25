@@ -139,16 +139,15 @@ InspectorBackend.registerCommand("IndexedDB.requestData", [{"name": "frameId", "
 
 // DOMStorage.
 InspectorBackend.registerDOMStorageDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "DOMStorage");
-InspectorBackend.registerEvent("DOMStorage.addDOMStorage", ["storage"]);
 InspectorBackend.registerEvent("DOMStorage.domStorageItemsCleared", ["storageId"]);
 InspectorBackend.registerEvent("DOMStorage.domStorageItemRemoved", ["storageId", "key"]);
 InspectorBackend.registerEvent("DOMStorage.domStorageItemAdded", ["storageId", "key", "newValue"]);
 InspectorBackend.registerEvent("DOMStorage.domStorageItemUpdated", ["storageId", "key", "oldValue", "newValue"]);
 InspectorBackend.registerCommand("DOMStorage.enable", [], []);
 InspectorBackend.registerCommand("DOMStorage.disable", [], []);
-InspectorBackend.registerCommand("DOMStorage.getDOMStorageEntries", [{"name": "storageId", "type": "string", "optional": false}], ["entries"]);
-InspectorBackend.registerCommand("DOMStorage.setDOMStorageItem", [{"name": "storageId", "type": "string", "optional": false}, {"name": "key", "type": "string", "optional": false}, {"name": "value", "type": "string", "optional": false}], ["success"]);
-InspectorBackend.registerCommand("DOMStorage.removeDOMStorageItem", [{"name": "storageId", "type": "string", "optional": false}, {"name": "key", "type": "string", "optional": false}], ["success"]);
+InspectorBackend.registerCommand("DOMStorage.getDOMStorageItems", [{"name": "storageId", "type": "object", "optional": false}], ["entries"]);
+InspectorBackend.registerCommand("DOMStorage.setDOMStorageItem", [{"name": "storageId", "type": "object", "optional": false}, {"name": "key", "type": "string", "optional": false}, {"name": "value", "type": "string", "optional": false}], []);
+InspectorBackend.registerCommand("DOMStorage.removeDOMStorageItem", [{"name": "storageId", "type": "object", "optional": false}, {"name": "key", "type": "string", "optional": false}], []);
 
 // ApplicationCache.
 InspectorBackend.registerApplicationCacheDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "ApplicationCache");
@@ -212,6 +211,7 @@ InspectorBackend.registerCommand("DOM.undo", [], []);
 InspectorBackend.registerCommand("DOM.redo", [], []);
 InspectorBackend.registerCommand("DOM.markUndoableState", [], []);
 InspectorBackend.registerCommand("DOM.focus", [{"name": "nodeId", "type": "number", "optional": false}], []);
+InspectorBackend.registerCommand("DOM.setFileInputFiles", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "files", "type": "object", "optional": false}], []);
 
 // CSS.
 InspectorBackend.registerCSSDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "CSS");

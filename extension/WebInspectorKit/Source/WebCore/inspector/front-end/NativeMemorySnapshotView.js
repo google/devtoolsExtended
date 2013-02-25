@@ -235,10 +235,12 @@ WebInspector.NativeSnapshotNode.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileType}
+ * @implements {MemoryAgent.Dispatcher}
  */
 WebInspector.NativeSnapshotProfileType = function()
 {
     WebInspector.ProfileType.call(this, WebInspector.NativeSnapshotProfileType.TypeId, WebInspector.UIString("Take Native Heap Snapshot"));
+    InspectorBackend.registerMemoryDispatcher(this);
     this._nextProfileUid = 1;
 }
 
@@ -252,30 +254,31 @@ WebInspector.NativeSnapshotProfileType.prototype = {
 
     /**
      * @override
-     * @param {WebInspector.ProfilesPanel} profilesPanel
      * @return {boolean}
      */
-    buttonClicked: function(profilesPanel)
+    buttonClicked: function()
     {
         var profileHeader = new WebInspector.NativeSnapshotProfileHeader(this, WebInspector.UIString("Snapshot %d", this._nextProfileUid), this._nextProfileUid);
         ++this._nextProfileUid;
         profileHeader.isTemporary = true;
-        profilesPanel.addProfileHeader(profileHeader);
+        this.addProfile(profileHeader);
         profileHeader.load(function() { });
 
         /**
          * @param {?string} error
          * @param {?MemoryAgent.MemoryBlock} memoryBlock
+         * @param {Object=} graphMetaInformation
          */
         function didReceiveMemorySnapshot(error, memoryBlock, graphMetaInformation)
         {
+            var metaInformation = /** @type{HeapSnapshotMetainfo} */(graphMetaInformation);
             this.isTemporary = false;
             this.sidebarElement.subtitle = Number.bytesToString(/** @type{number} */(memoryBlock.size));
 
-            var edgeFieldCount = graphMetaInformation.edge_fields.length;
-            var nodeFieldCount = graphMetaInformation.node_fields.length;
-            var nodeIdFieldOffset = graphMetaInformation.node_fields.indexOf("id");
-            var toNodeIdFieldOffset = graphMetaInformation.edge_fields.indexOf("to_node");
+            var edgeFieldCount = metaInformation.edge_fields.length;
+            var nodeFieldCount = metaInformation.node_fields.length;
+            var nodeIdFieldOffset = metaInformation.node_fields.indexOf("id");
+            var toNodeIdFieldOffset = metaInformation.edge_fields.indexOf("to_node");
 
             var baseToRealNodeIdMap = {};
             for (var i = 0; i < this._baseToRealNodeId.length; i += 2)
@@ -295,7 +298,7 @@ WebInspector.NativeSnapshotProfileType.prototype = {
 
             var heapSnapshot = {
                 "snapshot": {
-                    "meta": graphMetaInformation,
+                    "meta": metaInformation,
                     node_count: this._nodes.length / nodeFieldCount,
                     edge_count: this._edges.length / edgeFieldCount,
                     root_index: this._nodes.length - nodeFieldCount
@@ -343,6 +346,17 @@ WebInspector.NativeSnapshotProfileType.prototype = {
     createProfile: function(profile)
     {
         return new WebInspector.NativeSnapshotProfileHeader(this, profile.title, -1);
+    },
+
+    /**
+     * @override
+     * @param {MemoryAgent.HeapSnapshotChunk} chunk
+     */
+    addNativeSnapshotChunk: function(chunk)
+    {
+        var tempProfile = this.findTemporaryProfile();
+        if (tempProfile)
+            tempProfile.addNativeSnapshotChunk(chunk);
     },
 
     __proto__: WebInspector.ProfileType.prototype
@@ -399,6 +413,8 @@ WebInspector.NativeSnapshotProfileHeader.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotView}
+ * @param {WebInspector.ProfilesPanel} parent
+ * @param {WebInspector.NativeSnapshotProfileHeader} profile
  */
 WebInspector.NativeHeapSnapshotView = function(parent, profile)
 {
@@ -437,15 +453,14 @@ WebInspector.NativeMemoryProfileType.prototype = {
 
     /**
      * @override
-     * @param {WebInspector.ProfilesPanel} profilesPanel
      * @return {boolean}
      */
-    buttonClicked: function(profilesPanel)
+    buttonClicked: function()
     {
         var profileHeader = new WebInspector.NativeMemoryProfileHeader(this, WebInspector.UIString("Snapshot %d", this._nextProfileUid), this._nextProfileUid);
         ++this._nextProfileUid;
         profileHeader.isTemporary = true;
-        profilesPanel.addProfileHeader(profileHeader);
+        this.addProfile(profileHeader);
         /**
          * @param {?string} error
          * @param {?MemoryAgent.MemoryBlock} memoryBlock

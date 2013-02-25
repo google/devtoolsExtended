@@ -129,7 +129,9 @@ var WebInspector = {
         closeButton.addStyleClass("drawer-header-close-button");
         closeButton.addEventListener("click", this.closeViewInDrawer.bind(this), false);
 
-        document.getElementById("panel-status-bar").firstElementChild.appendChild(drawerStatusBarHeader);
+        var panelStatusBar = document.getElementById("panel-status-bar");
+        var drawerViewAnchor = document.getElementById("drawer-view-anchor");
+        panelStatusBar.insertBefore(drawerStatusBarHeader, drawerViewAnchor);
         this._drawerStatusBarHeader = drawerStatusBarHeader;
         this.drawer.show(view, WebInspector.Drawer.AnimationType.Immediately);
     },
@@ -272,16 +274,6 @@ var WebInspector = {
         WebInspector.domAgent.setInspectModeEnabled(enabled, callback.bind(this));
     },
 
-    _profilesLinkifier: function(title)
-    {
-        var profileStringMatches = WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp.exec(title);
-        if (profileStringMatches) {
-            var profilesPanel = /** @ type {WebInspector.ProfilesPanel} */ WebInspector.panel("profiles");
-            title = WebInspector.ProfilesPanel._instance.displayTitleForProfileLink(profileStringMatches[2], profileStringMatches[1]);
-        }
-        return title;
-    },
-
     _debuggerPaused: function()
     {
         // Create scripts panel upon demand.
@@ -415,7 +407,10 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     InspectorBackend.registerInspectorDispatcher(this);
 
-    this.workspace = new WebInspector.Workspace();
+    this.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
+    this.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(this.isolatedFileSystemManager);
+    this.fileMapping = new WebInspector.FileMapping();
+    this.workspace = new WebInspector.Workspace(this.fileMapping, this.isolatedFileSystemManager.mapping());
 
     this.cssModel = new WebInspector.CSSStyleModel(this.workspace);
     this.timelineManager = new WebInspector.TimelineManager();
@@ -438,13 +433,10 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.workspaceController = new WebInspector.WorkspaceController(this.workspace);
 
-    this.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
-    this.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(this.isolatedFileSystemManager);
-    this.fileMapping = new WebInspector.FileMapping(this.isolatedFileSystemManager.mapping());
-    this.fileSystemWorkspaceProvider = new WebInspector.FileSystemWorkspaceProvider(this.isolatedFileSystemManager, this.workspace, this.fileMapping);
+    this.fileSystemWorkspaceProvider = new WebInspector.FileSystemWorkspaceProvider(this.isolatedFileSystemManager, this.workspace);
 
     this.networkWorkspaceProvider = new WebInspector.SimpleWorkspaceProvider(this.workspace, WebInspector.projectTypes.Network);
-    new WebInspector.NetworkUISourceCodeProvider(this.networkWorkspaceProvider);
+    new WebInspector.NetworkUISourceCodeProvider(this.networkWorkspaceProvider, this.workspace);
 
     this.breakpointManager = new WebInspector.BreakpointManager(WebInspector.settings.breakpoints, this.debuggerModel, this.workspace);
 
@@ -452,7 +444,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     new WebInspector.DebuggerScriptMapping(this.workspace, this.networkWorkspaceProvider);
     this.liveEditSupport = new WebInspector.LiveEditSupport(this.workspace);
-    this.styleContentBinding = new WebInspector.StyleContentBinding(this.cssModel);
+    this.styleContentBinding = new WebInspector.StyleContentBinding(this.cssModel, this.workspace);
     new WebInspector.StylesSourceMapping(this.cssModel, this.workspace);
     if (WebInspector.experimentsSettings.sass.isEnabled())
         new WebInspector.SASSSourceMapping(this.cssModel, this.workspace, this.networkWorkspaceProvider);
@@ -468,7 +460,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     WebInspector.endBatchUpdate();
 
     this.addMainEventListeners(document);
-    WebInspector.registerLinkifierPlugin(this._profilesLinkifier.bind(this));
 
     window.addEventListener("resize", this.windowResize.bind(this), true);
 
@@ -583,7 +574,7 @@ WebInspector.close = function(event)
 WebInspector.documentClick = function(event)
 {
     var anchor = event.target.enclosingNodeOrSelfWithNodeName("a");
-    if (!anchor || (anchor.target === "_blank" && !WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp.exec(anchor.href)))
+    if (!anchor || (anchor.target === "_blank"))
         return;
 
     // Prevent the link from navigating, since we don't do any navigation by following links normally.
@@ -596,7 +587,7 @@ WebInspector.documentClick = function(event)
 
         const profileMatch = WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp.exec(anchor.href);
         if (profileMatch) {
-            WebInspector.showProfileForURL(anchor.href);
+            WebInspector.showPanel("profiles").showProfile(profileMatch[1], profileMatch[2]);
             return;
         }
 
@@ -982,11 +973,6 @@ WebInspector._showAnchorLocationInPanel = function(anchor, panel)
     WebInspector.inspectorView.showPanelForAnchorNavigation(panel);
     panel.showAnchorLocation(anchor);
     return true;
-}
-
-WebInspector.showProfileForURL = function(url)
-{
-    WebInspector.showPanel("profiles").showProfileForURL(url);
 }
 
 WebInspector.evaluateInConsole = function(expression, showResultOnly)
