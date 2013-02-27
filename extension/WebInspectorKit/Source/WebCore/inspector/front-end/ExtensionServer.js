@@ -639,8 +639,13 @@ WebInspector.ExtensionServer.prototype = {
     
     _onSendCommand: function(message, port) 
     {
-        function dispatchSendCommandReply(result) 
+        function dispatchSendCommandReply(error, result) 
         {
+            if (error) 
+                result = {error: error};
+            else
+                result = {value: result};
+            
             this._dispatchCallback(message.requestId, port, result);
         }
         InspectorBackend._wrapCallbackAndSendMessageObject(message.method, message.params, dispatchSendCommandReply.bind(this));

@@ -778,7 +778,13 @@ RemoteDebugImpl.prototype =
 {
     sendCommand: function(domainMethod, params, callback)
     {
-        return extensionServer.sendRequest({ command: commands.SendCommand, method: domainMethod, params: params }, callback);
+        function didSendRequest(result) {
+            if (result.error)
+                throw new Error(domainMethod + '(' + params.join(',') + ') FAILED ' + result.error);
+            else 
+                callback(result.value);
+        }
+        return extensionServer.sendRequest({ command: commands.SendCommand, method: domainMethod, params: params }, didSendRequest);
     },
     /**
      * @param domainMethod {string} eg 'Page.loadEventFired' 
