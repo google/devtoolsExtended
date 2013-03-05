@@ -200,7 +200,7 @@ WebInspector.ScriptsPanel.prototype = {
 
     defaultFocusedElement: function()
     {
-        return this._navigator.view.defaultFocusedElement();
+        return this._editorContainer.view.defaultFocusedElement() || this._navigator.view.defaultFocusedElement();
     },
 
     get paused()
@@ -1028,9 +1028,10 @@ WebInspector.ScriptsPanel.prototype = {
     {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data.uiSourceCode);
         var name = /** @type {string} */ (event.data.name);
-        if (!uiSourceCode.project().type() === WebInspector.projectTypes.Snippets)
+        if (uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets)
             return;
         WebInspector.scriptSnippetModel.renameScriptSnippet(uiSourceCode, name);
+        uiSourceCode.rename(name);
     },
         
     /**

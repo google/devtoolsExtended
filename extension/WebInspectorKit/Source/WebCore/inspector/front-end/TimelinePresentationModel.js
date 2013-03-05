@@ -76,6 +76,7 @@ WebInspector.TimelinePresentationModel._initRecordStyles = function()
     recordStyles[recordTypes.InvalidateLayout] = { title: WebInspector.UIString("Invalidate Layout"), category: categories["rendering"] };
     recordStyles[recordTypes.Layout] = { title: WebInspector.UIString("Layout"), category: categories["rendering"] };
     recordStyles[recordTypes.Paint] = { title: WebInspector.UIString("Paint"), category: categories["painting"] };
+    recordStyles[recordTypes.Rasterize] = { title: WebInspector.UIString("Rasterize"), category: categories["painting"] };
     recordStyles[recordTypes.ScrollLayer] = { title: WebInspector.UIString("Scroll"), category: categories["painting"] };
     recordStyles[recordTypes.DecodeImage] = { title: WebInspector.UIString("Image Decode"), category: categories["painting"] };
     recordStyles[recordTypes.ResizeImage] = { title: WebInspector.UIString("Image Resize"), category: categories["painting"] };
@@ -139,9 +140,8 @@ WebInspector.TimelinePresentationModel.isEventDivider = function(record)
     if (record.type === recordTypes.TimeStamp)
         return true;
     if (record.type === recordTypes.MarkDOMContent || record.type === recordTypes.MarkLoad) {
-        var mainFrame = WebInspector.resourceTreeModel.mainFrame;
-        if (mainFrame && mainFrame.id === record.frameId)
-            return true;
+        if (record.data && ((typeof record.data.isMainFrame) === "boolean"))
+            return record.data.isMainFrame;
     }
     return false;
 }
@@ -518,7 +518,10 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
     this._children = [];
     if (!hidden && parentRecord) {
         this.parent = parentRecord;
-        parentRecord.children.push(this);
+        if (this.isBackground && parentRecord === presentationModel._rootRecord)
+            WebInspector.TimelinePresentationModel.insertRetrospecitveRecord(parentRecord, this);
+        else
+            parentRecord.children.push(this);
     }
     if (origin)
         this._origin = origin;
@@ -618,12 +621,8 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
                 var openRecord = recordStack[index - 1];
                 if (openRecord.startTime > timeRecord.startTime)
                     continue;
-                function compareStartTime(value, record)
-                {
-                    return value < record.startTime ? -1 : 1;
-                }
                 timeRecord.parent.children.splice(timeRecord.parent.children.indexOf(timeRecord));
-                openRecord.children.splice(insertionIndexForObjectInListSortedByFunction(timeRecord.startTime, openRecord.children, compareStartTime), 0, timeRecord);
+                WebInspector.TimelinePresentationModel.insertRetrospecitveRecord(openRecord, timeRecord);
                 break;
             }
         }
@@ -682,6 +681,16 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
         }
         break;
     }
+}
+
+WebInspector.TimelinePresentationModel.insertRetrospecitveRecord = function(parent, record)
+{
+    function compareStartTime(value, record)
+    {
+        return value < record.startTime ? -1 : 1;
+    }
+    
+    parent.children.splice(insertionIndexForObjectInListSortedByFunction(record.startTime, parent.children, compareStartTime), 0, record);
 }
 
 WebInspector.TimelinePresentationModel.Record.prototype = {
@@ -781,6 +790,14 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     get endTime()
     {
         return WebInspector.TimelineModel.endTimeInSeconds(this._record);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    get isBackground()
+    {
+        return !!this._record.thread;
     },
 
     /**
@@ -1064,8 +1081,8 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             break;
         }
 
-        if (typeof details === "string")
-            return this._createSpanWithText(details);
+        if (details && !(details instanceof Node))
+            return this._createSpanWithText("" + details);
 
         return details ? details : null;
     },
@@ -1100,11 +1117,15 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @param {string=} defaultValue
+     * @param {*=} defaultValue
+     * @return {Element|string}
      */
     _linkifyScriptLocation: function(defaultValue)
     {
-        return this.scriptName ? this._linkifyLocation(this.scriptName, this.scriptLine, 0) : defaultValue;
+        if (this.scriptName)
+            return this._linkifyLocation(this.scriptName, this.scriptLine, 0);
+        else
+            return defaultValue ? "" + defaultValue : null;
     },
 
     calculateAggregatedStats: function(categories)

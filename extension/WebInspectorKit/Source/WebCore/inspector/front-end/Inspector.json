@@ -111,7 +111,7 @@
                     { "name": "loaderId", "$ref": "Network.LoaderId", "description": "Identifier of the loader associated with this frame." },
                     { "name": "name", "type": "string", "optional": true, "description": "Frame's name as specified in the tag." },
                     { "name": "url", "type": "string", "description": "Frame document's URL." },
-                    { "name": "securityOrigin", "type": "string", "optional": true, "description": "Frame document's security origin." },
+                    { "name": "securityOrigin", "type": "string", "description": "Frame document's security origin." },
                     { "name": "mimeType", "type": "string", "description": "Frame document's mimeType as determined by the browser." }
                 ],
                 "hidden": true
@@ -1283,15 +1283,6 @@
         "hidden": true,
         "types": [
             {
-                "id": "SecurityOriginWithDatabaseNames",
-                "type": "object",
-                "description": "Security origin with database names.",
-                "properties": [
-                    { "name": "securityOrigin", "type": "string", "description": "Security origin." },
-                    { "name": "databaseNames", "type": "array", "items": { "type": "string" }, "description": "Database names for this origin." }
-                ]
-            },
-            {
                 "id": "DatabaseWithObjectStores",
                 "type": "object",
                 "description": "Database with an array of object stores.",
@@ -1378,21 +1369,21 @@
                 "description": "Disables events from backend."
             },
             {
-                "name": "requestDatabaseNamesForFrame",
+                "name": "requestDatabaseNames",
                 "async": true,
                 "parameters": [
-                    { "name": "frameId", "$ref": "Network.FrameId", "description": "Frame id." }
+                    { "name": "securityOrigin", "type": "string", "description": "Security origin." }
                 ],
                 "returns": [
-                    { "name": "securityOriginWithDatabaseNames", "$ref": "SecurityOriginWithDatabaseNames", "description": "Frame with database names." }
+                    { "name": "databaseNames", "type": "array", "items": { "type": "string" }, "description": "Database names for origin." }
                 ],
-                "description": "Requests database names for given frame's security origin."
+                "description": "Requests database names for given security origin."
             },
             {
                 "name": "requestDatabase",
                 "async": true,
                 "parameters": [
-                    { "name": "frameId", "$ref": "Network.FrameId", "description": "Frame id." },
+                    { "name": "securityOrigin", "type": "string", "description": "Security origin." },
                     { "name": "databaseName", "type": "string", "description": "Database name." }
                 ],
                 "returns": [
@@ -1404,7 +1395,7 @@
                 "name": "requestData",
                 "async": true,
                 "parameters": [
-                    { "name": "frameId", "$ref": "Network.FrameId", "description": "Frame id." },
+                    { "name": "securityOrigin", "type": "string", "description": "Security origin." },
                     { "name": "databaseName", "type": "string", "description": "Database name." },
                     { "name": "objectStoreName", "type": "string", "description": "Object store name." },
                     { "name": "indexName", "type": "string", "description": "Index name, empty string for object store data requests." },
@@ -2271,8 +2262,10 @@
                 "id": "SourceRange",
                 "type": "object",
                 "properties": [
-                    { "name": "start", "type": "integer", "description": "Start of range (inclusive)."},
-                    { "name": "end", "type": "integer", "description": "End of range (exclusive)."}
+                    { "name": "startLine", "type": "integer", "description": "Start line of range." },
+                    { "name": "startColumn", "type": "integer", "description": "Start column of range (inclusive)." },
+                    { "name": "endLine", "type": "integer", "description": "End line of range" },
+                    { "name": "endColumn", "type": "integer", "description": "End column of range (exclusive)." }
                 ],
                 "description": "Text range within a resource."
             },
@@ -2595,6 +2588,7 @@
                 "type": "object",
                 "properties": [
                     { "name": "type", "type": "string", "description": "Event type." },
+                    { "name": "thread", "type": "string", "optional": true, "description": "If present, identifies the thread that produced the event." },
                     { "name": "data", "type": "object", "description": "Event data." },
                     { "name": "children", "type": "array", "optional": true, "items": { "$ref": "TimelineEvent" }, "description": "Nested records." }
                 ],
@@ -3669,11 +3663,10 @@
                 "properties": [
                     { "name": "layerId", "$ref": "LayerId", "description": "The unique id for this layer." },
                     { "name": "bounds", "$ref": "IntRect", "description": "Bounds of the layer." },
-                    { "name": "isComposited", "type": "boolean", "description": "Indicates whether this layer is composited." },
+                    { "name": "isComposited", "type": "boolean", "optional": true, "description": "Indicates whether this layer is composited." },
                     { "name": "paintCount", "type": "integer", "optional": true, "description": "Indicates how many time this layer has painted." },
                     { "name": "memory", "type": "integer", "optional": true, "description": "Estimated memory used by this layer." },
-                    { "name": "compositedBounds", "$ref": "IntRect", "optional": true, "description": "The bounds of the composited layer." },
-                    { "name": "childLayers", "type": "array", "optional": true, "items": { "$ref": "Layer" }, "description": "Child layers." }
+                    { "name": "compositedBounds", "$ref": "IntRect", "optional": true, "description": "The bounds of the composited layer." }
                 ]
             }
         ],
@@ -3685,23 +3678,6 @@
             {
                 "name": "disable",
                 "description": "Disables compositing tree inspection."
-            },
-            {
-                "name": "getLayerTree",
-                "description": "Returns the layer tree structure of the current page.",
-                "returns": [
-                    { "name": "layerTree", "$ref": "Layer", "description": "Layer tree structure of the current page." }
-                ]
-            },
-            {
-                "name": "nodeIdForLayerId",
-                "description": "Returns the node id for a given layer id.",
-                "parameters": [
-                    { "name": "layerId", "$ref": "LayerId" }
-                ],
-                "returns": [
-                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "The node id for the given layer id." }
-                ]
             }
         ],
         "events": [

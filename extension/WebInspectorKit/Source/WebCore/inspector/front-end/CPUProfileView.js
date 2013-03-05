@@ -53,7 +53,18 @@ WebInspector.CPUProfileView = function(profile)
     this.dataGrid = new WebInspector.DataGrid(columns);
     this.dataGrid.addEventListener("sorting changed", this._sortProfile, this);
     this.dataGrid.element.addEventListener("mousedown", this._mouseDownInDataGrid.bind(this), true);
-    this.dataGrid.show(this.element);
+
+    if (WebInspector.experimentsSettings.cpuFlameChart.isEnabled()) {
+        this._splitView = new WebInspector.SplitView(false, "flameChartSplitLocation");
+        this._splitView.show(this.element);
+
+        this.dataGrid.show(this._splitView.firstElement());
+
+        this.flameChart = new WebInspector.FlameChart(this);
+        this.flameChart.addEventListener(WebInspector.FlameChart.Events.SelectedNode, this._revealProfilerNode.bind(this));
+        this.flameChart.show(this._splitView.secondElement());
+    } else
+        this.dataGrid.show(this.element);
 
     this.viewSelectComboBox = new WebInspector.StatusBarComboBox(this._changeView.bind(this));
 
@@ -88,6 +99,17 @@ WebInspector.CPUProfileView._TypeTree = "Tree";
 WebInspector.CPUProfileView._TypeHeavy = "Heavy";
 
 WebInspector.CPUProfileView.prototype = {
+    _revealProfilerNode: function(event)
+    {
+        var current = this.profileDataGridTree.children[0];
+
+        while (current && current.profileNode !== event.data)
+            current = current.traverseNextNode(false, null, false);
+
+        if (current)
+            current.revealAndSelect();
+    },
+
     /**
      * @param {?Protocol.Error} error
      * @param {ProfilerAgent.CPUProfile} profile
@@ -109,6 +131,8 @@ WebInspector.CPUProfileView.prototype = {
         this._assignParentsInProfile();
         this._changeView();
         this._updatePercentButton();
+        if (this.flameChart)
+            this.flameChart.update();
     },
 
     get statusBarItems()
@@ -750,3 +774,5 @@ WebInspector.CPUProfileHeader.prototype = {
 
     __proto__: WebInspector.ProfileHeader.prototype
 }
+
+importScript("FlameChart.js");

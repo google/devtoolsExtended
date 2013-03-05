@@ -68,6 +68,7 @@ WebInspector.FileDescriptor = function(path, originURL, url, contentType, isEdit
 
 /**
  * @interface
+ * @extends {WebInspector.EventTarget}
  */
 WebInspector.ProjectDelegate = function() { }
 
@@ -101,6 +102,13 @@ WebInspector.ProjectDelegate.prototype = {
 
     /**
      * @param {Array.<string>} path
+     * @param {string} currentContent
+     * @param {function(?string)} callback
+     */
+    requestUpdatedFileContent: function(path, currentContent, callback) { },
+
+    /**
+     * @param {Array.<string>} path
      * @param {string} newContent
      * @param {function(?string)} callback
      */
@@ -113,21 +121,7 @@ WebInspector.ProjectDelegate.prototype = {
      * @param {boolean} isRegex
      * @param {function(Array.<WebInspector.ContentProvider.SearchMatch>)} callback
      */
-    searchInFileContent: function(path, query, caseSensitive, isRegex, callback) { },
-
-    /**
-     * @param {string} eventType
-     * @param {function(WebInspector.Event)} listener
-     * @param {Object=} thisObject
-     */
-    addEventListener: function(eventType, listener, thisObject) { },
-
-    /**
-     * @param {string} eventType
-     * @param {function(WebInspector.Event)} listener
-     * @param {Object=} thisObject
-     */
-    removeEventListener: function(eventType, listener, thisObject) { }
+    searchInFileContent: function(path, query, caseSensitive, isRegex, callback) { }
 }
 
 /**
@@ -252,6 +246,15 @@ WebInspector.Project.prototype = {
     requestFileContent: function(uiSourceCode, callback)
     {
         this._projectDelegate.requestFileContent(uiSourceCode.path(), callback);
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {function(?string)} callback
+     */
+    requestUpdatedFileContent: function(uiSourceCode, callback)
+    {
+        this._projectDelegate.requestUpdatedFileContent(uiSourceCode.path(), uiSourceCode.workingCopy(), callback);
     },
 
     /**

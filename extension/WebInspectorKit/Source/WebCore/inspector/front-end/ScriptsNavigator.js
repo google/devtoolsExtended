@@ -181,14 +181,6 @@ WebInspector.SnippetsNavigatorView.Events = {
 
 WebInspector.SnippetsNavigatorView.prototype = {
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
-     */
-    getOrCreateFolderTreeElement: function(uiSourceCode)
-    {
-        return this._scriptsTree;
-    },
-
-    /**
      * @param {Event} event
      * @param {WebInspector.UISourceCode=} uiSourceCode
      */
@@ -210,7 +202,7 @@ WebInspector.SnippetsNavigatorView.prototype = {
      */
     _handleEvaluateSnippet: function(uiSourceCode)
     {
-        if (!uiSourceCode.project().type() === WebInspector.projectTypes.Snippets)
+        if (uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets)
             return;
         WebInspector.scriptSnippetModel.evaluateScriptSnippet(uiSourceCode);
     },
@@ -228,7 +220,7 @@ WebInspector.SnippetsNavigatorView.prototype = {
      */
     _handleRemoveSnippet: function(uiSourceCode)
     {
-        if (!uiSourceCode.project().type() === WebInspector.projectTypes.Snippets)
+        if (uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets)
             return;
         WebInspector.scriptSnippetModel.deleteScriptSnippet(uiSourceCode);
     },

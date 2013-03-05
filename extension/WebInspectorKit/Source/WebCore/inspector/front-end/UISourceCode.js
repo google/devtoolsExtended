@@ -132,12 +132,15 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @param {string} url
+     * @param {string} newName
      */
-    urlChanged: function(url)
+    rename: function(newName)
     {
-        this._url = url;
-        this._originURL = url;
+        if (!this._path.length)
+            return;
+        this._path[this._path.length - 1] = newName;
+        this._url = newName;
+        this._originURL = newName;
         this.dispatchEventToListeners(WebInspector.UISourceCode.Events.TitleChanged, null);
     },
 
@@ -209,6 +212,26 @@ WebInspector.UISourceCode.prototype = {
         this._requestContentCallbacks.push(callback);
         if (this._requestContentCallbacks.length === 1)
             this._project.requestFileContent(this, this._fireContentAvailable.bind(this));
+    },
+
+    checkContentUpdated: function()
+    {
+        this._project.requestUpdatedFileContent(this, updatedContentLoaded.bind(this));
+
+        function updatedContentLoaded(updatedContent)
+        {
+            if (typeof updatedContent !== "string")
+                return;
+
+            if (!this.isDirty()) {
+                this.addRevision(updatedContent);
+                return;
+            }
+
+            var shouldUpdate = window.confirm(WebInspector.UIString("This file was changed externally. Would you like to reload it?"));
+            if (shouldUpdate)
+                this.addRevision(updatedContent);
+        }
     },
 
     /**
@@ -632,6 +655,7 @@ WebInspector.UISourceCode.prototype = {
 
 /**
  * @interface
+ * @extends {WebInspector.EventTarget}
  */
 WebInspector.UISourceCodeProvider = function()
 {
@@ -647,20 +671,6 @@ WebInspector.UISourceCodeProvider.prototype = {
      * @return {Array.<WebInspector.UISourceCode>}
      */
     uiSourceCodes: function() {},
-
-    /**
-     * @param {string} eventType
-     * @param {function(WebInspector.Event)} listener
-     * @param {Object=} thisObject
-     */
-    addEventListener: function(eventType, listener, thisObject) { },
-
-    /**
-     * @param {string} eventType
-     * @param {function(WebInspector.Event)} listener
-     * @param {Object=} thisObject
-     */
-    removeEventListener: function(eventType, listener, thisObject) { }
 }
 
 /**

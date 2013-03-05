@@ -779,10 +779,16 @@ RemoteDebugImpl.prototype =
     sendCommand: function(domainMethod, params, callback)
     {
         function didSendRequest(result) {
-            if (result.error)
-                throw new Error(domainMethod + '(' + params.join(',') + ') FAILED ' + result.error);
-            else 
-                callback(result.value);
+            if (!callback) { 
+                function formatParams(key) 
+                {
+                    return key + ': ' + params[key];
+                }
+                var formattedParams = Object.keys(params).map(formatParams).join(',');
+                throw new Error(domainMethod + '(' + formattedParams + ') FAILED ' + result.error);
+            } else {
+                callback(result.error, result.value);
+            }
         }
         return extensionServer.sendRequest({ command: commands.SendCommand, method: domainMethod, params: params }, didSendRequest);
     },

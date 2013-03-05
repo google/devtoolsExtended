@@ -80,10 +80,19 @@ InspectorBackend.registerMemoryDispatcher = function(dispatcher) {}
 
 var PageAgent = {};
 
-/** @typedef {string} */
-PageAgent.ResourceType;
+/** @enum {string} */
+PageAgent.ResourceType = {
+    Document: "Document",
+    Stylesheet: "Stylesheet",
+    Image: "Image",
+    Font: "Font",
+    Script: "Script",
+    XHR: "XHR",
+    WebSocket: "WebSocket",
+    Other: "Other"
+};
 
-/** @typedef {{id:(string), parentId:(string|undefined), loaderId:(NetworkAgent.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string|undefined), mimeType:(string)}|null} */
+/** @typedef {{id:(string), parentId:(string|undefined), loaderId:(NetworkAgent.LoaderId), name:(string|undefined), url:(string), securityOrigin:(string), mimeType:(string)}|null} */
 PageAgent.Frame;
 
 /** @typedef {{frame:(PageAgent.Frame), childFrames:(Array.<PageAgent.FrameResourceTree>|undefined), resources:(Array.<Object>)}|null} */
@@ -447,13 +456,51 @@ var RuntimeAgent = {};
 /** @typedef {string} */
 RuntimeAgent.RemoteObjectId;
 
-/** @typedef {{type:(string), subtype:(string|undefined), className:(string|undefined), value:(*|undefined), description:(string|undefined), objectId:(RuntimeAgent.RemoteObjectId|undefined), preview:(RuntimeAgent.ObjectPreview|undefined)}|null} */
+/** @enum {string} */
+RuntimeAgent.RemoteObjectType = {
+    Object: "object",
+    Function: "function",
+    Undefined: "undefined",
+    String: "string",
+    Number: "number",
+    Boolean: "boolean"
+};
+
+/** @enum {string} */
+RuntimeAgent.RemoteObjectSubtype = {
+    Array: "array",
+    Null: "null",
+    Node: "node",
+    Regexp: "regexp",
+    Date: "date"
+};
+
+/** @typedef {{type:(RuntimeAgent.RemoteObjectType), subtype:(RuntimeAgent.RemoteObjectSubtype|undefined), className:(string|undefined), value:(*|undefined), description:(string|undefined), objectId:(RuntimeAgent.RemoteObjectId|undefined), preview:(RuntimeAgent.ObjectPreview|undefined)}|null} */
 RuntimeAgent.RemoteObject;
 
 /** @typedef {{lossless:(boolean), overflow:(boolean), properties:(Array.<RuntimeAgent.PropertyPreview>)}|null} */
 RuntimeAgent.ObjectPreview;
 
-/** @typedef {{name:(string), type:(string), value:(string|undefined), valuePreview:(RuntimeAgent.ObjectPreview|undefined), subtype:(string|undefined)}|null} */
+/** @enum {string} */
+RuntimeAgent.PropertyPreviewType = {
+    Object: "object",
+    Function: "function",
+    Undefined: "undefined",
+    String: "string",
+    Number: "number",
+    Boolean: "boolean"
+};
+
+/** @enum {string} */
+RuntimeAgent.PropertyPreviewSubtype = {
+    Array: "array",
+    Null: "null",
+    Node: "node",
+    Regexp: "regexp",
+    Date: "date"
+};
+
+/** @typedef {{name:(string), type:(RuntimeAgent.PropertyPreviewType), value:(string|undefined), valuePreview:(RuntimeAgent.ObjectPreview|undefined), subtype:(RuntimeAgent.PropertyPreviewSubtype|undefined)}|null} */
 RuntimeAgent.PropertyPreview;
 
 /** @typedef {{name:(string), value:(RuntimeAgent.RemoteObject|undefined), writable:(boolean|undefined), get:(RuntimeAgent.RemoteObject|undefined), set:(RuntimeAgent.RemoteObject|undefined), configurable:(boolean), enumerable:(boolean), wasThrown:(boolean|undefined), isOwn:(boolean|undefined)}|null} */
@@ -558,7 +605,44 @@ InspectorBackend.registerRuntimeDispatcher = function(dispatcher) {}
 
 var ConsoleAgent = {};
 
-/** @typedef {{source:(string), level:(string), text:(string), type:(string|undefined), url:(string|undefined), line:(number|undefined), repeatCount:(number|undefined), parameters:(Array.<RuntimeAgent.RemoteObject>|undefined), stackTrace:(ConsoleAgent.StackTrace|undefined), networkRequestId:(NetworkAgent.RequestId|undefined)}|null} */
+/** @enum {string} */
+ConsoleAgent.ConsoleMessageSource = {
+    HTML: "html",
+    WML: "wml",
+    XML: "xml",
+    Javascript: "javascript",
+    Network: "network",
+    ConsoleAPI: "console-api",
+    Other: "other"
+};
+
+/** @enum {string} */
+ConsoleAgent.ConsoleMessageLevel = {
+    Tip: "tip",
+    Log: "log",
+    Warning: "warning",
+    Error: "error",
+    Debug: "debug"
+};
+
+/** @enum {string} */
+ConsoleAgent.ConsoleMessageType = {
+    Log: "log",
+    Dir: "dir",
+    DirXML: "dirxml",
+    Table: "table",
+    Trace: "trace",
+    Clear: "clear",
+    StartGroup: "startGroup",
+    StartGroupCollapsed: "startGroupCollapsed",
+    EndGroup: "endGroup",
+    Assert: "assert",
+    Timing: "timing",
+    Profile: "profile",
+    ProfileEnd: "profileEnd"
+};
+
+/** @typedef {{source:(ConsoleAgent.ConsoleMessageSource), level:(ConsoleAgent.ConsoleMessageLevel), text:(string), type:(ConsoleAgent.ConsoleMessageType|undefined), url:(string|undefined), line:(number|undefined), repeatCount:(number|undefined), parameters:(Array.<RuntimeAgent.RemoteObject>|undefined), stackTrace:(ConsoleAgent.StackTrace|undefined), networkRequestId:(NetworkAgent.RequestId|undefined)}|null} */
 ConsoleAgent.ConsoleMessage;
 
 /** @typedef {{functionName:(string), url:(string), lineNumber:(number), columnNumber:(number)}|null} */
@@ -667,7 +751,14 @@ NetworkAgent.WebSocketFrame;
 /** @typedef {{url:(string), type:(PageAgent.ResourceType), response:(NetworkAgent.Response|undefined), bodySize:(number)}|null} */
 NetworkAgent.CachedResource;
 
-/** @typedef {{type:(string), stackTrace:(ConsoleAgent.StackTrace|undefined), url:(string|undefined), lineNumber:(number|undefined)}|null} */
+/** @enum {string} */
+NetworkAgent.InitiatorType = {
+    Parser: "parser",
+    Script: "script",
+    Other: "other"
+};
+
+/** @typedef {{type:(NetworkAgent.InitiatorType), stackTrace:(ConsoleAgent.StackTrace|undefined), url:(string|undefined), lineNumber:(number|undefined)}|null} */
 NetworkAgent.Initiator;
 
 /**
@@ -909,9 +1000,6 @@ InspectorBackend.registerDatabaseDispatcher = function(dispatcher) {}
 
 var IndexedDBAgent = {};
 
-/** @typedef {{securityOrigin:(string), databaseNames:(Array.<string>)}|null} */
-IndexedDBAgent.SecurityOriginWithDatabaseNames;
-
 /** @typedef {{name:(string), version:(string), intVersion:(number), objectStores:(Array.<IndexedDBAgent.ObjectStore>)}|null} */
 IndexedDBAgent.DatabaseWithObjectStores;
 
@@ -921,7 +1009,15 @@ IndexedDBAgent.ObjectStore;
 /** @typedef {{name:(string), keyPath:(IndexedDBAgent.KeyPath), unique:(boolean), multiEntry:(boolean)}|null} */
 IndexedDBAgent.ObjectStoreIndex;
 
-/** @typedef {{type:(string), number:(number|undefined), string:(string|undefined), date:(number|undefined), array:(Array.<IndexedDBAgent.Key>|undefined)}|null} */
+/** @enum {string} */
+IndexedDBAgent.KeyType = {
+    Number: "number",
+    String: "string",
+    Date: "date",
+    Array: "array"
+};
+
+/** @typedef {{type:(IndexedDBAgent.KeyType), number:(number|undefined), string:(string|undefined), date:(number|undefined), array:(Array.<IndexedDBAgent.Key>|undefined)}|null} */
 IndexedDBAgent.Key;
 
 /** @typedef {{lower:(IndexedDBAgent.Key|undefined), upper:(IndexedDBAgent.Key|undefined), lowerOpen:(boolean), upperOpen:(boolean)}|null} */
@@ -930,7 +1026,14 @@ IndexedDBAgent.KeyRange;
 /** @typedef {{key:(RuntimeAgent.RemoteObject), primaryKey:(RuntimeAgent.RemoteObject), value:(RuntimeAgent.RemoteObject)}|null} */
 IndexedDBAgent.DataEntry;
 
-/** @typedef {{type:(string), string:(string|undefined), array:(Array.<string>|undefined)}|null} */
+/** @enum {string} */
+IndexedDBAgent.KeyPathType = {
+    Null: "null",
+    String: "string",
+    Array: "array"
+};
+
+/** @typedef {{type:(IndexedDBAgent.KeyPathType), string:(string|undefined), array:(Array.<string>|undefined)}|null} */
 IndexedDBAgent.KeyPath;
 
 /**
@@ -948,24 +1051,24 @@ IndexedDBAgent.disable = function(opt_callback) {}
 IndexedDBAgent.disable.invoke = function(obj, opt_callback) {}
 
 /**
- * @param {NetworkAgent.FrameId} frameId
- * @param {function(?Protocol.Error, IndexedDBAgent.SecurityOriginWithDatabaseNames):void=} opt_callback
+ * @param {string} securityOrigin
+ * @param {function(?Protocol.Error, Array.<string>):void=} opt_callback
  */
-IndexedDBAgent.requestDatabaseNamesForFrame = function(frameId, opt_callback) {}
-/** @param {function(?Protocol.Error, IndexedDBAgent.SecurityOriginWithDatabaseNames):void=} opt_callback */
-IndexedDBAgent.requestDatabaseNamesForFrame.invoke = function(obj, opt_callback) {}
+IndexedDBAgent.requestDatabaseNames = function(securityOrigin, opt_callback) {}
+/** @param {function(?Protocol.Error, Array.<string>):void=} opt_callback */
+IndexedDBAgent.requestDatabaseNames.invoke = function(obj, opt_callback) {}
 
 /**
- * @param {NetworkAgent.FrameId} frameId
+ * @param {string} securityOrigin
  * @param {string} databaseName
  * @param {function(?Protocol.Error, IndexedDBAgent.DatabaseWithObjectStores):void=} opt_callback
  */
-IndexedDBAgent.requestDatabase = function(frameId, databaseName, opt_callback) {}
+IndexedDBAgent.requestDatabase = function(securityOrigin, databaseName, opt_callback) {}
 /** @param {function(?Protocol.Error, IndexedDBAgent.DatabaseWithObjectStores):void=} opt_callback */
 IndexedDBAgent.requestDatabase.invoke = function(obj, opt_callback) {}
 
 /**
- * @param {NetworkAgent.FrameId} frameId
+ * @param {string} securityOrigin
  * @param {string} databaseName
  * @param {string} objectStoreName
  * @param {string} indexName
@@ -974,7 +1077,7 @@ IndexedDBAgent.requestDatabase.invoke = function(obj, opt_callback) {}
  * @param {IndexedDBAgent.KeyRange=} opt_keyRange
  * @param {function(?Protocol.Error, Array.<IndexedDBAgent.DataEntry>, boolean):void=} opt_callback
  */
-IndexedDBAgent.requestData = function(frameId, databaseName, objectStoreName, indexName, skipCount, pageSize, opt_keyRange, opt_callback) {}
+IndexedDBAgent.requestData = function(securityOrigin, databaseName, objectStoreName, indexName, skipCount, pageSize, opt_keyRange, opt_callback) {}
 /** @param {function(?Protocol.Error, Array.<IndexedDBAgent.DataEntry>, boolean):void=} opt_callback */
 IndexedDBAgent.requestData.invoke = function(obj, opt_callback) {}
 /** @interface */
@@ -1555,8 +1658,13 @@ CSSAgent.StyleSheetId;
 /** @typedef {{styleSheetId:(CSSAgent.StyleSheetId), ordinal:(number)}|null} */
 CSSAgent.CSSStyleId;
 
-/** @typedef {string} */
-CSSAgent.StyleSheetOrigin;
+/** @enum {string} */
+CSSAgent.StyleSheetOrigin = {
+    User: "user",
+    UserAgent: "user-agent",
+    Inspector: "inspector",
+    Regular: "regular"
+};
 
 /** @typedef {{styleSheetId:(CSSAgent.StyleSheetId), ordinal:(number)}|null} */
 CSSAgent.CSSRuleId;
@@ -1585,7 +1693,7 @@ CSSAgent.CSSStyleSheetBody;
 /** @typedef {{ruleId:(CSSAgent.CSSRuleId|undefined), selectorList:(CSSAgent.SelectorList), sourceURL:(string|undefined), sourceLine:(number), origin:(CSSAgent.StyleSheetOrigin), style:(CSSAgent.CSSStyle), media:(Array.<CSSAgent.CSSMedia>|undefined)}|null} */
 CSSAgent.CSSRule;
 
-/** @typedef {{start:(number), end:(number)}|null} */
+/** @typedef {{startLine:(number), startColumn:(number), endLine:(number), endColumn:(number)}|null} */
 CSSAgent.SourceRange;
 
 /** @typedef {{name:(string), value:(string)}|null} */
@@ -1600,10 +1708,26 @@ CSSAgent.CSSComputedStyleProperty;
 /** @typedef {{styleId:(CSSAgent.CSSStyleId|undefined), cssProperties:(Array.<CSSAgent.CSSProperty>), shorthandEntries:(Array.<CSSAgent.ShorthandEntry>), cssText:(string|undefined), range:(CSSAgent.SourceRange|undefined), width:(string|undefined), height:(string|undefined)}|null} */
 CSSAgent.CSSStyle;
 
-/** @typedef {{name:(string), value:(string), priority:(string|undefined), implicit:(boolean|undefined), text:(string|undefined), parsedOk:(boolean|undefined), status:(string|undefined), range:(CSSAgent.SourceRange|undefined)}|null} */
+/** @enum {string} */
+CSSAgent.CSSPropertyStatus = {
+    Active: "active",
+    Inactive: "inactive",
+    Disabled: "disabled",
+    Style: "style"
+};
+
+/** @typedef {{name:(string), value:(string), priority:(string|undefined), implicit:(boolean|undefined), text:(string|undefined), parsedOk:(boolean|undefined), status:(CSSAgent.CSSPropertyStatus|undefined), range:(CSSAgent.SourceRange|undefined)}|null} */
 CSSAgent.CSSProperty;
 
-/** @typedef {{text:(string), source:(string), sourceURL:(string|undefined), sourceLine:(number|undefined)}|null} */
+/** @enum {string} */
+CSSAgent.CSSMediaSource = {
+    MediaRule: "mediaRule",
+    ImportRule: "importRule",
+    LinkedSheet: "linkedSheet",
+    InlineSheet: "inlineSheet"
+};
+
+/** @typedef {{text:(string), source:(CSSAgent.CSSMediaSource), sourceURL:(string|undefined), sourceLine:(number|undefined)}|null} */
 CSSAgent.CSSMedia;
 
 /** @typedef {{selector:(string), url:(string), lineNumber:(number), time:(number), hitCount:(number), matchCount:(number)}|null} */
@@ -1612,7 +1736,14 @@ CSSAgent.SelectorProfileEntry;
 /** @typedef {{totalTime:(number), data:(Array.<CSSAgent.SelectorProfileEntry>)}|null} */
 CSSAgent.SelectorProfile;
 
-/** @typedef {{regionOverset:(string), nodeId:(DOMAgent.NodeId)}|null} */
+/** @enum {string} */
+CSSAgent.RegionRegionOverset = {
+    Overset: "overset",
+    Fit: "fit",
+    Empty: "empty"
+};
+
+/** @typedef {{regionOverset:(CSSAgent.RegionRegionOverset), nodeId:(DOMAgent.NodeId)}|null} */
 CSSAgent.Region;
 
 /** @typedef {{documentNodeId:(DOMAgent.NodeId), name:(string), overset:(boolean), content:(Array.<DOMAgent.NodeId>), regions:(Array.<CSSAgent.Region>)}|null} */
@@ -1795,7 +1926,7 @@ InspectorBackend.registerCSSDispatcher = function(dispatcher) {}
 
 var TimelineAgent = {};
 
-/** @typedef {{type:(string), data:(Object), children:(Array.<TimelineAgent.TimelineEvent>|undefined)}|null} */
+/** @typedef {{type:(string), thread:(string|undefined), data:(Object), children:(Array.<TimelineAgent.TimelineEvent>|undefined)}|null} */
 TimelineAgent.TimelineEvent;
 
 /**
@@ -1875,7 +2006,16 @@ DebuggerAgent.FunctionDetails;
 /** @typedef {{callFrameId:(DebuggerAgent.CallFrameId), functionName:(string), location:(DebuggerAgent.Location), scopeChain:(Array.<DebuggerAgent.Scope>), this:(RuntimeAgent.RemoteObject)}|null} */
 DebuggerAgent.CallFrame;
 
-/** @typedef {{type:(string), object:(RuntimeAgent.RemoteObject)}|null} */
+/** @enum {string} */
+DebuggerAgent.ScopeType = {
+    Global: "global",
+    Local: "local",
+    With: "with",
+    Closure: "closure",
+    Catch: "catch"
+};
+
+/** @typedef {{type:(DebuggerAgent.ScopeType), object:(RuntimeAgent.RemoteObject)}|null} */
 DebuggerAgent.Scope;
 
 /**
@@ -2143,8 +2283,12 @@ InspectorBackend.registerDebuggerDispatcher = function(dispatcher) {}
 
 var DOMDebuggerAgent = {};
 
-/** @typedef {string} */
-DOMDebuggerAgent.DOMBreakpointType;
+/** @enum {string} */
+DOMDebuggerAgent.DOMBreakpointType = {
+    SubtreeModified: "subtree-modified",
+    AttributeModified: "attribute-modified",
+    NodeRemoved: "node-removed"
+};
 
 /**
  * @param {DOMAgent.NodeId} nodeId
@@ -2222,7 +2366,14 @@ InspectorBackend.registerDOMDebuggerDispatcher = function(dispatcher) {}
 
 var ProfilerAgent = {};
 
-/** @typedef {{typeId:(string), title:(string), uid:(number), maxJSObjectId:(number|undefined)}|null} */
+/** @enum {string} */
+ProfilerAgent.ProfileHeaderTypeId = {
+    CPU: "CPU",
+    CSS: "CSS",
+    HEAP: "HEAP"
+};
+
+/** @typedef {{typeId:(ProfilerAgent.ProfileHeaderTypeId), title:(string), uid:(number), maxJSObjectId:(number|undefined)}|null} */
 ProfilerAgent.ProfileHeader;
 
 /** @typedef {{functionName:(string), url:(string), lineNumber:(number), totalTime:(number), selfTime:(number), numberOfCalls:(number), visible:(boolean), callUID:(number), children:(Array.<ProfilerAgent.CPUProfileNode>)}|null} */
@@ -2742,7 +2893,7 @@ LayerTreeAgent.LayerId;
 /** @typedef {{x:(number), y:(number), width:(number), height:(number)}|null} */
 LayerTreeAgent.IntRect;
 
-/** @typedef {{layerId:(LayerTreeAgent.LayerId), bounds:(LayerTreeAgent.IntRect), isComposited:(boolean), paintCount:(number|undefined), memory:(number|undefined), compositedBounds:(LayerTreeAgent.IntRect|undefined), childLayers:(Array.<LayerTreeAgent.Layer>|undefined)}|null} */
+/** @typedef {{layerId:(LayerTreeAgent.LayerId), bounds:(LayerTreeAgent.IntRect), isComposited:(boolean|undefined), paintCount:(number|undefined), memory:(number|undefined), compositedBounds:(LayerTreeAgent.IntRect|undefined)}|null} */
 LayerTreeAgent.Layer;
 
 /**
@@ -2758,21 +2909,6 @@ LayerTreeAgent.enable.invoke = function(obj, opt_callback) {}
 LayerTreeAgent.disable = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 LayerTreeAgent.disable.invoke = function(obj, opt_callback) {}
-
-/**
- * @param {function(?Protocol.Error, LayerTreeAgent.Layer):void=} opt_callback
- */
-LayerTreeAgent.getLayerTree = function(opt_callback) {}
-/** @param {function(?Protocol.Error, LayerTreeAgent.Layer):void=} opt_callback */
-LayerTreeAgent.getLayerTree.invoke = function(obj, opt_callback) {}
-
-/**
- * @param {LayerTreeAgent.LayerId} layerId
- * @param {function(?Protocol.Error, DOMAgent.NodeId):void=} opt_callback
- */
-LayerTreeAgent.nodeIdForLayerId = function(layerId, opt_callback) {}
-/** @param {function(?Protocol.Error, DOMAgent.NodeId):void=} opt_callback */
-LayerTreeAgent.nodeIdForLayerId.invoke = function(obj, opt_callback) {}
 /** @interface */
 LayerTreeAgent.Dispatcher = function() {};
 LayerTreeAgent.Dispatcher.prototype.layerTreeDidChange = function() {};
