@@ -45,7 +45,7 @@ WebInspector.AceTextEditor = function(url, delegate)
     WebInspector.View.call(this);
     this._delegate = delegate;
     this._url = url;
-    this.element.className = "ace-editor-container";
+    this.element.className = "ace-editor-container source-code";
 
     var prefix = window.flattenImports ? "" : "ace/";
     ace.config.setModuleUrl("ace/mode/javascript", prefix + "mode_javascript.js");
@@ -55,17 +55,64 @@ WebInspector.AceTextEditor = function(url, delegate)
     this._aceEditor = window.ace.edit(this.element);
 
     this._aceEditor.setShowFoldWidgets(false);
+    this._aceEditor.session.setFixedGutterWidth(true);
     this._aceEditor.on("gutterclick", this._gutterClick.bind(this));
     this._aceEditor.on("change", this._onTextChange.bind(this));
     this._aceEditor.setHighlightActiveLine(false);
     this._aceEditor.session.setUseWorker(false);
     this.registerRequiredCSS("ace/acedevtools.css");
+    this._attributes = [];
 }
 
 WebInspector.AceTextEditor.prototype = {
 
+    _updateBreakpoints: function()
+    {
+        this._aceEditor.session.clearBreakpoints();
+        for(var i in this._attributes) {
+            var breakpoint = this.getAttribute(i, "ace_breakpoint");
+            if (!breakpoint)
+                continue;
+            var className = breakpoint.conditional ? "webkit-breakpoint-conditional" : "webkit-breakpoint";
+            if (breakpoint.disabled) className += " webkit-breakpoint-disabled";
+            this._aceEditor.session.setBreakpoint(i, className);
+        }
+    },
+
+    _updateLineAttributes: function(delta) {
+        var range = delta.range;
+        var length, insertionIndex;
+
+        if (range.end.row === range.start.row)
+            return;
+
+        if (delta.action === "insertText") {
+            length = range.end.row - range.start.row;
+            insertionIndex = range.start.column === 0 ? range.start.row: range.start.row + 1;
+        } else if (delta.action === "insertLines") {
+            length = range.end.row - range.start.row;
+            insertionIndex = range.start.row;
+        } else if (delta.action === "removeText") {
+            length = range.start.row - range.end.row;
+            insertionIndex = range.start.row;
+        } else if (delta.action === "removeLines") {
+            length = range.start.row - range.end.row;
+            insertionIndex = range.start.row;
+        }
+
+        if (length > 0) {
+            var spliceArguments = new Array(length);
+            spliceArguments.unshift(insertionIndex, 0);
+            Array.prototype.splice.apply(this._attributes, spliceArguments);
+        } else if (length < 0) {
+            this._attributes.splice(insertionIndex, -length);
+        }
+        this._updateBreakpoints();
+    },
+
     _onTextChange: function(event)
     {
+        this._updateLineAttributes(event.data);
         this._delegate.onTextChanged(null, null);
     },
 
@@ -163,7 +210,11 @@ WebInspector.AceTextEditor.prototype = {
      */
     addBreakpoint: function(lineNumber, disabled, conditional)
     {
-        this._aceEditor.getSession().setBreakpoint(lineNumber, "webkit-breakpoint");
+        this.setAttribute(lineNumber, "ace_breakpoint", {
+            disabled: disabled,
+            conditional: conditional
+        });
+        this._updateBreakpoints();
     },
 
     /**
@@ -171,7 +222,8 @@ WebInspector.AceTextEditor.prototype = {
      */
     removeBreakpoint: function(lineNumber)
     {
-        this._aceEditor.getSession().clearBreakpoint(lineNumber);
+        this.removeAttribute(lineNumber, "ace_breakpoint");
+        this._updateBreakpoints();
     },
 
     /**
@@ -179,7 +231,10 @@ WebInspector.AceTextEditor.prototype = {
      */
     setExecutionLine: function(lineNumber)
     {
-        console.log("aceEditor.setExecutionLine not implemented");
+        this._executionLine = lineNumber;
+        const Range = ace.require('ace/range').Range;
+        this._executionLineMarker = this._aceEditor.session.addMarker(new Range(lineNumber, 0, lineNumber, Infinity), "webkit-execution-line", "fullLine");
+        this._aceEditor.session.addGutterDecoration(lineNumber, "webkit-gutter-execution-line");
     },
 
     /**
@@ -194,7 +249,8 @@ WebInspector.AceTextEditor.prototype = {
 
     clearExecutionLine: function()
     {
-        console.log("aceEditor.clearExecutionLine not implemented");
+        this._aceEditor.session.removeMarker(this._executionLineMarker);
+        this._aceEditor.session.removeGutterDecoration(this._executionLine, "webkit-gutter-execution-line");
     },
 
     /**
@@ -296,7 +352,7 @@ WebInspector.AceTextEditor.prototype = {
      */
     setSelection: function(textRange)
     {
-        console.log("aceEditor.setSelection not implemented");
+        this._aceEditor.scrollToLine(textRange.startLine, true);
     },
 
     /**
@@ -342,21 +398,27 @@ WebInspector.AceTextEditor.prototype = {
     /**
      * @param {number} line
      * @param {string} name
-     * @param {Object?} value
+     * @return {Object|null} value
      */
-    setAttribute: function(line, name, value)
+    getAttribute: function(line, name)
     {
-        console.log("aceEditor.setAttribute not implemented");
+        var attrs = this._attributes[line];
+        return attrs ? attrs[name] : null;
     },
 
     /**
      * @param {number} line
      * @param {string} name
-     * @return {Object|null} value
+     * @param {Object?} value
      */
-    getAttribute: function(line, name)
+    setAttribute: function(line, name, value)
     {
-        console.log("aceEditor.getAttribute not implemented");
+        var attrs = this._attributes[line];
+        if (!attrs) {
+            attrs = {};
+            this._attributes[line] = attrs;
+        }
+        attrs[name] = value;
     },
 
     /**
@@ -365,7 +427,9 @@ WebInspector.AceTextEditor.prototype = {
      */
     removeAttribute: function(line, name)
     {
-        console.log("aceEditor.removeAttribute not implemented");
+        var attrs = this._attributes[line];
+        if (attrs)
+            delete attrs[name];
     },
 
     wasShown: function() { },

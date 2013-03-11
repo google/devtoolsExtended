@@ -333,5 +333,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate) { }
 /** @constructor */
 WebInspector.AceTextEditor = function(url, delegate) { }
 
+WebInspector.suggestReload = function() { }
+WebInspector.reload = function() { }
+
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;

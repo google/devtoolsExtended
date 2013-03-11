@@ -1009,7 +1009,7 @@ function buildPlatformExtensionAPI(extensionInfo)
 
 function buildExtensionAPIInjectedScript(extensionInfo)
 {
-    return "(function(injectedScriptHost, inspectedWindow, injectedScriptId){ " +
+    return "(function(injectedScriptId){ " +
         "var extensionServer;" +
         defineCommonExtensionSymbols.toString() + ";" +
         injectedExtensionAPI.toString() + ";" +

@@ -607,18 +607,20 @@ var ConsoleAgent = {};
 
 /** @enum {string} */
 ConsoleAgent.ConsoleMessageSource = {
-    HTML: "html",
-    WML: "wml",
     XML: "xml",
     Javascript: "javascript",
     Network: "network",
     ConsoleAPI: "console-api",
+    Storage: "storage",
+    Appcache: "appcache",
+    Rendering: "rendering",
+    Css: "css",
+    Security: "security",
     Other: "other"
 };
 
 /** @enum {string} */
 ConsoleAgent.ConsoleMessageLevel = {
-    Tip: "tip",
     Log: "log",
     Warning: "warning",
     Error: "error",
@@ -2890,11 +2892,17 @@ var LayerTreeAgent = {};
 /** @typedef {string} */
 LayerTreeAgent.LayerId;
 
+/** @typedef {string} */
+LayerTreeAgent.PseudoElementId;
+
 /** @typedef {{x:(number), y:(number), width:(number), height:(number)}|null} */
 LayerTreeAgent.IntRect;
 
-/** @typedef {{layerId:(LayerTreeAgent.LayerId), bounds:(LayerTreeAgent.IntRect), isComposited:(boolean|undefined), paintCount:(number|undefined), memory:(number|undefined), compositedBounds:(LayerTreeAgent.IntRect|undefined)}|null} */
+/** @typedef {{layerId:(LayerTreeAgent.LayerId), nodeId:(DOMAgent.NodeId), bounds:(LayerTreeAgent.IntRect), paintCount:(number), memory:(number), compositedBounds:(LayerTreeAgent.IntRect), isInShadowTree:(boolean|undefined), isReflection:(boolean|undefined), isGeneratedContent:(boolean|undefined), pseudoElementId:(LayerTreeAgent.PseudoElementId|undefined), pseudoClass:(string|undefined)}|null} */
 LayerTreeAgent.Layer;
+
+/** @typedef {{transform3D:(boolean|undefined), video:(boolean|undefined), canvas:(boolean|undefined), plugin:(boolean|undefined), iFrame:(boolean|undefined), backfaceVisibilityHidden:(boolean|undefined), clipsCompositingDescendants:(boolean|undefined), animation:(boolean|undefined), filters:(boolean|undefined), positionFixed:(boolean|undefined), positionSticky:(boolean|undefined), overflowScrollingTouch:(boolean|undefined), stacking:(boolean|undefined), overlap:(boolean|undefined), negativeZIndexChildren:(boolean|undefined), transformWithCompositedDescendants:(boolean|undefined), opacityWithCompositedDescendants:(boolean|undefined), maskWithCompositedDescendants:(boolean|undefined), reflectionWithCompositedDescendants:(boolean|undefined), filterWithCompositedDescendants:(boolean|undefined), blendingWithCompositedDescendants:(boolean|undefined), perspective:(boolean|undefined), preserve3D:(boolean|undefined), root:(boolean|undefined)}|null} */
+LayerTreeAgent.CompositingReasons;
 
 /**
  * @param {function(?Protocol.Error):void=} opt_callback
@@ -2909,6 +2917,22 @@ LayerTreeAgent.enable.invoke = function(obj, opt_callback) {}
 LayerTreeAgent.disable = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 LayerTreeAgent.disable.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {DOMAgent.NodeId} nodeId
+ * @param {function(?Protocol.Error, Array.<LayerTreeAgent.Layer>):void=} opt_callback
+ */
+LayerTreeAgent.layersForNode = function(nodeId, opt_callback) {}
+/** @param {function(?Protocol.Error, Array.<LayerTreeAgent.Layer>):void=} opt_callback */
+LayerTreeAgent.layersForNode.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {LayerTreeAgent.LayerId} layerId
+ * @param {function(?Protocol.Error, LayerTreeAgent.CompositingReasons):void=} opt_callback
+ */
+LayerTreeAgent.reasonsForCompositingLayer = function(layerId, opt_callback) {}
+/** @param {function(?Protocol.Error, LayerTreeAgent.CompositingReasons):void=} opt_callback */
+LayerTreeAgent.reasonsForCompositingLayer.invoke = function(obj, opt_callback) {}
 /** @interface */
 LayerTreeAgent.Dispatcher = function() {};
 LayerTreeAgent.Dispatcher.prototype.layerTreeDidChange = function() {};

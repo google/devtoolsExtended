@@ -315,6 +315,30 @@ WebInspector.Events = {
     }
 })();}
 
+WebInspector.suggestReload = function()
+{
+    if (window.confirm(WebInspector.UIString("It is recommended to restart inspector after making these changes. Would you like to restart it?")))
+        this.reload();
+}
+
+WebInspector.reload = function()
+{
+    var queryParams = window.location.search;
+    var url = window.location.href;
+    url = url.substring(0, url.length - queryParams.length);
+    var queryParamsObject = {};
+    for (var name in WebInspector.queryParamsObject)
+        queryParamsObject[name] = WebInspector.queryParamsObject[name];
+    if (this.dockController)
+        queryParamsObject["dockSide"] = this.dockController.dockSide();
+    var names = Object.keys(queryParamsObject);
+    for (var i = 0; i < names.length; ++i)
+        url += (i ? "&" : "?") + names[i] + "=" + queryParamsObject[names[i]];
+
+    InspectorBackend.disconnect();
+    document.location = url;
+}
+
 WebInspector.loaded = function()
 {
     InspectorBackend.loadFromJSONIfNeeded("../Inspector.json");
@@ -726,6 +750,10 @@ WebInspector.documentKeyDown = function(event)
             if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
                 PageAgent.reload(event.shiftKey);
                 event.consume(true);
+            }
+            if (window.DEBUG && event.altKey) {
+                WebInspector.reload();
+                return;
             }
             break;
         case "F5":

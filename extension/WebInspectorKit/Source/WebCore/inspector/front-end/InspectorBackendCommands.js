@@ -88,8 +88,8 @@ InspectorBackend.registerCommand("Runtime.disable", [], []);
 
 // Console.
 InspectorBackend.registerConsoleDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Console");
-InspectorBackend.registerEnum("Console.ConsoleMessageSource", {HTML: "html", WML: "wml", XML: "xml", Javascript: "javascript", Network: "network", ConsoleAPI: "console-api", Other: "other"});
-InspectorBackend.registerEnum("Console.ConsoleMessageLevel", {Tip: "tip", Log: "log", Warning: "warning", Error: "error", Debug: "debug"});
+InspectorBackend.registerEnum("Console.ConsoleMessageSource", {XML: "xml", Javascript: "javascript", Network: "network", ConsoleAPI: "console-api", Storage: "storage", Appcache: "appcache", Rendering: "rendering", Css: "css", Security: "security", Other: "other"});
+InspectorBackend.registerEnum("Console.ConsoleMessageLevel", {Log: "log", Warning: "warning", Error: "error", Debug: "debug"});
 InspectorBackend.registerEnum("Console.ConsoleMessageType", {Log: "log", Dir: "dir", DirXML: "dirxml", Table: "table", Trace: "trace", Clear: "clear", StartGroup: "startGroup", StartGroupCollapsed: "startGroupCollapsed", EndGroup: "endGroup", Assert: "assert", Timing: "timing", Profile: "profile", ProfileEnd: "profileEnd"});
 InspectorBackend.registerEvent("Console.messageAdded", ["message"]);
 InspectorBackend.registerEvent("Console.messageRepeatCountUpdated", ["count"]);
@@ -393,5 +393,7 @@ InspectorBackend.registerLayerTreeDispatcher = InspectorBackend.registerDomainDi
 InspectorBackend.registerEvent("LayerTree.layerTreeDidChange", []);
 InspectorBackend.registerCommand("LayerTree.enable", [], []);
 InspectorBackend.registerCommand("LayerTree.disable", [], []);
+InspectorBackend.registerCommand("LayerTree.layersForNode", [{"name": "nodeId", "type": "number", "optional": false}], ["layers"]);
+InspectorBackend.registerCommand("LayerTree.reasonsForCompositingLayer", [{"name": "layerId", "type": "string", "optional": false}], ["compositingReasons"]);
 
 

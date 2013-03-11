@@ -433,7 +433,7 @@ WebInspector.ScriptsPanel.prototype = {
             return sourceFrame;
         this._currentUISourceCode = uiSourceCode;
         if (!uiSourceCode.project().isServiceProject())
-            this._navigator.revealUISourceCode(uiSourceCode);
+            this._navigator.revealUISourceCode(uiSourceCode, true);
         this._editorContainer.showFile(uiSourceCode);
         this._updateScriptViewStatusBarItems();
 
@@ -751,8 +751,10 @@ WebInspector.ScriptsPanel.prototype = {
     _evaluateSelectionInConsole: function()
     {
         var selection = window.getSelection();
-        if (selection.type === "Range" && !selection.isCollapsed)
-            WebInspector.evaluateInConsole(selection.toString());
+        if (selection.type !== "Range" || selection.isCollapsed)
+            return false;
+        WebInspector.evaluateInConsole(selection.toString());
+        return true;
     },
 
     _createDebugToolbar: function()
@@ -890,7 +892,7 @@ WebInspector.ScriptsPanel.prototype = {
     jumpToPreviousSearchResult: function()
     {
         if (!this._searchView)
-            return false;
+            return;
 
         if (this._searchView !== this.visibleView) {
             this.performSearch(this._searchQuery);
@@ -957,29 +959,32 @@ WebInspector.ScriptsPanel.prototype = {
     {
         var sourceFrame = this.visibleView;
         if (!sourceFrame)
-            return;
+            return false;
 
         if (sourceFrame instanceof WebInspector.JavaScriptSourceFrame) {
             var javaScriptSourceFrame = /** @type {WebInspector.JavaScriptSourceFrame} */ (sourceFrame);
             javaScriptSourceFrame.toggleBreakpointOnCurrentLine();
-        }            
+            return true;
+        }
+        return false;
     },
 
     _showOutlineDialog: function()
     {
         var uiSourceCode = this._editorContainer.currentFile();
         if (!uiSourceCode)
-            return;
+            return false;
 
         switch (uiSourceCode.contentType()) {
         case WebInspector.resourceTypes.Document:
         case WebInspector.resourceTypes.Script:
             WebInspector.JavaScriptOutlineDialog.show(this.visibleView, uiSourceCode);
-            break;
+            return true;
         case WebInspector.resourceTypes.Stylesheet:
             WebInspector.StyleSheetOutlineDialog.show(this.visibleView, uiSourceCode);
-            break;
+            return true;
         }
+        return false;
     },
 
     _installDebuggerSidebarController: function()
@@ -1107,6 +1112,77 @@ WebInspector.ScriptsPanel.prototype = {
     },
 
     /** 
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    _mapFileSystemToNetwork: function(uiSourceCode)
+    {
+        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(uiSourceCode.name(), WebInspector.projectTypes.Network, mapFileSystemToNetwork.bind(this), this.editorView.mainElement)                
+
+        /** 
+         * @param {WebInspector.UISourceCode} networkUISourceCode
+         */
+        function mapFileSystemToNetwork(networkUISourceCode)
+        {
+            this._workspace.addMapping(networkUISourceCode, uiSourceCode);
+        }
+    },
+
+    /** 
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    _removeNetworkMapping: function(uiSourceCode)
+    {
+        if (confirm(WebInspector.UIString("Are you sure you want to remove network mapping?")))
+            this._workspace.removeMapping(uiSourceCode);
+    },
+
+    /** 
+     * @param {WebInspector.UISourceCode} networkUISourceCode
+     */
+    _mapNetworkToFileSystem: function(networkUISourceCode)
+    {
+        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(networkUISourceCode.name(), WebInspector.projectTypes.FileSystem, mapNetworkToFileSystem.bind(this), this.editorView.mainElement)                
+
+        /** 
+         * @param {WebInspector.UISourceCode} uiSourceCode
+         */
+        function mapNetworkToFileSystem(uiSourceCode)
+        {
+            this._workspace.addMapping(networkUISourceCode, uiSourceCode);
+        }
+    },
+
+    /** 
+     * @param {WebInspector.ContextMenu} contextMenu
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    _appendUISourceCodeMappingItems: function(contextMenu, uiSourceCode)
+    {
+        if (uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem) {
+            var hasMappings = !!uiSourceCode.url;
+            if (!hasMappings)
+                contextMenu.appendItem(WebInspector.UIString("Map to network resource..."), this._mapFileSystemToNetwork.bind(this, uiSourceCode));
+            else
+                contextMenu.appendItem(WebInspector.UIString("Remove network mapping"), this._removeNetworkMapping.bind(this, uiSourceCode));
+        }
+
+        if (uiSourceCode.project().type() === WebInspector.projectTypes.Network) {
+            /** 
+             * @param {WebInspector.Project} project
+             */
+            function filterProject(project)
+            {
+                return project.type() === WebInspector.projectTypes.FileSystem;
+            }
+
+            if (!this._workspace.projects().filter(filterProject).length)
+                return;
+            if (this._workspace.uiSourceCodeForURL(uiSourceCode.url) === uiSourceCode)
+                contextMenu.appendItem(WebInspector.UIString("Map to file system resource..."), this._mapNetworkToFileSystem.bind(this, uiSourceCode));
+        }
+    },
+
+    /** 
      * @param {WebInspector.ContextMenu} contextMenu
      * @param {Object} target
      */
@@ -1117,6 +1193,10 @@ WebInspector.ScriptsPanel.prototype = {
 
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (target);
         contextMenu.appendItem(WebInspector.UIString("Local modifications..."), this._showLocalHistory.bind(this, uiSourceCode));
+
+        if (WebInspector.isolatedFileSystemManager.supportsFileSystems() && WebInspector.experimentsSettings.fileSystemProject.isEnabled())
+            this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
+
         var resource = WebInspector.resourceForURL(uiSourceCode.url);
         if (resource && resource.request)
             contextMenu.appendApplicableItems(resource.request);

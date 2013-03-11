@@ -204,7 +204,6 @@ WebInspector.ExperimentsSettings = function()
     // Add currently running experiments here.
     this.snippetsSupport = this._createExperiment("snippetsSupport", "Snippets support");
     this.nativeMemorySnapshots = this._createExperiment("nativeMemorySnapshots", "Native memory profiling");
-    this.liveNativeMemoryChart = this._createExperiment("liveNativeMemoryChart", "Live native memory chart");
     this.nativeMemoryTimeline = this._createExperiment("nativeMemoryTimeline", "Native memory timeline");
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
     this.canvasInspection = this._createExperiment("canvasInspection ", "Canvas inspection");
@@ -358,7 +357,7 @@ WebInspector.VersionController = function()
 {
 }
 
-WebInspector.VersionController.currentVersion = 1;
+WebInspector.VersionController.currentVersion = 2;
 
 WebInspector.VersionController.prototype = {
     updateVersion: function()
@@ -387,6 +386,12 @@ WebInspector.VersionController.prototype = {
     _updateVersionFrom0To1: function()
     {
         this._clearBreakpointsWhenTooMany(WebInspector.settings.breakpoints, 500000);
+    },
+
+    _updateVersionFrom1To2: function()
+    {
+        var versionSetting = WebInspector.settings.createSetting("previouslyViewedFiles", []);
+        versionSetting.set([]);
     },
 
     /**

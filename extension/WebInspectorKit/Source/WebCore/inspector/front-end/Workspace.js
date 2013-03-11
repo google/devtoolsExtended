@@ -459,7 +459,7 @@ WebInspector.Workspace.prototype = {
             return project ? project.uiSourceCode(path) : null;
         }
 
-        var projectId = this._fileSystemMapping.fileSystemId(fileSystemPath);
+        var projectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
         var pathPrefix = entry.pathPrefix.substr(fileSystemPath.length + 1);
         var path = pathPrefix + url.substr(entry.urlPrefix.length);
         var project = this.project(projectId);
@@ -476,6 +476,45 @@ WebInspector.Workspace.prototype = {
         if (!entry)
             return "";
         return entry.urlPrefix + path.substring(entry.pathPrefix.length);
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} networkUISourceCode
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    addMapping: function(networkUISourceCode, uiSourceCode)
+    {
+        var url = networkUISourceCode.url;
+        var path = uiSourceCode.path();
+        var suffix = "";
+        for (var i = path.length - 1; i >= 0; --i) {
+            var nextSuffix = "/" + path[i] + suffix;
+            if (!url.endsWith(nextSuffix))
+                break;
+            suffix = nextSuffix;
+        }
+        var fileSystemPath = WebInspector.fileSystemWorkspaceProvider.fileSystemPath(uiSourceCode);
+        var filePath = "/" + path.join("/");
+        var pathPrefix = fileSystemPath + filePath.substr(0, filePath.length - suffix.length) + "/";
+        var urlPrefix = url.substr(0, url.length - suffix.length) + "/";
+
+        var entries = this._fileMapping.mappingEntries();
+        var entry = new WebInspector.FileMapping.Entry(urlPrefix, pathPrefix);
+        entries.push(entry);
+        this._fileMapping.setMappingEntries(entries);
+        WebInspector.suggestReload();
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    removeMapping: function(uiSourceCode)
+    {
+        var entry = this._fileMapping.mappingEntryForURL(uiSourceCode.url);
+        var entries = this._fileMapping.mappingEntries();
+        entries.remove(entry);
+        this._fileMapping.setMappingEntries(entries);
+        WebInspector.suggestReload();
     },
 
     __proto__: WebInspector.Object.prototype

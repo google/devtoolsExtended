@@ -57,6 +57,8 @@ WebInspector.NavigatorView = function()
 
     this._rootNode = new WebInspector.NavigatorRootTreeNode(this);
     this._rootNode.populate();
+
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._inspectedURLChanged, this);
 }
 
 WebInspector.NavigatorView.Events = {
@@ -83,8 +85,28 @@ WebInspector.NavigatorView.prototype = {
         var uiSourceCodeNode = new WebInspector.NavigatorUISourceCodeTreeNode(this, uiSourceCode);
         this._uiSourceCodeNodes[uiSourceCode.uri()] = uiSourceCodeNode;
         node.appendChild(uiSourceCodeNode);
+        if (uiSourceCode.url === WebInspector.inspectedPageURL)
+            this.revealUISourceCode(uiSourceCode);
     },
 
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _inspectedURLChanged: function(event)
+    {
+        var nodes = Object.values(this._uiSourceCodeNodes);
+        for (var i = 0; i < nodes.length; ++i) {
+            var uiSourceCode = nodes[i].uiSourceCode();
+            if (uiSourceCode.url === WebInspector.inspectedPageURL)
+                this.revealUISourceCode(uiSourceCode);
+        }
+
+    },
+
+    /**
+     * @param {WebInspector.Project} project
+     * @return {WebInspector.NavigatorTreeNode}
+     */
     _getProjectNode: function(project)
     {
         if (!project.displayName())
@@ -92,6 +114,10 @@ WebInspector.NavigatorView.prototype = {
         return this._rootNode.child(project.id());
     },
 
+    /**
+     * @param {WebInspector.Project} project
+     * @return {WebInspector.NavigatorFolderTreeNode}
+     */
     _createProjectNode: function(project)
     {
         var type = project.type() === WebInspector.projectTypes.FileSystem ? WebInspector.NavigatorTreeOutline.Types.FileSystem : WebInspector.NavigatorTreeOutline.Types.Domain;
@@ -100,16 +126,30 @@ WebInspector.NavigatorView.prototype = {
         return projectNode;
     },
 
+    /**
+     * @param {WebInspector.Project} project
+     * @return {WebInspector.NavigatorTreeNode}
+     */
     _getOrCreateProjectNode: function(project)
     {
         return this._getProjectNode(project) || this._createProjectNode(project);
     },
 
+    /**
+     * @param {WebInspector.NavigatorTreeNode} parentNode
+     * @param {string} name
+     * @return {WebInspector.NavigatorFolderTreeNode}
+     */
     _getFolderNode: function(parentNode, name)
     {
         return parentNode.child(name);
     },
 
+    /**
+     * @param {WebInspector.NavigatorTreeNode} parentNode
+     * @param {string} name
+     * @return {WebInspector.NavigatorFolderTreeNode}
+     */
     _createFolderNode: function(parentNode, name)
     {
         var folderNode = new WebInspector.NavigatorFolderTreeNode(this, name, WebInspector.NavigatorTreeOutline.Types.Folder, name);
@@ -117,11 +157,20 @@ WebInspector.NavigatorView.prototype = {
         return folderNode;
     },
 
+    /**
+     * @param {WebInspector.NavigatorTreeNode} parentNode
+     * @param {string} name
+     * @return {WebInspector.NavigatorFolderTreeNode}
+     */
     _getOrCreateFolderNode: function(parentNode, name)
     {
         return this._getFolderNode(parentNode, name) || this._createFolderNode(parentNode, name);
     },
 
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @return {WebInspector.NavigatorTreeNode}
+     */
     _getUISourceCodeParentNode: function(uiSourceCode)
     {
         var projectNode = this._getProjectNode(uiSourceCode.project());
@@ -137,6 +186,10 @@ WebInspector.NavigatorView.prototype = {
         return parentNode;
     },
 
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @return {WebInspector.NavigatorTreeNode}
+     */
     _getOrCreateUISourceCodeParentNode: function(uiSourceCode)
     {
         var projectNode = this._getOrCreateProjectNode(uiSourceCode.project());
@@ -154,8 +207,9 @@ WebInspector.NavigatorView.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {boolean=} select
      */
-    revealUISourceCode: function(uiSourceCode)
+    revealUISourceCode: function(uiSourceCode, select)
     {
         var node = this._uiSourceCodeNodes[uiSourceCode.uri()];
         if (!node)
@@ -163,7 +217,7 @@ WebInspector.NavigatorView.prototype = {
         if (this._scriptsTree.selectedTreeElement)
             this._scriptsTree.selectedTreeElement.deselect();
         this._lastSelectedUISourceCode = uiSourceCode;
-        node.reveal();
+        node.reveal(select);
     },
 
     /**
@@ -188,6 +242,7 @@ WebInspector.NavigatorView.prototype = {
         var node = this._uiSourceCodeNodes[uiSourceCode.uri()];
         if (!node)
             return;
+        delete this._uiSourceCodeNodes[uiSourceCode.uri()]
         parentNode.removeChild(node);
         node = parentNode;
         while (node) {
@@ -438,10 +493,7 @@ WebInspector.NavigatorFolderTreeElement.prototype = {
     onattach: function()
     {
         WebInspector.BaseNavigatorTreeElement.prototype.onattach.call(this);
-        if (this.type() === WebInspector.NavigatorTreeOutline.Types.Domain && this.titleText === WebInspector.inspectedPageDomain)
-            this.expand();
-        else
-            this.collapse();
+        this.collapse();
     },
 
     __proto__: WebInspector.BaseNavigatorTreeElement.prototype
@@ -710,6 +762,14 @@ WebInspector.NavigatorUISourceCodeTreeNode = function(navigatorView, uiSourceCod
 
 WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
     /**
+     * @return {WebInspector.UISourceCode}
+     */
+    uiSourceCode: function()
+    {
+        return this._uiSourceCode;
+    },
+
+    /**
      * @return {TreeElement}
      */
     treeElement: function()
@@ -782,11 +842,16 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
         this.updateTitle();
     },
 
-    reveal: function()
+    /**
+     * @param {boolean=} select
+     */
+    reveal: function(select)
     {
         this.parent.populate();
         this.parent.treeElement().expand();
-        this._treeElement.revealAndSelect();
+        this._treeElement.reveal();
+        if (select)
+            this._treeElement.select();
     },
 
     /**
