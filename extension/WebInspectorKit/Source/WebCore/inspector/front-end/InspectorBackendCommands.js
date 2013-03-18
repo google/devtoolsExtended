@@ -257,10 +257,8 @@ InspectorBackend.registerCommand("CSS.getNamedFlowCollection", [{"name": "docume
 // Timeline.
 InspectorBackend.registerTimelineDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Timeline");
 InspectorBackend.registerEvent("Timeline.eventRecorded", ["record"]);
-InspectorBackend.registerCommand("Timeline.start", [{"name": "maxCallStackDepth", "type": "number", "optional": true}], []);
+InspectorBackend.registerCommand("Timeline.start", [{"name": "maxCallStackDepth", "type": "number", "optional": true}, {"name": "includeDomCounters", "type": "boolean", "optional": true}, {"name": "includeNativeMemoryStatistics", "type": "boolean", "optional": true}], []);
 InspectorBackend.registerCommand("Timeline.stop", [], []);
-InspectorBackend.registerCommand("Timeline.setIncludeDomCounters", [{"name": "enabled", "type": "boolean", "optional": false}], []);
-InspectorBackend.registerCommand("Timeline.setIncludeNativeMemoryStatistics", [{"name": "enabled", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Timeline.supportsFrameInstrumentation", [], ["result"]);
 InspectorBackend.registerCommand("Timeline.canMonitorMainThread", [], ["result"]);
 
@@ -363,6 +361,7 @@ InspectorBackend.registerEvent("Worker.disconnectedFromWorker", []);
 InspectorBackend.registerCommand("Worker.enable", [], []);
 InspectorBackend.registerCommand("Worker.disable", [], []);
 InspectorBackend.registerCommand("Worker.sendMessageToWorker", [{"name": "workerId", "type": "number", "optional": false}, {"name": "message", "type": "object", "optional": false}], []);
+InspectorBackend.registerCommand("Worker.canInspectWorkers", [], ["result"]);
 InspectorBackend.registerCommand("Worker.connectToWorker", [{"name": "workerId", "type": "number", "optional": false}], []);
 InspectorBackend.registerCommand("Worker.disconnectFromWorker", [{"name": "workerId", "type": "number", "optional": false}], []);
 InspectorBackend.registerCommand("Worker.setAutoconnectToWorkers", [{"name": "value", "type": "boolean", "optional": false}], []);

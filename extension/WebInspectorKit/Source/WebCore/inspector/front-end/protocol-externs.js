@@ -1933,9 +1933,11 @@ TimelineAgent.TimelineEvent;
 
 /**
  * @param {number=} opt_maxCallStackDepth
+ * @param {boolean=} opt_includeDomCounters
+ * @param {boolean=} opt_includeNativeMemoryStatistics
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-TimelineAgent.start = function(opt_maxCallStackDepth, opt_callback) {}
+TimelineAgent.start = function(opt_maxCallStackDepth, opt_includeDomCounters, opt_includeNativeMemoryStatistics, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 TimelineAgent.start.invoke = function(obj, opt_callback) {}
 
@@ -1945,22 +1947,6 @@ TimelineAgent.start.invoke = function(obj, opt_callback) {}
 TimelineAgent.stop = function(opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 TimelineAgent.stop.invoke = function(obj, opt_callback) {}
-
-/**
- * @param {boolean} enabled
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-TimelineAgent.setIncludeDomCounters = function(enabled, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-TimelineAgent.setIncludeDomCounters.invoke = function(obj, opt_callback) {}
-
-/**
- * @param {boolean} enabled
- * @param {function(?Protocol.Error):void=} opt_callback
- */
-TimelineAgent.setIncludeNativeMemoryStatistics = function(enabled, opt_callback) {}
-/** @param {function(?Protocol.Error):void=} opt_callback */
-TimelineAgent.setIncludeNativeMemoryStatistics.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {function(?Protocol.Error, boolean):void=} opt_callback
@@ -2381,7 +2367,7 @@ ProfilerAgent.ProfileHeader;
 /** @typedef {{functionName:(string), url:(string), lineNumber:(number), totalTime:(number), selfTime:(number), numberOfCalls:(number), visible:(boolean), callUID:(number), children:(Array.<ProfilerAgent.CPUProfileNode>)}|null} */
 ProfilerAgent.CPUProfileNode;
 
-/** @typedef {{head:(ProfilerAgent.CPUProfileNode|undefined), bottomUpHead:(ProfilerAgent.CPUProfileNode|undefined), idleTime:(number|undefined)}|null} */
+/** @typedef {{head:(ProfilerAgent.CPUProfileNode|undefined), idleTime:(number|undefined)}|null} */
 ProfilerAgent.CPUProfile;
 
 /** @typedef {string} */
@@ -2666,6 +2652,13 @@ WorkerAgent.disable.invoke = function(obj, opt_callback) {}
 WorkerAgent.sendMessageToWorker = function(workerId, message, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 WorkerAgent.sendMessageToWorker.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {function(?Protocol.Error, boolean):void=} opt_callback
+ */
+WorkerAgent.canInspectWorkers = function(opt_callback) {}
+/** @param {function(?Protocol.Error, boolean):void=} opt_callback */
+WorkerAgent.canInspectWorkers.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {number} workerId

@@ -172,7 +172,6 @@ InspectorFrontendHostAPI.prototype.moveWindowBy = function(x, y) {}
 InspectorFrontendHostAPI.prototype.setInjectedScriptForOrigin = function(origin, script) {}
 InspectorFrontendHostAPI.prototype.loaded = function() {}
 InspectorFrontendHostAPI.prototype.localizedStringsURL = function() {}
-InspectorFrontendHostAPI.prototype.hiddenPanels = function() {}
 InspectorFrontendHostAPI.prototype.inspectedURLChanged = function(url) {}
 InspectorFrontendHostAPI.prototype.documentCopy = function(event) {}
 InspectorFrontendHostAPI.prototype.copyText = function(text) {}
@@ -192,7 +191,6 @@ InspectorFrontendHostAPI.prototype.addFileSystem = function() {}
 InspectorFrontendHostAPI.prototype.removeFileSystem = function(fileSystemPath) {}
 InspectorFrontendHostAPI.prototype.isolatedFileSystem = function(fileSystemId, registeredName) {}
 InspectorFrontendHostAPI.prototype.setZoomFactor = function(zoom) {}
-InspectorFrontendHostAPI.prototype.canInspectWorkers = function() {}
 /** @type {InspectorFrontendHostAPI} */
 var InspectorFrontendHost;
 

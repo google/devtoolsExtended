@@ -33,6 +33,7 @@ importScript("cm/css.js");
 importScript("cm/javascript.js");
 importScript("cm/xml.js");
 importScript("cm/htmlmixed.js");
+importScript("cm/matchbrackets.js");
 
 /**
  * @constructor
@@ -52,7 +53,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     this._codeMirror = window.CodeMirror(this.element, {
         lineNumbers: true,
-        gutters: ["CodeMirror-linenumbers", "breakpoints"]
+        gutters: ["CodeMirror-linenumbers", "breakpoints"],
+        matchBrackets: true
     });
 
     var indent = WebInspector.settings.textEditorIndent.get();
@@ -65,6 +67,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     }
 
     this._tokenHighlighter = new WebInspector.CodeMirrorTextEditor.TokenHighlighter(this._codeMirror);
+    this._blockIndentController = new WebInspector.CodeMirrorTextEditor.BlockIndentController(this._codeMirror);
 
     this._codeMirror.on("change", this._change.bind(this));
     this._codeMirror.on("gutterClick", this._gutterClick.bind(this));
@@ -75,6 +78,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.element.firstChild.addStyleClass("source-code");
     this.element.firstChild.addStyleClass("fill");
     this._elementToWidget = new Map();
+    this._nestedUpdatesCounter = 0;
 }
 
 WebInspector.CodeMirrorTextEditor.prototype = {
@@ -120,9 +124,16 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._codeMirror.focus();
     },
 
-    beginUpdates: function() { },
+    beginUpdates: function()
+    {
+        ++this._nestedUpdatesCounter;
+    },
 
-    endUpdates: function() { },
+    endUpdates: function()
+    {
+        if (!--this._nestedUpdatesCounter);
+            this._codeMirror.refresh();
+    },
 
     /**
      * @param {number} lineNumber
@@ -439,7 +450,7 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
 
         var selectedText = this._codeMirror.getSelection();
         if (this._isWord(selectedText, selectionStart.line, selectionStart.ch, selectionEnd.ch))
-            this._codeMirror.operation(this._addHighlight.bind(this, selectedText));
+            this._codeMirror.operation(this._addHighlight.bind(this, selectedText, selectionStart));
     },
 
     _isWord: function(selectedText, lineNumber, startColumn, endColumn)
@@ -452,27 +463,58 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
 
     _removeHighlight: function()
     {
-        if (this._overlayMode) {
-            this._codeMirror.removeOverlay(this._overlayMode);
-            delete this._overlayMode;
+        if (this._highlightDescriptor) {
+            this._codeMirror.removeOverlay(this._highlightDescriptor.overlay);
+            this._codeMirror.removeLineClass(this._highlightDescriptor.selectionStart.line, "wrap", "cm-line-with-selection");
+            delete this._highlightDescriptor;
         }
     },
 
-    _addHighlight: function(token)
+    _addHighlight: function(token, selectionStart)
     {
         const tokenFirstChar = token.charAt(0);
         function nextToken(stream)
         {
-            if (stream.match(token))
-                return "token-highlight";
-            stream.next();
-            if (!stream.skipTo(tokenFirstChar))
-                stream.skipToEnd();
+            if (stream.match(token) && (stream.eol() || !WebInspector.TextUtils.isWordChar(stream.peek())))
+                return stream.column() === selectionStart.ch ? "token-highlight column-with-selection" : "token-highlight";
+
+            var eatenChar;
+            do {
+                eatenChar = stream.next();
+            } while (eatenChar && (WebInspector.TextUtils.isWordChar(eatenChar) || stream.peek() !== tokenFirstChar));
         }
 
-        this._overlayMode = {
+        var overlayMode = {
             token: nextToken
         };
-        this._codeMirror.addOverlay(this._overlayMode);
+        this._codeMirror.addOverlay(overlayMode);
+        this._codeMirror.addLineClass(selectionStart.line, "wrap", "cm-line-with-selection")
+        this._highlightDescriptor = {
+            overlay: overlayMode,
+            selectionStart: selectionStart
+        };
+    }
+}
+
+WebInspector.CodeMirrorTextEditor.BlockIndentController = function(codeMirror)
+{
+    codeMirror.addKeyMap(this);
+}
+
+WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
+    name: "blockIndentKeymap",
+
+    Enter: function(codeMirror)
+    {
+        if (codeMirror.somethingSelected())
+            return CodeMirror.Pass;
+        var cursor = codeMirror.getCursor();
+        var line = codeMirror.getLine(cursor.line);
+        if (line.substr(cursor.ch - 1, 2) === "{}") {
+            codeMirror.execCommand("newlineAndIndent");
+            codeMirror.setCursor(cursor);
+            codeMirror.execCommand("newlineAndIndent");
+        } else
+            return CodeMirror.Pass;
     }
 }

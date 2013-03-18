@@ -1,0 +1,36 @@
+Tests file system project mappings.
+
+
+Running: testAutomaticMapping
+Adding file system.
+Adding network resource.
+UISourceCode uri to url mappings:
+    filesystem:/var/www/html/foo.js -> 
+    filesystem:/var/www/bar.js -> 
+Adding mapping between network and file system resources.
+Emulate reloading inspector.
+UISourceCode uri to url mappings:
+    filesystem:/var/www/html/foo.js -> http://localhost/html/foo.js
+    filesystem:/var/www/bar.js -> http://localhost/bar.js
+Removing mapping between network and file system resources.
+Emulate reloading inspector.
+UISourceCode uri to url mappings:
+    filesystem:/var/www/html/foo.js -> 
+    filesystem:/var/www/bar.js -> 
+
+Running: testScriptFileOnReloadWithDirtyFile
+Adding file system.
+ - hasDivergedFromVM: false
+Editing uiSourceCode:
+ - hasDivergedFromVM: true
+Committing uiSourceCode with live edit failure:
+ - hasDivergedFromVM: true
+Editing uiSourceCode again:
+ - hasDivergedFromVM: true
+Committing uiSourceCode again (with live edit success now):
+ - hasDivergedFromVM: false
+Reloading page:
+ - hasDivergedFromVM: false
+Editing uiSourceCode again and reloading while it is dirty:
+ - hasDivergedFromVM: true
+

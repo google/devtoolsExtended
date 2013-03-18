@@ -62,7 +62,8 @@ var Capabilities = {
     canOverrideDeviceOrientation: false,
     canShowDebugBorders: false,
     canShowFPSCounter: false,
-    canContinuouslyPaint: false
+    canContinuouslyPaint: false,
+    canInspectWorkers: false
 }
 
 /**
@@ -117,6 +118,8 @@ WebInspector.Settings = function()
     this.cssReloadEnabled = this.createSetting("cssReloadEnabled", false);
     this.cssReloadTimeout = this.createSetting("cssReloadTimeout", 1000);
     this.showCpuOnTimelineRuler = this.createSetting("showCpuOnTimelineRuler", false);
+    this.timelineStackFramesToCapture = this.createSetting("timelineStackFramesToCapture", 30);
+    this.timelineLimitStackFramesFlag = this.createSetting("timelineLimitStackFramesFlag", false);
     this.showMetricsRulers = this.createSetting("showMetricsRulers", false);
     this.emulatedCSSMedia = this.createSetting("emulatedCSSMedia", "print");
     this.showToolbarIcons = this.createSetting("showToolbarIcons", false);

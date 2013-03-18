@@ -39,18 +39,74 @@ WebInspector.FlameChart = function(cpuProfileView)
     this.registerRequiredCSS("flameChart.css");
 
     this.element.className = "flame-chart";
+    this._timelineGrid = new WebInspector.TimelineGrid();
+    this._calculator = new WebInspector.FlameChart.Calculator();
+    this.element.appendChild(this._timelineGrid.element);
     this._canvas = this.element.createChild("canvas");
+    WebInspector.installDragHandle(this._canvas, this._startCanvasDragging.bind(this), this._canvasDragging.bind(this), this._endCanvasDragging.bind(this), "col-resize");
+
     this._cpuProfileView = cpuProfileView;
-    this._xScaleFactor = 0.0;
-    this._yScaleFactor = 10;
-    this._minWidth = 0;
+    this._xScaleFactor = 4.0;
+    this._xOffset = 0;
+    this._barHeight = 10;
+    this._minWidth = 1;
     this.element.onmousemove = this._onMouseMove.bind(this);
+    this.element.onmousewheel = this._onMouseWheel.bind(this);
     this.element.onclick = this._onClick.bind(this);
     this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
+    this._popoverHelper.setTimeout(250);
     this._anchorElement = this.element.createChild("span");
     this._anchorElement.className = "item-anchor";
     this._linkifier = new WebInspector.Linkifier();
-    this._colorIndexes = { };
+    this._highlightedNodeIndex = -1;
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.TimelineGrid.Calculator}
+ */
+WebInspector.FlameChart.Calculator = function()
+{
+}
+
+WebInspector.FlameChart.Calculator.prototype = {
+    /**
+     * @param {WebInspector.FlameChart} flameChart
+     */
+    _updateBoundaries: function(flameChart)
+    {
+        this._xScaleFactor = flameChart._xScaleFactor;
+        this._minimumBoundaries = flameChart._xOffset / this._xScaleFactor;
+        this._maximumBoundaries = (flameChart._xOffset + flameChart._canvas.width) / this._xScaleFactor;
+    },
+
+    /**
+     * @param {number} time
+     */
+    computePosition: function(time)
+    {
+        return (time - this._minimumBoundaries) * this._xScaleFactor;
+    },
+
+    formatTime: function(value)
+    {
+        return Number.secondsToString((value + this._minimumBoundaries) / 1000);
+    },
+
+    maximumBoundary: function()
+    {
+        return this._maximumBoundaries;
+    },
+
+    minimumBoundary: function()
+    {
+        return this._minimumBoundaries;
+    },
+
+    boundarySpan: function()
+    {
+        return this._maximumBoundaries - this._minimumBoundaries;
+    }
 }
 
 WebInspector.FlameChart.Events = {
@@ -58,16 +114,150 @@ WebInspector.FlameChart.Events = {
 }
 
 WebInspector.FlameChart.prototype = {
+    _startCanvasDragging: function(event)
+    {
+        if (!this._timelineData)
+            return false;
+        this._isDragging = true;
+        this._dragStartPoint = event.pageX;
+        this._dragStartXOffset = this._xOffset;
+        this._hidePopover();
+        return true;
+    },
+
+    _maxXOffset: function()
+    {
+        if (!this._timelineData)
+            return 0;
+        var maxXOffset = Math.floor(this._timelineData.totalTime * this._xScaleFactor - this._canvas.width);
+        return maxXOffset > 0 ? maxXOffset : 0;
+    },
+
+    _setXOffset: function(xOffset)
+    {
+        xOffset = Number.constrain(xOffset, 0, this._maxXOffset());
+
+        if (xOffset !== this._xOffset) {
+            this._xOffset = xOffset;
+            this._scheduleUpdate();
+        }
+    },
+
+    _canvasDragging: function(event)
+    {
+        this._setXOffset(this._dragStartXOffset + this._dragStartPoint - event.pageX);
+    },
+
+    _endCanvasDragging: function()
+    {
+        this._isDragging = false;
+    },
+
+    _nodeCount: function()
+    {
+        var nodes = this._cpuProfileView.profileHead.children.slice();
+
+        var nodeCount = 0;
+        while (nodes.length) {
+            var node = nodes.pop();
+            ++nodeCount;
+            nodes = nodes.concat(node.children);
+        }
+        return nodeCount;
+    },
+
+    _calculateTimelineData: function()
+    {
+        if (this._timelineData)
+            return this._timelineData;
+
+        if (!this._cpuProfileView.profileHead)
+            return null;
+
+        var nodeCount = this._nodeCount();
+        var functionColorPairs = { };
+        var currentColorIndex = 0;
+
+        var startTimes = new Float32Array(nodeCount);
+        var durations = new Float32Array(nodeCount);
+        var depths = new Uint8Array(nodeCount);
+        var nodes = new Array(nodeCount);
+        var colorPairs = new Array(nodeCount);
+        var index = 0;
+
+        function appendReversedArray(toArray, fromArray)
+        {
+            for (var i = fromArray.length - 1; i >= 0; --i)
+                toArray.push(fromArray[i]);
+        }
+
+        var stack = [];
+        appendReversedArray(stack, this._cpuProfileView.profileHead.children);
+
+        var levelOffsets = /** @type {Array.<!number>} */ ([0]);
+        var levelExitIndexes = /** @type {Array.<!number>} */ ([0]);
+
+        while (stack.length) {
+            var level = levelOffsets.length - 1;
+            var node = stack.pop();
+            var offset = levelOffsets[level];
+
+            var functionUID = node.functionName + ":" + node.url + ":" + node.lineNumber;
+            var colorPair = functionColorPairs[functionUID];
+            if (!colorPair) {
+                ++currentColorIndex;
+                var hue = (currentColorIndex * 5 + 11 * (currentColorIndex % 2)) % 360;
+                functionColorPairs[functionUID] = colorPair = {highlighted: "hsl(" + hue + ", 100%, 33%)", normal: "hsl(" + hue + ", 100%, 66%)"};
+            }
+
+            colorPairs[index] = colorPair;
+            depths[index] = level;
+            durations[index] = node.totalTime;
+            startTimes[index] = offset;
+            nodes[index] = node;
+
+            ++index;
+
+            levelOffsets[level] += node.totalTime;
+            if (node.children.length) {
+                levelExitIndexes.push(stack.length);
+                levelOffsets.push(offset + node.selfTime / 2);
+                appendReversedArray(stack, node.children);
+            }
+
+            while (stack.length === levelExitIndexes[levelExitIndexes.length - 1]) {
+                levelOffsets.pop();
+                levelExitIndexes.pop();
+            }
+        }
+
+        this._timelineData = {
+            nodeCount: nodeCount,
+            totalTime: this._cpuProfileView.profileHead.totalTime,
+            startTimes: startTimes,
+            durations: durations,
+            depths: depths,
+            colorPairs: colorPairs,
+            nodes: nodes
+        }
+
+        return this._timelineData;
+    },
+
     _getPopoverAnchor: function()
     {
-        if (!this._highlightedNode)
+        if (this._highlightedNodeIndex === -1 || this._isDragging)
             return null;
         return this._anchorElement;
     },
 
     _showPopover: function(anchor, popover)
     {
-        var node = this._highlightedNode;
+        if (this._isDragging)
+            return;
+        var node = this._timelineData.nodes[this._highlightedNodeIndex];
+        if (!node)
+            return;
         var contentHelper = new WebInspector.PopoverContentHelper(node.functionName);
         contentHelper.appendTextRow(WebInspector.UIString("Total time"), Number.secondsToString(node.totalTime / 1000, true));
         contentHelper.appendTextRow(WebInspector.UIString("Self time"), Number.secondsToString(node.selfTime / 1000, true));
@@ -81,67 +271,103 @@ WebInspector.FlameChart.prototype = {
         popover.show(contentHelper._contentTable, anchor);
     },
 
+    _hidePopover: function()
+    {
+        this._popoverHelper.hidePopover();
+        this._linkifier.reset();
+    },
+
     _onClick: function(e)
     {
-        if (!this._highlightedNode)
+        if (this._highlightedNodeIndex === -1)
             return;
-        this.dispatchEventToListeners(WebInspector.FlameChart.Events.SelectedNode, this._highlightedNode);
+        var node = this._timelineData.nodes[this._highlightedNodeIndex];
+        this.dispatchEventToListeners(WebInspector.FlameChart.Events.SelectedNode, node);
     },
 
     _onMouseMove: function(e)
     {
-        var node = this._coordinatesToNode(e.offsetX, e.offsetY);
-        if (typeof node === 'undefined' && !this._highlightedNode)
+        if (this._isDragging)
             return;
-        if (node === this._highlightedNode)
+        var nodeIndex = this._coordinatesToNodeIndex(e.offsetX, e.offsetY);
+        if (nodeIndex === this._highlightedNodeIndex)
             return;
-        if (this._highlightedNode)
-            this._popoverHelper.hidePopover();
-        this._highlightedNode = node;
+        this._highlightedNodeIndex = nodeIndex;
         this.update();
+
+        if (nodeIndex === -1)
+            return;
+
+        var timelineData = this._timelineData;
+
+        var anchorLeft = Math.floor(timelineData.startTimes[nodeIndex] * this._xScaleFactor - this._xOffset);
+        anchorLeft = Number.constrain(anchorLeft, 0, this._canvas.width);
+
+        var anchorWidth = Math.floor(timelineData.durations[nodeIndex] * this._xScaleFactor);
+        anchorWidth = Number.constrain(anchorWidth, 0, this._canvas.width - anchorLeft);
+
+        var style = this._anchorElement.style;
+        style.width = anchorWidth + "px";
+        style.height = this._barHeight + "px";
+        style.left = anchorLeft + "px";
+        style.top = Math.floor(this._canvas.height - (timelineData.depths[nodeIndex] + 1) * this._barHeight) + "px";
+    },
+
+    _adjustXOffset: function(direction)
+    {
+        var step = this._xScaleFactor * 5;
+        this._setXOffset(this._xOffset + (direction > 0 ? step : -step));
+    },
+
+    _adjustXScale: function(direction, x)
+    {
+        var cursorTime = (x + this._xOffset) / this._xScaleFactor;
+
+        if (direction > 0)
+            this._xScaleFactor /= 2;
+        else
+            this._xScaleFactor *= 2;
+
+        this._setXOffset(Math.floor(cursorTime * this._xScaleFactor - x));
+    },
+
+    _onMouseWheel: function(e)
+    {
+        if (!e.shiftKey)
+            this._adjustXScale(e.wheelDelta, e.offsetX);
+        else
+            this._adjustXOffset(e.wheelDelta);
+
+        this._hidePopover();
+        this._scheduleUpdate();
     },
 
     /**
      * @param {!number} x
      * @param {!number} y
      */
-    _coordinatesToNode: function(x, y)
+    _coordinatesToNodeIndex: function(x, y)
     {
-        var cursorOffset = x / this._xScaleFactor;
-        var cursorLevel = (this._canvas.height - y) / this._yScaleFactor;
-        this._highlightedNode = null;
-        var cursorNode;
+        var timelineData = this._timelineData;
+        if (!timelineData)
+            return -1;
+        var cursorTime = (x + this._xOffset) / this._xScaleFactor;
+        var cursorLevel = Math.floor((this._canvas.height - y) / this._barHeight);
 
-        function findNodeCallback(offset, level, node)
-        {
-            if (cursorLevel > level && cursorLevel < level + 1 && cursorOffset > offset && cursorOffset < offset + node.totalTime) {
-                cursorNode = node;
-                var style = this._anchorElement.style;
-                style.width = Math.floor(node.totalTime * this._xScaleFactor) + "px";
-                style.height = this._yScaleFactor + "px";
-                style.left = Math.floor(offset * this._xScaleFactor) + "px";
-                style.top = Math.floor(this._canvas.height - (level + 1) * this._yScaleFactor) + "px";
-            }
+        for (var i = 0; i < timelineData.nodeCount; ++i) {
+            if (cursorTime < timelineData.startTimes[i])
+                return -1;
+            if (cursorTime < (timelineData.startTimes[i] + timelineData.durations[i])
+                && cursorLevel === timelineData.depths[i])
+                return i;
         }
-        this._forEachNode(findNodeCallback.bind(this));
-        return cursorNode;
+        return -1;
     },
 
     onResize: function()
     {
-        this.draw(this.element.clientWidth, this.element.clientHeight);
-        this._popoverHelper.hidePopover();
-    },
-
-    /**
-     * @return {Array.<!ProfilerAgent.CPUProfileNode> }
-     */
-    _rootNodes: function()
-    {
-        if (!this._cpuProfileView.profileHead)
-            return null;
-        this._totalTime = this._cpuProfileView.profileHead.totalTime;
-        return this._cpuProfileView.profileHead.children.slice();
+        this._hidePopover();
+        this._scheduleUpdate();
     },
 
     /**
@@ -150,92 +376,58 @@ WebInspector.FlameChart.prototype = {
      */
     draw: function(width, height)
     {
-        if (!this._rootNodes())
+        var timelineData = this._calculateTimelineData();
+        if (!timelineData)
             return;
-
         this._canvas.height = height;
         this._canvas.width = width;
+        var xScaleFactor = this._xScaleFactor;
+        var barHeight = this._barHeight;
+        var xOffset = this._xOffset;
 
-        this._xScaleFactor = width / this._totalTime;
-        this._colorIndex = 0;
+        var context = this._canvas.getContext("2d");
 
-        this._context = this._canvas.getContext("2d");
+        for (var i = 0; i < timelineData.nodeCount; ++i) {
+            var x = Math.floor(timelineData.startTimes[i] * xScaleFactor) - xOffset;
+            if (x > width)
+                break;
+            var y = height - (timelineData.depths[i] + 1) * barHeight;
+            var barWidth = Math.floor(timelineData.durations[i] * xScaleFactor);
+            if (x + barWidth < 0)
+                continue;
+            if (barWidth < this._minWidth)
+                continue;
 
-        this._forEachNode(this._drawNode.bind(this));
-    },
+            var colorPair = timelineData.colorPairs[i];
+            var color;
+            if (this._highlightedNodeIndex === i)
+                color =  colorPair.highlighted;
+            else
+                color = colorPair.normal;
 
-    /**
-     * @param {!number} offset
-     * @param {!number} level
-     * @param {!ProfilerAgent.CPUProfileNode} node
-     */
-    _drawNode: function(offset, level, node)
-    {
-        var colorIndex = node.colorIndex;
-        if (!colorIndex) {
-            var functionUID = node.functionName + ":" + node.url + ":" + node.lineNumber;
-            colorIndex = this._colorIndexes[functionUID];
-            if (!colorIndex)
-                this._colorIndexes[functionUID] = colorIndex = ++this._colorIndex;
-            node.colorIndex = colorIndex;
-        }
-        var hue = (colorIndex * 5 + 11 * (colorIndex % 2)) % 360;
-        var lightness = this._highlightedNode === node ? 33 : 67;
-        var color = "hsl(" + hue + ", 100%, " + lightness + "%)";
-        this._drawBar(this._context, offset, level, node, color);
-    },
-
-    /**
-     * @param {!function(!number, !number, !ProfilerAgent.CPUProfileNode)} callback
-     */
-    _forEachNode: function(callback)
-    {
-        var nodes = this._rootNodes();
-        var levelOffsets = /** @type {Array.<!number>} */ ([0]);
-        var levelExitIndexes = [0];
-
-        while (nodes.length) {
-            var level = levelOffsets.length - 1;
-            var node = nodes.pop();
-            if (node.totalTime * this._xScaleFactor > this._minWidth) {
-                var offset = levelOffsets[level];
-                callback(offset, level, node);
-                levelOffsets[level] += node.totalTime;
-                if (node.children.length) {
-                    levelExitIndexes.push(nodes.length);
-                    levelOffsets.push(offset + node.selfTime / 2);
-                    nodes = nodes.concat(node.children);
-                }
-            }
-            while (nodes.length === levelExitIndexes[levelExitIndexes.length - 1]) {
-                levelOffsets.pop();
-                levelExitIndexes.pop();
-            }
+            context.beginPath();
+            context.rect(x, y, barWidth - 1, barHeight - 1);
+            context.fillStyle = color;
+            context.fill();
         }
     },
 
-    /**
-     * @param {Object} context
-     * @param {number} offset
-     * @param {number} level
-     * @param {!ProfilerAgent.CPUProfileNode} node
-     * @param {!string} hslColor
-     */
-    _drawBar: function(context, offset, level, node, color)
+    _scheduleUpdate: function()
     {
-        var width = node.totalTime * this._xScaleFactor;
-        var height = this._yScaleFactor;
-        var x = offset * this._xScaleFactor;
-        var y = this._canvas.height - level * this._yScaleFactor - height;
-        context.beginPath();
-        context.rect(x, y, width - 1, height - 1);
-        context.fillStyle = color;
-        context.fill();
+        if (this._updateTimerId)
+            return;
+        this._updateTimerId = setTimeout(this.update.bind(this), 10);
     },
 
     update: function()
     {
+        this._updateTimerId = 0;
         this.draw(this.element.clientWidth, this.element.clientHeight);
+        if (this._timelineData) {
+            this._calculator._updateBoundaries(this);
+            this._timelineGrid.element.style.width = this.element.clientWidth;
+            this._timelineGrid.updateDividers(this._calculator);
+        }
     },
 
     __proto__: WebInspector.View.prototype

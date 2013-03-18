@@ -71,11 +71,8 @@ var WebInspector = {
             panelDescriptors.push(console);
             return panelDescriptors;
         }
-        var hiddenPanels = InspectorFrontendHost.hiddenPanels();
-        for (var i = 0; i < allDescriptors.length; ++i) {
-            if (hiddenPanels.indexOf(allDescriptors[i].name()) === -1)
-                panelDescriptors.push(allDescriptors[i]);
-        }
+        for (var i = 0; i < allDescriptors.length; ++i)
+            panelDescriptors.push(allDescriptors[i]);
         return panelDescriptors;
     },
 
@@ -408,6 +405,7 @@ WebInspector.doLoadedDone = function()
     PageAgent.canContinuouslyPaint(WebInspector._initializeCapability.bind(WebInspector, "canContinuouslyPaint", null));
     PageAgent.canOverrideDeviceMetrics(WebInspector._initializeCapability.bind(WebInspector, "canOverrideDeviceMetrics", null));
     PageAgent.canOverrideGeolocation(WebInspector._initializeCapability.bind(WebInspector, "canOverrideGeolocation", null));
+    WorkerAgent.canInspectWorkers(WebInspector._initializeCapability.bind(WebInspector, "canInspectWorkers", null));
     PageAgent.canOverrideDeviceOrientation(WebInspector._initializeCapability.bind(WebInspector, "canOverrideDeviceOrientation", WebInspector._doLoadedDoneWithCapabilities.bind(WebInspector)));
 }
 
@@ -677,7 +675,7 @@ WebInspector._registerShortcuts = function()
     ];
     section.addRelatedKeys(keys, WebInspector.UIString("Go to the panel to the left/right"));
 
-    var keys = [
+    keys = [
         shortcut.makeDescriptor("[", shortcut.Modifiers.CtrlOrMeta | shortcut.Modifiers.Alt),
         shortcut.makeDescriptor("]", shortcut.Modifiers.CtrlOrMeta | shortcut.Modifiers.Alt)
     ];
@@ -702,6 +700,12 @@ WebInspector._registerShortcuts = function()
 
     var goToShortcut = WebInspector.GoToLineDialog.createShortcut();
     section.addKey(goToShortcut, WebInspector.UIString("Go to line"));
+
+    keys = [
+        shortcut.Keys.F1,
+        shortcut.makeDescriptor("?")
+    ];
+    section.addAlternateKeys(keys, WebInspector.UIString("Show keyboard shortcuts"));
 }
 
 /**
