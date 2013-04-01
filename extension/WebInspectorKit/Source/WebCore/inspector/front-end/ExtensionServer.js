@@ -425,8 +425,6 @@ WebInspector.ExtensionServer.prototype = {
         function convertSeverity(level)
         {
             switch (level) {
-                case WebInspector.extensionAPI.console.Severity.Tip:
-                    return WebInspector.ConsoleMessage.MessageLevel.Tip;
                 case WebInspector.extensionAPI.console.Severity.Log:
                     return WebInspector.ConsoleMessage.MessageLevel.Log;
                 case WebInspector.extensionAPI.console.Severity.Warning:
@@ -458,8 +456,6 @@ WebInspector.ExtensionServer.prototype = {
             if (!level)
                 return;
             switch (level) {
-                case WebInspector.ConsoleMessage.MessageLevel.Tip:
-                    return WebInspector.extensionAPI.console.Severity.Tip;
                 case WebInspector.ConsoleMessage.MessageLevel.Log:
                     return WebInspector.extensionAPI.console.Severity.Log;
                 case WebInspector.ConsoleMessage.MessageLevel.Warning:
@@ -880,10 +876,12 @@ WebInspector.ExtensionServer.prototype = {
             function resolveURLToFrame(url)
             {
                 var found;
-                WebInspector.resourceTreeModel.frames().some(function(frame) {
+                function hasMatchingURL(frame) 
+                {
                     found = (frame.url === url) ? frame : null;
                     return found;
-                });
+                }
+                WebInspector.resourceTreeModel.frames().some(hasMatchingURL);
                 return found;
             }
 
@@ -897,9 +895,9 @@ WebInspector.ExtensionServer.prototype = {
             }
 
             var contextSecurityOrigin;
-            if (options["useContentScriptContext"] )
+            if (options.useContentScriptContext)
                 contextSecurityOrigin = securityOrigin;
-            else if (options.scriptExecutionContext && frame.url.indexOf(options.scriptExecutionContext) !== 0)
+            else if (options.scriptExecutionContext)
                 contextSecurityOrigin = options.scriptExecutionContext;
 
             var frameContextList = WebInspector.runtimeModel.contextListByFrame(frame);

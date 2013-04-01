@@ -519,7 +519,7 @@ WebInspector.ElementsTreeOutline.prototype = {
             WebInspector.domAgent.inspectElement(treeElement.representedObject.id);
         }
         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendItem(WebInspector.UIString("Reveal in Elements Panel"), focusElement.bind(this));
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Elements panel" : "Reveal in Elements Panel"), focusElement.bind(this));
         contextMenu.show();
     },
 
@@ -1266,7 +1266,7 @@ WebInspector.ElementsTreeElement.prototype = {
         this.treeOutline._populateContextMenu(contextMenu, this.representedObject);
 
         contextMenu.appendSeparator();
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Scroll into view" : "Scroll Into View"), this._scrollIntoView.bind(this)); 
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Scroll into view" : "Scroll into View"), this._scrollIntoView.bind(this)); 
     },
 
     _populateForcedPseudoStateItems: function(subMenu)
@@ -1480,7 +1480,7 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         if (error)
             return;
-        if (this._htmlEditElement && WebInspector.isBeingEdited(this._htmlEditElement))
+        if (this._editing)
             return;
 
         function consume(event)
@@ -1493,7 +1493,6 @@ WebInspector.ElementsTreeElement.prototype = {
 
         this._htmlEditElement = document.createElement("div");
         this._htmlEditElement.className = "source-code elements-tree-editor";
-        this._htmlEditElement.textContent = initialValue;
 
         // Hide header items.
         var child = this.listItemElement.firstChild;
@@ -1510,9 +1509,13 @@ WebInspector.ElementsTreeElement.prototype = {
 
         this.updateSelection();
 
-        function commit()
+        /**
+         * @param {Element} element
+         * @param {string} newValue
+         */
+        function commit(element, newValue)
         {
-            commitCallback(initialValue, this._htmlEditElement.textContent);
+            commitCallback(initialValue, newValue);
             dispose.call(this);
         }
 
@@ -1538,7 +1541,7 @@ WebInspector.ElementsTreeElement.prototype = {
         }
 
         var config = new WebInspector.EditingConfig(commit.bind(this), dispose.bind(this));
-        config.setMultiline(true);
+        config.setMultilineOptions(initialValue, { name: "xml", htmlMode: true }, "web-inspector-html", true, true);
         this._editing = WebInspector.startEditing(this._htmlEditElement, config);
     },
 

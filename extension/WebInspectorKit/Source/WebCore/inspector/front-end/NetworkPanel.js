@@ -208,7 +208,7 @@ WebInspector.NetworkLogView.prototype = {
             title: WebInspector.UIString("Cookies"),
             sortable: true,
             weight: 6,
-            aligned: "right"
+            align: WebInspector.DataGrid.Align.Right
         });
 
         columns.push({
@@ -216,7 +216,7 @@ WebInspector.NetworkLogView.prototype = {
             title: WebInspector.UIString("Set-Cookies"),
             sortable: true,
             weight: 6,
-            aligned: "right"
+            align: WebInspector.DataGrid.Align.Right
         });
 
         columns.push({
@@ -225,7 +225,7 @@ WebInspector.NetworkLogView.prototype = {
             title: WebInspector.UIString("Size"),
             sortable: true,
             weight: 6,
-            aligned: "right"
+            align: WebInspector.DataGrid.Align.Right
         });
 
         columns.push({
@@ -234,7 +234,7 @@ WebInspector.NetworkLogView.prototype = {
             title: WebInspector.UIString("Time"),
             sortable: true,
             weight: 6,
-            aligned: "right"
+            align: WebInspector.DataGrid.Align.Right
         });
 
         columns.push({
@@ -243,7 +243,7 @@ WebInspector.NetworkLogView.prototype = {
             title: WebInspector.UIString("Timeline"),
             sortable: false,
             weight: 40,
-            sort: "ascending"
+            sort: WebInspector.DataGrid.Order.Ascending
         });
 
         this._dataGrid = new WebInspector.DataGrid(columns);
@@ -253,8 +253,8 @@ WebInspector.NetworkLogView.prototype = {
         this._dataGrid.show(this.element);
 
         // Event listeners need to be added _after_ we attach to the document, so that owner document is properly update.
-        this._dataGrid.addEventListener("sorting changed", this._sortItems, this);
-        this._dataGrid.addEventListener("width changed", this._updateDividersIfNeeded, this);
+        this._dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortItems, this);
+        this._dataGrid.addEventListener(WebInspector.DataGrid.Events.ColumnsResized, this._updateDividersIfNeeded, this);
         this._dataGrid.scrollContainer.addEventListener("scroll", this._updateOffscreenRows.bind(this));
 
         this._patchTimelineHeader();
@@ -346,7 +346,7 @@ WebInspector.NetworkLogView.prototype = {
     _sortItems: function()
     {
         this._removeAllNodeHighlights();
-        var columnIdentifier = this._dataGrid.sortColumnIdentifier;
+        var columnIdentifier = this._dataGrid.sortColumnIdentifier();
         if (columnIdentifier === "timeline") {
             this._sortByTimeline();
             return;
@@ -355,7 +355,7 @@ WebInspector.NetworkLogView.prototype = {
         if (!sortingFunction)
             return;
 
-        this._dataGrid.sortNodes(sortingFunction, this._dataGrid.sortOrder === "descending");
+        this._dataGrid.sortNodes(sortingFunction, !this._dataGrid.isSortOrderAscending());
         this._timelineSortSelector.selectedIndex = 0;
         this._updateOffscreenRows();
 
@@ -364,7 +364,7 @@ WebInspector.NetworkLogView.prototype = {
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.NetworkSort,
             column: columnIdentifier,
-            sortOrder: this._dataGrid.sortOrder
+            sortOrder: this._dataGrid.sortOrder()
         });
     },
 
@@ -384,7 +384,7 @@ WebInspector.NetworkLogView.prototype = {
             this._timelineGrid.hideEventDividers();
         else
             this._timelineGrid.showEventDividers();
-        this._dataGrid.markColumnAsSortedBy("timeline", "ascending");
+        this._dataGrid.markColumnAsSortedBy("timeline", WebInspector.DataGrid.Order.Ascending);
         this._updateOffscreenRows();
     },
 
@@ -1060,7 +1060,7 @@ WebInspector.NetworkLogView.prototype = {
                 contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy request headers" : "Copy Request Headers"), this._copyRequestHeaders.bind(this, request));
             if (request.responseHeadersText)
                 contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy response headers" : "Copy Response Headers"), this._copyResponseHeaders.bind(this, request));
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy as curl" : "Copy as Curl"), this._copyCurlCommand.bind(this, request));
+            contextMenu.appendItem(WebInspector.UIString("Copy as cURL"), this._copyCurlCommand.bind(this, request));
         }
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy all as HAR" : "Copy All as HAR"), this._copyAll.bind(this));
 
@@ -1700,7 +1700,7 @@ WebInspector.NetworkPanel.prototype = {
             WebInspector.inspectorView.setCurrentPanel(this);
             this.revealAndHighlightRequest(/** @type {WebInspector.NetworkRequest} */ (target));
         }
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in network panel" : "Reveal in Network Panel"), reveal.bind(this));
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Network panel" : "Reveal in Network Panel"), reveal.bind(this));
     },
 
     _injectStyles: function()
@@ -1788,6 +1788,11 @@ WebInspector.NetworkBaseCalculator.prototype = {
     },
 
     minimumBoundary: function()
+    {
+        return this._minimumBoundary;
+    },
+
+    zeroTime: function()
     {
         return this._minimumBoundary;
     },

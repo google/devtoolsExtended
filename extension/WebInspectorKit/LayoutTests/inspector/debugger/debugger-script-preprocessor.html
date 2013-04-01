@@ -4,10 +4,18 @@
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
+window.bar = "foo = " + window.foo;
+window.whereAmI = "main world";
+
+testRunner.setIsolatedWorldSecurityOrigin(632, "file:///");
+testRunner.evaluateScriptInIsolatedWorld(632, "window.whereAmI = 'brave new world'");
+
 function load()
 {
     eval("function dynamic" + "Script1() {}"); 
     eval("function dynamic" + "Script2() {}"); 
+    eval("function dynamic" + "RuntimeError() {}"); 
+    eval("function dynamic" + "Console() {}");
     runTest();
 }
 
@@ -24,17 +32,30 @@ function test()
             } catch (e) {
                 return script + "//@ sourceURL=dynamicScript2";
             }
+        } 
+        if (name) {
+            // Verify that the |name| argument is correct. Note: if name is not passed in
+            // the results will be a script with a sourceURL equal to the original file name.
+            return script + "//@ sourceURL=" + name + ".js";     
+        } 
+        if (script.indexOf("dynamic" + "RuntimeError") !== -1) {
+            throw new Error("internal preprocessor error " + script);
         }
-        // Verify that the |name| argument is correct. Note: if name is not passed in
-        // the results will be a script with a sourceURL equal to the original file name.
-        return script + "//@ sourceURL=" + name + ".js"; 
+        return "console.log(\"writing to the console should not crash\");"
     }
+
+    var failingPreprocessor = "(function() {throw new Error(\"failingPreprocessor throws\");}())"
+    var syntaxError = "syntax error";
 
     InspectorTest.startDebuggerTest(step1);
 
+    function injectedScript() {
+        return "window.foo = 42;"
+    }
+
     function step1()
     {         
-        InspectorTest.reloadPage(step2, undefined, "(" + preprocessor + ")");
+        InspectorTest.reloadPage(step2, injectedScript(), "(" + preprocessor + ")");
     }
 
     function step2()
@@ -47,6 +68,32 @@ function test()
         for (var i = 0; i < scripts.length; ++i)
             InspectorTest.addResult(WebInspector.displayNameForURL(scripts[i].sourceURL));
 
+        // Repeat, to verify operation when the preprocessor is already in place. 
+        InspectorTest.reloadPage(step3, injectedScript(), "(" + preprocessor + ")");
+    }
+
+    function step3()
+    {
+        function didEvaluateInConsole(value) 
+        {
+            InspectorTest.addResult(value);
+            step4();
+        }
+        InspectorTest.evaluateInConsole("window.bar", didEvaluateInConsole);
+    }
+
+    function step4() 
+    {
+        InspectorTest.reloadPage(step5, injectedScript(), "(" + failingPreprocessor + ")");
+    }
+
+    function step5() 
+    {
+         InspectorTest.reloadPage(step6, injectedScript(), "(" + syntaxError + ")");
+    }
+
+    function step6() 
+    {
         InspectorTest.reloadPage(InspectorTest.completeDebuggerTest.bind(InspectorTest));
     }
 }

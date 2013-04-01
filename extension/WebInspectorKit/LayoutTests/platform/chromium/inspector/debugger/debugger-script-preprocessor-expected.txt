@@ -1,3 +1,15 @@
+CONSOLE MESSAGE: line 19: Uncaught Error: internal preprocessor error function dynamicRuntimeError() {}
+CONSOLE MESSAGE: line 19: Uncaught Error: internal preprocessor error function dynamicRuntimeError() {}
+CONSOLE MESSAGE: line 1: preprocessor threw exception
+CONSOLE MESSAGE: line 1: writing to the console should not crash
+CONSOLE MESSAGE: line 19: Uncaught Error: internal preprocessor error function dynamicRuntimeError() {}
+CONSOLE MESSAGE: line 19: Uncaught Error: internal preprocessor error function dynamicRuntimeError() {}
+CONSOLE MESSAGE: line 1: preprocessor threw exception
+CONSOLE MESSAGE: line 1: writing to the console should not crash
+CONSOLE MESSAGE: line 1: Uncaught Error: failingPreprocessor throws
+CONSOLE MESSAGE: line 1: Uncaught Error: failingPreprocessor throws
+CONSOLE MESSAGE: line 1: Uncaught SyntaxError: Unexpected identifier
+CONSOLE MESSAGE: line 1: Uncaught SyntaxError: Unexpected identifier
 Tests script preprocessor (ability to preprocess all scripts upon reload).
 
 Debugger was enabled.
@@ -5,9 +17,17 @@ Page reloaded.
 inspector-test.js.js
 debugger-test.js.js
 debugger-script-preprocessor.html
+
 debugger-script-preprocessor.html
 dynamicScript1
 dynamicScript2
+
+
+
+Page reloaded.
+"foo = 42"
+Page reloaded.
+Page reloaded.
 Page reloaded.
 Debugger was disabled.
 

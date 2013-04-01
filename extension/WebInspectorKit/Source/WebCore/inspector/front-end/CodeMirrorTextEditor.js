@@ -34,6 +34,7 @@ importScript("cm/javascript.js");
 importScript("cm/xml.js");
 importScript("cm/htmlmixed.js");
 importScript("cm/matchbrackets.js");
+importScript("cm/closebrackets.js");
 
 /**
  * @constructor
@@ -54,7 +55,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._codeMirror = window.CodeMirror(this.element, {
         lineNumbers: true,
         gutters: ["CodeMirror-linenumbers", "breakpoints"],
-        matchBrackets: true
+        matchBrackets: true,
+        autoCloseBrackets: WebInspector.experimentsSettings.textEditorSmartBraces.isEnabled()
     });
 
     var indent = WebInspector.settings.textEditorIndent.get();
@@ -68,9 +70,12 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     this._tokenHighlighter = new WebInspector.CodeMirrorTextEditor.TokenHighlighter(this._codeMirror);
     this._blockIndentController = new WebInspector.CodeMirrorTextEditor.BlockIndentController(this._codeMirror);
+    this._fixWordMovement = new WebInspector.CodeMirrorTextEditor.FixWordMovement(this._codeMirror);
 
     this._codeMirror.on("change", this._change.bind(this));
     this._codeMirror.on("gutterClick", this._gutterClick.bind(this));
+    this._codeMirror.on("cursorActivity", this._cursorActivity.bind(this));
+    this._codeMirror.on("scroll", this._scroll.bind(this));
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this));
 
     this._lastRange = this.range();
@@ -79,9 +84,36 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.element.firstChild.addStyleClass("fill");
     this._elementToWidget = new Map();
     this._nestedUpdatesCounter = 0;
+
+    this.element.addEventListener("focus", this._handleElementFocus.bind(this), false);
+    this.element.tabIndex = 0;
 }
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+
+    /**
+     * @param {WebInspector.TextRange} textRange
+     * @return {string}
+     */
+    copyRange: function(textRange)
+    {
+        var pos = this._toPos(textRange);
+        return this._codeMirror.getRange(pos.start, pos.end);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isClean: function()
+    {
+        return this._codeMirror.isClean();
+    },
+
+    markClean: function()
+    {
+        this._codeMirror.markClean();
+    },
+
     /**
      * @param {string} mimeType
      */
@@ -112,14 +144,43 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
+     * @param {Object} highlightDescriptor
+     */
+    removeHighlight: function(highlightDescriptor)
+    {
+        highlightDescriptor.clear();
+    },
+
+    /**
+     * @param {WebInspector.TextRange} range
+     * @param {string} cssClass
+     * @return {Object}
+     */
+    highlightRange: function(range, cssClass)
+    {
+        var pos = this._toPos(range);
+        ++pos.end.ch;
+        return this._codeMirror.markText(pos.start, pos.end, {
+            className: cssClass,
+            startStyle: cssClass + "-start",
+            endStyle: cssClass + "-end"
+        });
+    },
+
+    /**
      * @return {Element}
      */
     defaultFocusedElement: function()
     {
-        return this.element.firstChild;
+        return this.element;
     },
 
     focus: function()
+    {
+        this._codeMirror.focus();
+    },
+
+    _handleElementFocus: function()
     {
         this._codeMirror.focus();
     },
@@ -140,8 +201,18 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     revealLine: function(lineNumber)
     {
-        this._codeMirror.setCursor({ line: lineNumber, ch: 0 });
-        this._codeMirror.scrollIntoView();
+        var pos = CodeMirror.Pos(lineNumber, 0);
+        var topLine = this._topScrolledLine();
+        var bottomLine = this._bottomScrolledLine();
+
+        var margin = null;
+        var lineMargin = 3;
+        var scrollInfo = this._codeMirror.getScrollInfo();
+        if ((lineNumber < topLine + lineMargin) || (lineNumber >= bottomLine - lineMargin)) {
+            // scrollIntoView could get into infinite loop if margin exceeds half of the clientHeight.
+            margin = (scrollInfo.clientHeight*0.9/2) >>> 0;
+        }
+        this._codeMirror.scrollIntoView(pos, margin);
     },
 
     _gutterClick: function(instance, lineNumber, gutter, event)
@@ -298,12 +369,64 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._lastRange = newRange;
     },
 
+    _cursorActivity: function()
+    {
+        var start = this._codeMirror.getCursor("anchor");
+        var end = this._codeMirror.getCursor("head");
+        this._delegate.selectionChanged(this._toRange(start, end));
+    },
+
+    _coordsCharLocal: function(coords)
+    {
+        var top = coords.top;
+        var totalLines = this._codeMirror.lineCount();
+        var begin = 0;
+        var end = totalLines - 1;
+        while (end - begin > 1) {
+            var middle = (begin + end) >> 1;
+            var coords = this._codeMirror.charCoords(CodeMirror.Pos(middle, 0), "local");
+            if (coords.top >= top)
+                end = middle;
+            else
+                begin = middle;
+        }
+
+        return end;
+    },
+
+    _topScrolledLine: function()
+    {
+        var scrollInfo = this._codeMirror.getScrollInfo();
+        // Workaround for CodeMirror's coordsChar incorrect result for "local" mode.
+        return this._coordsCharLocal(scrollInfo);
+    },
+
+    _bottomScrolledLine: function()
+    {
+        var scrollInfo = this._codeMirror.getScrollInfo();
+        scrollInfo.top += scrollInfo.clientHeight;
+        // Workaround for CodeMirror's coordsChar incorrect result for "local" mode.
+        return this._coordsCharLocal(scrollInfo);
+    },
+
+    _scroll: function()
+    {
+        this._delegate.scrollChanged(this._topScrolledLine());
+    },
+
     /**
      * @param {number} lineNumber
      */
     scrollToLine: function(lineNumber)
     {
-        this._codeMirror.setCursor({line:lineNumber, ch:0});
+        function performScroll()
+        {
+            var pos = CodeMirror.Pos(lineNumber, 0);
+            var coords = this._codeMirror.charCoords(pos, "local");
+            this._codeMirror.scrollTo(0, coords.top);
+        }
+
+        setTimeout(performScroll.bind(this), 0);
     },
 
     /**
@@ -333,9 +456,14 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     setSelection: function(textRange)
     {
-        this._lastSelection = textRange;
-        var pos = this._toPos(textRange);
-        this._codeMirror.setSelection(pos.start, pos.end);
+        function performSelectionSet()
+        {
+            this._lastSelection = textRange;
+            var pos = this._toPos(textRange);
+            this._codeMirror.setSelection(pos.start, pos.end);
+        }
+
+        setTimeout(performSelectionSet.bind(this), 0);
     },
 
     /**
@@ -517,4 +645,39 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
         } else
             return CodeMirror.Pass;
     }
+}
+
+WebInspector.CodeMirrorTextEditor.FixWordMovement = function(codeMirror)
+{
+    function moveLeft(shift, codeMirror)
+    {
+        var cursor = codeMirror.getCursor("head");
+        if (cursor.ch !== 0 || cursor.line === 0)
+            return CodeMirror.Pass;
+        codeMirror.setExtending(shift);
+        codeMirror.execCommand("goLineUp");
+        codeMirror.execCommand("goLineEnd")
+        codeMirror.setExtending(false);
+    }
+    function moveRight(shift, codeMirror)
+    {
+        var cursor = codeMirror.getCursor("head");
+        var line = codeMirror.getLine(cursor.line);
+        if (cursor.ch !== line.length || cursor.line + 1 === codeMirror.lineCount())
+            return CodeMirror.Pass;
+        codeMirror.setExtending(shift);
+        codeMirror.execCommand("goLineDown");
+        codeMirror.execCommand("goLineStart");
+        codeMirror.setExtending(false);
+    }
+
+    var modifierKey = WebInspector.isMac() ? "Alt" : "Ctrl";
+    var leftKey = modifierKey + "-Left";
+    var rightKey = modifierKey + "-Right";
+    var keyMap = {};
+    keyMap[leftKey] = moveLeft.bind(this, false);
+    keyMap[rightKey] = moveRight.bind(this, false);
+    keyMap["Shift-" + leftKey] = moveLeft.bind(this, true);
+    keyMap["Shift-" + rightKey] = moveRight.bind(this, true);
+    codeMirror.addKeyMap(keyMap);
 }

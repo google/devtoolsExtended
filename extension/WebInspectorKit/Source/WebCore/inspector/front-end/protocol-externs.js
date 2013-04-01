@@ -36,6 +36,7 @@ InspectorAgent.Dispatcher.prototype.inspect = function(object, hints) {};
  * @param {string} reason
  */
 InspectorAgent.Dispatcher.prototype.detached = function(reason) {};
+InspectorAgent.Dispatcher.prototype.targetCrashed = function() {};
 /**
  * @param {InspectorAgent.Dispatcher} dispatcher
  */
@@ -395,9 +396,10 @@ PageAgent.captureScreenshot.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {boolean} accept
+ * @param {string=} opt_promptText
  * @param {function(?Protocol.Error):void=} opt_callback
  */
-PageAgent.handleJavaScriptDialog = function(accept, opt_callback) {}
+PageAgent.handleJavaScriptDialog = function(accept, opt_promptText, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 PageAgent.handleJavaScriptDialog.invoke = function(obj, opt_callback) {}
 /** @interface */
@@ -1082,6 +1084,16 @@ IndexedDBAgent.requestDatabase.invoke = function(obj, opt_callback) {}
 IndexedDBAgent.requestData = function(securityOrigin, databaseName, objectStoreName, indexName, skipCount, pageSize, opt_keyRange, opt_callback) {}
 /** @param {function(?Protocol.Error, Array.<IndexedDBAgent.DataEntry>, boolean):void=} opt_callback */
 IndexedDBAgent.requestData.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {string} securityOrigin
+ * @param {string} databaseName
+ * @param {string} objectStoreName
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+IndexedDBAgent.clearObjectStore = function(securityOrigin, databaseName, objectStoreName, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+IndexedDBAgent.clearObjectStore.invoke = function(obj, opt_callback) {}
 /** @interface */
 IndexedDBAgent.Dispatcher = function() {};
 /**
@@ -1318,6 +1330,9 @@ DOMAgent.EventListener;
 /** @typedef {{r:(number), g:(number), b:(number), a:(number|undefined)}|null} */
 DOMAgent.RGBA;
 
+/** @typedef {Array.<number>|undefined} */
+DOMAgent.Quad;
+
 /** @typedef {{showInfo:(boolean|undefined), contentColor:(DOMAgent.RGBA|undefined), paddingColor:(DOMAgent.RGBA|undefined), borderColor:(DOMAgent.RGBA|undefined), marginColor:(DOMAgent.RGBA|undefined)}|null} */
 DOMAgent.HighlightConfig;
 
@@ -1491,6 +1506,16 @@ DOMAgent.setInspectModeEnabled.invoke = function(obj, opt_callback) {}
 DOMAgent.highlightRect = function(x, y, width, height, opt_color, opt_outlineColor, opt_callback) {}
 /** @param {function(?Protocol.Error):void=} opt_callback */
 DOMAgent.highlightRect.invoke = function(obj, opt_callback) {}
+
+/**
+ * @param {DOMAgent.Quad} quad
+ * @param {DOMAgent.RGBA=} opt_color
+ * @param {DOMAgent.RGBA=} opt_outlineColor
+ * @param {function(?Protocol.Error):void=} opt_callback
+ */
+DOMAgent.highlightQuad = function(quad, opt_color, opt_outlineColor, opt_callback) {}
+/** @param {function(?Protocol.Error):void=} opt_callback */
+DOMAgent.highlightQuad.invoke = function(obj, opt_callback) {}
 
 /**
  * @param {DOMAgent.HighlightConfig} highlightConfig
@@ -1928,7 +1953,10 @@ InspectorBackend.registerCSSDispatcher = function(dispatcher) {}
 
 var TimelineAgent = {};
 
-/** @typedef {{type:(string), thread:(string|undefined), data:(Object), children:(Array.<TimelineAgent.TimelineEvent>|undefined)}|null} */
+/** @typedef {{documents:(number), nodes:(number), jsEventListeners:(number)}|null} */
+TimelineAgent.DOMCounters;
+
+/** @typedef {{type:(string), thread:(string|undefined), data:(Object), children:(Array.<TimelineAgent.TimelineEvent>|undefined), counters:(TimelineAgent.DOMCounters|undefined), usedHeapSize:(number|undefined), nativeHeapStatistics:(Object|undefined)}|null} */
 TimelineAgent.TimelineEvent;
 
 /**
@@ -2364,10 +2392,10 @@ ProfilerAgent.ProfileHeaderTypeId = {
 /** @typedef {{typeId:(ProfilerAgent.ProfileHeaderTypeId), title:(string), uid:(number), maxJSObjectId:(number|undefined)}|null} */
 ProfilerAgent.ProfileHeader;
 
-/** @typedef {{functionName:(string), url:(string), lineNumber:(number), totalTime:(number), selfTime:(number), numberOfCalls:(number), visible:(boolean), callUID:(number), children:(Array.<ProfilerAgent.CPUProfileNode>)}|null} */
+/** @typedef {{functionName:(string), url:(string), lineNumber:(number), totalTime:(number), selfTime:(number), numberOfCalls:(number), visible:(boolean), callUID:(number), children:(Array.<ProfilerAgent.CPUProfileNode>), id:(number|undefined)}|null} */
 ProfilerAgent.CPUProfileNode;
 
-/** @typedef {{head:(ProfilerAgent.CPUProfileNode|undefined), idleTime:(number|undefined)}|null} */
+/** @typedef {{head:(ProfilerAgent.CPUProfileNode|undefined), idleTime:(number|undefined), samples:(Array.<number>|undefined)}|null} */
 ProfilerAgent.CPUProfile;
 
 /** @typedef {string} */
