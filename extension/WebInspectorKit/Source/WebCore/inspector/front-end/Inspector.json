@@ -307,14 +307,6 @@
                 "hidden": true
             },
             {
-                "name": "canOverrideDeviceMetrics",
-                "description": "Checks whether <code>setDeviceMetricsOverride</code> can be invoked.",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "If true, <code>setDeviceMetricsOverride</code> can safely be invoked on the agent." }
-                ],
-                "hidden": true
-            },
-            {
                 "name": "setDeviceMetricsOverride",
                 "description": "Overrides the values of device screen dimensions (window.screen.width, window.screen.height, window.innerWidth, window.innerHeight, and \"device-width\"/\"device-height\"-related CSS media query results) and the font scale factor.",
                 "parameters": [
@@ -330,14 +322,6 @@
                 "description": "Requests that backend shows paint rectangles",
                 "parameters": [
                     { "name": "result", "type": "boolean", "description": "True for showing paint rectangles" }
-                ],
-                "hidden": true
-            },
-            {
-                "name": "canShowDebugBorders",
-                "description": "Tells if backend supports debug borders on layers",
-                "returns": [
-                    { "name": "show", "type": "boolean", "description": "True if the debug borders can be shown" }
                 ],
                 "hidden": true
             },
@@ -411,14 +395,6 @@
                 "description": "Clears the overriden Geolocation Position and Error."
             },
             {
-                "name": "canOverrideGeolocation",
-                "description": "Checks if Geolocation can be overridden.",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "True if browser can ovrride Geolocation." }
-                ],
-                "hidden": true
-            },
-            {
                 "name": "setDeviceOrientationOverride",
                 "description": "Overrides the Device Orientation.",
                 "parameters": [
@@ -431,14 +407,6 @@
             {
                 "name": "clearDeviceOrientationOverride",
                 "description": "Clears the overridden Device Orientation.",
-                "hidden": true
-            },
-            {
-                "name": "canOverrideDeviceOrientation",
-                "description": "Check the backend if Web Inspector can override the device orientation.",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "If true, <code>setDeviceOrientationOverride</code> can safely be invoked on the agent." }
-                ],
                 "hidden": true
             },
             {
@@ -1715,6 +1683,12 @@
                 "description": "Unique DOM node identifier."
             },
             {
+                "id": "BackendNodeId",
+                "type": "integer",
+                "description": "Unique DOM node identifier used to reference a node that may not have been pushed to the front-end.",
+                "hidden": true
+            },
+            {
                 "id": "Node",
                 "type": "object",
                 "properties": [
@@ -2014,6 +1988,25 @@
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node for given path." }
                 ],
                 "description": "Requests that the node is sent to the caller given its path. // FIXME, use XPath",
+                "hidden": true
+            },
+            {
+                "name": "pushNodeByBackendIdToFrontend",
+                "parameters": [
+                    { "name": "backendNodeId", "$ref": "BackendNodeId", "description": "The backend node id of the node." }
+                ],
+                "returns": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "The pushed node's id." }
+                ],
+                "description": "Requests that the node is sent to the caller given its backend node id.",
+                "hidden": true
+            },
+            {
+                "name": "releaseBackendNodeIds",
+                "parameters": [
+                    { "name": "nodeGroup", "type": "string", "description": "The backend node ids group name." }
+                ],
+                "description": "Requests that group of <code>BackendNodeIds</code> is released.",
                 "hidden": true
             },
             {
@@ -2654,22 +2647,6 @@
             {
                 "name": "stop",
                 "description": "Stops capturing instrumentation events."
-            },
-            {
-                "name": "supportsFrameInstrumentation",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "True if timeline supports frame instrumentation." }
-                ],
-                "hidden": true,
-                "description": "Tells whether timeline agent supports frame instrumentation."
-            },
-            {
-                "name": "canMonitorMainThread",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "True if timeline supports main thread CPU utilization instrumentation." }
-                ],
-                "hidden": true,
-                "description": "Tells whether timeline agent supports main thread CPU utilization instrumentation."
             }
         ],
         "events": [
@@ -2747,22 +2724,6 @@
             }
         ],
         "commands": [
-            {
-                "name": "causesRecompilation",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "True if enabling debugger causes scripts recompilation." }
-                ],
-                "hidden": true,
-                "description": "Tells whether enabling debugger causes scripts recompilation."
-            },
-            {
-                "name": "supportsSeparateScriptCompilationAndExecution",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "True if debugger supports separate script compilation and execution." }
-                ],
-                "hidden": true,
-                "description": "Tells whether debugger supports separate script compilation and execution."
-            },
             {
                 "name": "enable",
                 "description": "Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received."
@@ -2857,7 +2818,7 @@
                 "returns": [
                     { "name": "result", "type": "boolean", "description": "True if <code>setScriptSource</code> is supported." }
                 ],
-                "description": "Tells whether <code>setScriptSource</code> is supported."
+                "description": "Always returns true."
             },
             {
                 "name": "setScriptSource",
@@ -3156,24 +3117,6 @@
         ],
         "commands": [
             {
-                "name": "causesRecompilation",
-                "returns": [
-                    { "name": "result", "type": "boolean" }
-                ]
-            },
-            {
-                "name": "isSampling",
-                "returns": [
-                    { "name": "result", "type": "boolean" }
-                ]
-            },
-            {
-                "name": "hasHeapProfiler",
-                "returns": [
-                    { "name": "result", "type": "boolean" }
-                ]
-            },
-            {
                 "name": "enable"
             },
             {
@@ -3183,7 +3126,10 @@
                 "name": "start"
             },
             {
-                "name": "stop"
+                "name": "stop",
+                "returns": [
+                    { "name": "header", "$ref": "ProfileHeader", "description": "The header of the recorded profile."}
+                ]
             },
             {
                 "name": "getProfileHeaders",
@@ -3304,12 +3250,6 @@
             }
         ],
         "commands": [
-            {
-                "name": "hasHeapProfiler",
-                "returns": [
-                    { "name": "result", "type": "boolean" }
-                ]
-            },
             {
                 "name": "getProfileHeaders",
                 "returns": [

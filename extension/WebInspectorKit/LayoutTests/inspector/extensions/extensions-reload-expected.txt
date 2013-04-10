@@ -7,5 +7,10 @@ Page reloaded.
 Page reloaded.
 With injected code: foo = 42
 Without injected code: foo = undefined
+RUNNING TEST: extension_testReloadPreprocessesCode
+Page reloaded.
+Page reloaded.
+With Preprocessed code: foo = 24
+Without Preprocessed code: foo = undefined
 All tests done.
 

@@ -28,9 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-importScript("Dialog.js");
-importScript("FilteredItemSelectionDialog.js");
-
 /**
  * @constructor
  */
@@ -53,11 +50,9 @@ WebInspector.ExtensionServer = function()
     this._registerHandler(commands.AddAuditResult, this._onAddAuditResult.bind(this));
     this._registerHandler(commands.AddConsoleMessage, this._onAddConsoleMessage.bind(this));
     this._registerHandler(commands.AddRequestHeaders, this._onAddRequestHeaders.bind(this));
-    this._registerHandler(commands.AddSelectorItems, this._onAddSelectorItems.bind(this));
     this._registerHandler(commands.CreatePanel, this._onCreatePanel.bind(this));
     this._registerHandler(commands.CreateSidebarPane, this._onCreateSidebarPane.bind(this));
     this._registerHandler(commands.CreateStatusBarButton, this._onCreateStatusBarButton.bind(this));
-    this._registerHandler(commands.CreateItemSelector, this._onCreateItemSelector.bind(this));
     this._registerHandler(commands.EvaluateOnInspectedPage, this._onEvaluateOnInspectedPage.bind(this));
     this._registerHandler(commands.GetHAR, this._onGetHAR.bind(this));
     this._registerHandler(commands.GetConsoleMessages, this._onGetConsoleMessages.bind(this));
@@ -106,11 +101,6 @@ WebInspector.ExtensionServer.prototype = {
     notifyButtonClicked: function(identifier)
     {
         this._postNotification(WebInspector.extensionAPI.Events.ButtonClicked + identifier);
-    },
-
-    notifyItemSelected: function(identifier, item, promptValue) 
-    {
-        this._postNotification(WebInspector.extensionAPI.Events.ItemSelected + identifier, item, promptValue);
     },
 
     _inspectedURLChanged: function(event)
@@ -195,24 +185,6 @@ WebInspector.ExtensionServer.prototype = {
         NetworkAgent.setExtraHTTPHeaders(allHeaders);
     },
 
-    _onAddSelectorItems: function(message) 
-    {
-        var id = message.itemSelectorId;
-        if (typeof id !== "string")
-            return this._status.E_BADARGTYPE("itemSelectorId", typeof id, "string");
-
-        if (!WebInspector.Dialog.currentInstance())
-            return; // fail silently, the dialog could exit asynchronously
-
-        var itemsProxy = this._clientObjects[id];
-        if (!itemsProxy)
-            return this._status.E_NOTFOUND(message.itemSelectorId);
-
-        var items = message.items; 
-        itemsProxy.addItems(items);
-        return this._status.OK();
-    },
-
     _onCreatePanel: function(message, port)
     {
         var id = message.id;
@@ -233,53 +205,6 @@ WebInspector.ExtensionServer.prototype = {
     {
         // Note: WebInspector.showPanel already sanitizes input.
         WebInspector.showPanel(message.id);
-    },
-
-    _onCreateItemSelector: function(message, port)
-    {
-        var panel = this._clientObjects[message.panel];
-        if (!panel || !(panel instanceof WebInspector.ExtensionPanel))
-            return this._status.E_NOTFOUND(message.panel);
-            
-        var id = message.id;
-
-        if (id in this._clientObjects || id in WebInspector.panels)
-            return this._status.E_EXISTS(id);
-
-        if (WebInspector.Dialog.currentInstance())
-            WebInspector.Dialog.hide();
-
-        var extensionServer = this;
-        var itemsProxy = {
-            requestItems: function(callback)
-            {
-                this.callback = callback;
-                if (this._items) {
-                    this.addItems(this._items);
-                    delete this._items;
-                }
-            },
-            addItems: function(items)
-            {
-                if (this.callback)
-                    this.callback(items);
-                else 
-                    this._items = (this._items || []), this._items.concat(items);
-            },
-            selectItem: function(item, promptValue) 
-            {
-                extensionServer.notifyItemSelected(id, item, promptValue);
-            }
-        };
-        this._clientObjects[id] = itemsProxy;
-        var delegate = new WebInspector.ExtensionSelectionContentProvider(panel, itemsProxy);
-        var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(delegate);
-        filteredItemSelectionDialog.willHide = function()
-        {
-            extensionServer.notifyItemSelected(id);
-        }
-        WebInspector.Dialog.show(panel.element, filteredItemSelectionDialog);
-        return this._status.OK();
     },
 
     _onCreateStatusBarButton: function(message, port)
@@ -741,6 +666,9 @@ WebInspector.ExtensionServer.prototype = {
         extensions.forEach(this._addExtension, this);
     },
 
+    /**
+     * @param {ExtensionDescriptor} extensionInfo
+     */
     _addExtension: function(extensionInfo)
     {
         if (this._initDone) {
@@ -753,6 +681,9 @@ WebInspector.ExtensionServer.prototype = {
             this._pendingExtensions = [extensionInfo];
     },
 
+    /**
+     * @param {ExtensionDescriptor} extensionInfo
+     */
     _innerAddExtension: function(extensionInfo)
     {
         const urlOriginRegExp = new RegExp("([^:]+:\/\/[^/]*)\/"); // Can't use regexp literal here, MinJS chokes on it.

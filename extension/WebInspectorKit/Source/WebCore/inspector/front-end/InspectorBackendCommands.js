@@ -47,10 +47,8 @@ InspectorBackend.registerCommand("Page.getResourceContent", [{"name": "frameId",
 InspectorBackend.registerCommand("Page.searchInResource", [{"name": "frameId", "type": "string", "optional": false}, {"name": "url", "type": "string", "optional": false}, {"name": "query", "type": "string", "optional": false}, {"name": "caseSensitive", "type": "boolean", "optional": true}, {"name": "isRegex", "type": "boolean", "optional": true}], ["result"]);
 InspectorBackend.registerCommand("Page.searchInResources", [{"name": "text", "type": "string", "optional": false}, {"name": "caseSensitive", "type": "boolean", "optional": true}, {"name": "isRegex", "type": "boolean", "optional": true}], ["result"]);
 InspectorBackend.registerCommand("Page.setDocumentContent", [{"name": "frameId", "type": "string", "optional": false}, {"name": "html", "type": "string", "optional": false}], []);
-InspectorBackend.registerCommand("Page.canOverrideDeviceMetrics", [], ["result"]);
 InspectorBackend.registerCommand("Page.setDeviceMetricsOverride", [{"name": "width", "type": "number", "optional": false}, {"name": "height", "type": "number", "optional": false}, {"name": "fontScaleFactor", "type": "number", "optional": false}, {"name": "fitWindow", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Page.setShowPaintRects", [{"name": "result", "type": "boolean", "optional": false}], []);
-InspectorBackend.registerCommand("Page.canShowDebugBorders", [], ["show"]);
 InspectorBackend.registerCommand("Page.setShowDebugBorders", [{"name": "show", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Page.canShowFPSCounter", [], ["show"]);
 InspectorBackend.registerCommand("Page.setShowFPSCounter", [{"name": "show", "type": "boolean", "optional": false}], []);
@@ -60,10 +58,8 @@ InspectorBackend.registerCommand("Page.getScriptExecutionStatus", [], ["result"]
 InspectorBackend.registerCommand("Page.setScriptExecutionDisabled", [{"name": "value", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Page.setGeolocationOverride", [{"name": "latitude", "type": "number", "optional": true}, {"name": "longitude", "type": "number", "optional": true}, {"name": "accuracy", "type": "number", "optional": true}], []);
 InspectorBackend.registerCommand("Page.clearGeolocationOverride", [], []);
-InspectorBackend.registerCommand("Page.canOverrideGeolocation", [], ["result"]);
 InspectorBackend.registerCommand("Page.setDeviceOrientationOverride", [{"name": "alpha", "type": "number", "optional": false}, {"name": "beta", "type": "number", "optional": false}, {"name": "gamma", "type": "number", "optional": false}], []);
 InspectorBackend.registerCommand("Page.clearDeviceOrientationOverride", [], []);
-InspectorBackend.registerCommand("Page.canOverrideDeviceOrientation", [], ["result"]);
 InspectorBackend.registerCommand("Page.setTouchEmulationEnabled", [{"name": "enabled", "type": "boolean", "optional": false}], []);
 InspectorBackend.registerCommand("Page.setEmulatedMedia", [{"name": "media", "type": "string", "optional": false}], []);
 InspectorBackend.registerCommand("Page.getCompositingBordersVisible", [], ["result"]);
@@ -218,6 +214,8 @@ InspectorBackend.registerCommand("DOM.highlightNode", [{"name": "highlightConfig
 InspectorBackend.registerCommand("DOM.hideHighlight", [], []);
 InspectorBackend.registerCommand("DOM.highlightFrame", [{"name": "frameId", "type": "string", "optional": false}, {"name": "contentColor", "type": "object", "optional": true}, {"name": "contentOutlineColor", "type": "object", "optional": true}], []);
 InspectorBackend.registerCommand("DOM.pushNodeByPathToFrontend", [{"name": "path", "type": "string", "optional": false}], ["nodeId"]);
+InspectorBackend.registerCommand("DOM.pushNodeByBackendIdToFrontend", [{"name": "backendNodeId", "type": "number", "optional": false}], ["nodeId"]);
+InspectorBackend.registerCommand("DOM.releaseBackendNodeIds", [{"name": "nodeGroup", "type": "string", "optional": false}], []);
 InspectorBackend.registerCommand("DOM.resolveNode", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "objectGroup", "type": "string", "optional": true}], ["object"]);
 InspectorBackend.registerCommand("DOM.getAttributes", [{"name": "nodeId", "type": "number", "optional": false}], ["attributes"]);
 InspectorBackend.registerCommand("DOM.moveTo", [{"name": "nodeId", "type": "number", "optional": false}, {"name": "targetNodeId", "type": "number", "optional": false}, {"name": "insertBeforeNodeId", "type": "number", "optional": true}], ["nodeId"]);
@@ -262,8 +260,6 @@ InspectorBackend.registerTimelineDispatcher = InspectorBackend.registerDomainDis
 InspectorBackend.registerEvent("Timeline.eventRecorded", ["record"]);
 InspectorBackend.registerCommand("Timeline.start", [{"name": "maxCallStackDepth", "type": "number", "optional": true}, {"name": "includeDomCounters", "type": "boolean", "optional": true}, {"name": "includeNativeMemoryStatistics", "type": "boolean", "optional": true}], []);
 InspectorBackend.registerCommand("Timeline.stop", [], []);
-InspectorBackend.registerCommand("Timeline.supportsFrameInstrumentation", [], ["result"]);
-InspectorBackend.registerCommand("Timeline.canMonitorMainThread", [], ["result"]);
 
 // Debugger.
 InspectorBackend.registerDebuggerDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, "Debugger");
@@ -274,8 +270,6 @@ InspectorBackend.registerEvent("Debugger.scriptFailedToParse", ["url", "scriptSo
 InspectorBackend.registerEvent("Debugger.breakpointResolved", ["breakpointId", "location"]);
 InspectorBackend.registerEvent("Debugger.paused", ["callFrames", "reason", "data"]);
 InspectorBackend.registerEvent("Debugger.resumed", []);
-InspectorBackend.registerCommand("Debugger.causesRecompilation", [], ["result"]);
-InspectorBackend.registerCommand("Debugger.supportsSeparateScriptCompilationAndExecution", [], ["result"]);
 InspectorBackend.registerCommand("Debugger.enable", [], []);
 InspectorBackend.registerCommand("Debugger.disable", [], []);
 InspectorBackend.registerCommand("Debugger.setBreakpointsActive", [{"name": "active", "type": "boolean", "optional": false}], []);
@@ -321,13 +315,10 @@ InspectorBackend.registerEvent("Profiler.finishHeapSnapshot", ["uid"]);
 InspectorBackend.registerEvent("Profiler.setRecordingProfile", ["isProfiling"]);
 InspectorBackend.registerEvent("Profiler.resetProfiles", []);
 InspectorBackend.registerEvent("Profiler.reportHeapSnapshotProgress", ["done", "total"]);
-InspectorBackend.registerCommand("Profiler.causesRecompilation", [], ["result"]);
-InspectorBackend.registerCommand("Profiler.isSampling", [], ["result"]);
-InspectorBackend.registerCommand("Profiler.hasHeapProfiler", [], ["result"]);
 InspectorBackend.registerCommand("Profiler.enable", [], []);
 InspectorBackend.registerCommand("Profiler.disable", [], []);
 InspectorBackend.registerCommand("Profiler.start", [], []);
-InspectorBackend.registerCommand("Profiler.stop", [], []);
+InspectorBackend.registerCommand("Profiler.stop", [], ["header"]);
 InspectorBackend.registerCommand("Profiler.getProfileHeaders", [], ["headers"]);
 InspectorBackend.registerCommand("Profiler.getCPUProfile", [{"name": "uid", "type": "number", "optional": false}], ["profile"]);
 InspectorBackend.registerCommand("Profiler.getHeapSnapshot", [{"name": "uid", "type": "number", "optional": false}], []);
@@ -345,7 +336,6 @@ InspectorBackend.registerEvent("HeapProfiler.addHeapSnapshotChunk", ["uid", "chu
 InspectorBackend.registerEvent("HeapProfiler.finishHeapSnapshot", ["uid"]);
 InspectorBackend.registerEvent("HeapProfiler.resetProfiles", []);
 InspectorBackend.registerEvent("HeapProfiler.reportHeapSnapshotProgress", ["done", "total"]);
-InspectorBackend.registerCommand("HeapProfiler.hasHeapProfiler", [], ["result"]);
 InspectorBackend.registerCommand("HeapProfiler.getProfileHeaders", [], ["headers"]);
 InspectorBackend.registerCommand("HeapProfiler.getHeapSnapshot", [{"name": "uid", "type": "number", "optional": false}], []);
 InspectorBackend.registerCommand("HeapProfiler.removeProfile", [{"name": "uid", "type": "number", "optional": false}], []);

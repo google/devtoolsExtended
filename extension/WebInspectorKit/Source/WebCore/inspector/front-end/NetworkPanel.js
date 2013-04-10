@@ -80,21 +80,11 @@ WebInspector.NetworkLogView = function(coulmnsVisibilitySetting)
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._domContentLoadedEventFired, this);
 
     this._initializeView();
-    function onCanClearBrowserCache(error, result)
-    {
-        this._canClearBrowserCache = result;
-    }
-    NetworkAgent.canClearBrowserCache(onCanClearBrowserCache.bind(this));
-
-    function onCanClearBrowserCookies(error, result)
-    {
-        this._canClearBrowserCookies = result;
-    }
-    NetworkAgent.canClearBrowserCookies(onCanClearBrowserCookies.bind(this));
 
     WebInspector.networkLog.requests.forEach(this._appendRequest.bind(this));
 }
 
+WebInspector.NetworkLogView.HTTPSchemas = {"http": true, "https": true, "ws": true, "wss": true};
 WebInspector.NetworkLogView._defaultColumnsVisivility = {method: true, status: true, domain: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true};
 
 WebInspector.NetworkLogView.prototype = {
@@ -984,7 +974,7 @@ WebInspector.NetworkLogView.prototype = {
             var row = document.createElement("tr");
             row.createChild("td").textContent = stackFrame.functionName ? stackFrame.functionName : WebInspector.UIString("(anonymous function)");
             row.createChild("td").textContent = " @ ";
-            row.createChild("td").appendChild(this._linkifier.linkifyLocation(stackFrame.url, stackFrame.lineNumber - 1, 0));
+            row.createChild("td").appendChild(this._linkifier.linkifyLocation(stackFrame.url, stackFrame.lineNumber - 1, stackFrame.columnNumber - 1));
             framesTable.appendChild(row);
         }
         return framesTable;
@@ -1064,18 +1054,12 @@ WebInspector.NetworkLogView.prototype = {
         }
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy all as HAR" : "Copy All as HAR"), this._copyAll.bind(this));
 
-        if (InspectorFrontendHost.canSave()) {
-            contextMenu.appendSeparator();
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save as HAR with content" : "Save as HAR with Content"), this._exportAll.bind(this));
-        }
+        contextMenu.appendSeparator();
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save as HAR with content" : "Save as HAR with Content"), this._exportAll.bind(this));
 
-        if (this._canClearBrowserCache || this._canClearBrowserCookies)
-            contextMenu.appendSeparator();
-        if (this._canClearBrowserCache)
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cache" : "Clear Browser Cache"), this._clearBrowserCache.bind(this));
-        if (this._canClearBrowserCookies)
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cookies" : "Clear Browser Cookies"), this._clearBrowserCookies.bind(this));
-
+        contextMenu.appendSeparator();
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cache" : "Clear Browser Cache"), this._clearBrowserCache.bind(this));
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cookies" : "Clear Browser Cookies"), this._clearBrowserCookies.bind(this));
 
         if (request && request.type === WebInspector.resourceTypes.XHR) {
             contextMenu.appendSeparator();
@@ -1094,7 +1078,7 @@ WebInspector.NetworkLogView.prototype = {
     _copyAll: function()
     {
         var harArchive = {
-            log: (new WebInspector.HARLog(this._requests)).build()
+            log: (new WebInspector.HARLog(this._requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter))).build()
         };
         InspectorFrontendHost.copyText(JSON.stringify(harArchive, null, 2));
     },
@@ -1132,7 +1116,7 @@ WebInspector.NetworkLogView.prototype = {
             var progressIndicator = new WebInspector.ProgressIndicator();
             this._progressBarContainer.appendChild(progressIndicator.element);
             var harWriter = new WebInspector.HARWriter();
-            harWriter.write(stream, this._requests, progressIndicator);
+            harWriter.write(stream, this._requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter), progressIndicator);
         }
     },
 
@@ -1396,13 +1380,26 @@ WebInspector.NetworkLogView.prototype = {
         var command = ["curl"];
         var ignoredHeaders = {};
 
+        function escapeCharacter(x)
+        {
+           var code = x.charCodeAt(0);
+           // Add leading zero when needed to not care about the next character.
+           return code < 16 ? "\\x0" + code.toString(16) : "\\x" + code.toString(16);
+        }
+
         function escape(str)
         {
-            return "\"" + str.replace(/\\/g, "\\\\")
-                             .replace(/\"/g, "\\\"")
-                             .replace(/\$/g, "\\$")
-                             .replace(/\n/g, "\\\n")
-                             .replace(/\`/g, "\\\`") + "\"";
+            if (/[\0-\x1f\']/.test(str)) {
+                // Use ANSI-C quoting syntax.
+                return "$\'" + str.replace(/\\/g, "\\\\")
+                                  .replace(/\'/g, "\\\'")
+                                  .replace(/\n/g, "\\n")
+                                  .replace(/\r/g, "\\r")
+                                  .replace(/[\0-\x1f]/g, escapeCharacter) + "'";
+            } else {
+                // Use single quote syntax.
+                return "'" + str + "'";
+            }
         }
         command.push(escape(request.url));
 
@@ -1438,6 +1435,15 @@ WebInspector.NetworkLogView.prototype = {
     }, 
 
     __proto__: WebInspector.View.prototype
+}
+
+/**
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView.HTTPRequestsFilter = function(request)
+{
+    return request.parsedURL.isValid && (request.parsedURL.scheme in WebInspector.NetworkLogView.HTTPSchemas);
 }
 
 
@@ -2236,55 +2242,40 @@ WebInspector.NetworkDataGridNode.prototype = {
 
     _refreshInitiatorCell: function()
     {
+        this._initiatorCell.removeChildren();
         this._initiatorCell.removeStyleClass("network-dim-cell");
         this._initiatorCell.removeStyleClass("network-script-initiated");
         delete this._initiatorCell.request;
-        this._initiatorCell.title = "";
-        this._displayedInitiatorURL = "";
-        this._displayedInitiatorLineNumber = -Infinity;
-        this._displayedInitiatorType = "";
 
-        var initiator = this._request.initiator;
-        var initiatorTypes = WebInspector.NetworkRequest.InitiatorType;
-        if ((initiator && initiator.type !== initiatorTypes.Other) || this._request.redirectSource) {
-            this._initiatorCell.removeChildren();
-            var redirectSource = this._request.redirectSource;
-            if (redirectSource) {
-                this._initiatorCell.title = redirectSource.url;
-                this._initiatorCell.appendChild(WebInspector.linkifyRequestAsNode(redirectSource));
-                this._displayedInitiatorType = WebInspector.UIString("Redirect");
-                this._appendSubtitle(this._initiatorCell, this._displayedInitiatorType);
-                this._displayedInitiatorURL = redirectSource.url;
-            } else if (initiator.type === initiatorTypes.Script) {
-                var topFrame = initiator.stackTrace[0];
-                // This could happen when request loading was triggered by console.
-                if (!topFrame.url) {
-                    this._initiatorCell.addStyleClass("network-dim-cell");
-                    this._displayedInitiatorType = WebInspector.UIString("Other");
-                    this._initiatorCell.setTextAndTitle(this._displayedInitiatorType);
-                    return;
-                }
-                var urlElement = this._parentView._linkifier.linkifyLocation(topFrame.url, topFrame.lineNumber - 1, 0);
-                urlElement.title = "";
-                this._initiatorCell.appendChild(urlElement);
-                this._displayedInitiatorType = WebInspector.UIString("Script");
-                this._appendSubtitle(this._initiatorCell, this._displayedInitiatorType);
-                this._initiatorCell.addStyleClass("network-script-initiated");
-                this._initiatorCell.request = this._request;
-                this._displayedInitiatorURL = WebInspector.displayNameForURL(topFrame.url);
-                this._displayedInitiatorLineNumber = topFrame.lineNumber;
-            } else { // initiator.type === initiatorTypes.Parser
-                this._initiatorCell.title = initiator.url + ":" + initiator.lineNumber;
-                this._initiatorCell.appendChild(WebInspector.linkifyResourceAsNode(initiator.url, initiator.lineNumber - 1));
-                this._displayedInitiatorType = WebInspector.UIString("Parser");
-                this._appendSubtitle(this._initiatorCell, this._displayedInitiatorType);
-                this._displayedInitiatorURL = WebInspector.displayNameForURL(initiator.url);
-                this._displayedInitiatorLineNumber = initiator.lineNumber;
-            }
-        } else {
+        var request = this._request;
+        var initiator = request.initiatorInfo();
+
+        switch (initiator.type) {
+        case WebInspector.NetworkRequest.InitiatorType.Parser:
+            this._initiatorCell.title = initiator.url + ":" + initiator.lineNumber;
+            this._initiatorCell.appendChild(WebInspector.linkifyResourceAsNode(initiator.url, initiator.lineNumber - 1));
+            this._appendSubtitle(this._initiatorCell, WebInspector.UIString("Parser"));
+            break;
+
+        case WebInspector.NetworkRequest.InitiatorType.Redirect:
+            this._initiatorCell.title = initiator.url;
+            this._initiatorCell.appendChild(WebInspector.linkifyRequestAsNode(request.redirectSource));
+            this._appendSubtitle(this._initiatorCell, WebInspector.UIString("Redirect"));
+            break;
+
+        case WebInspector.NetworkRequest.InitiatorType.Script:
+            var urlElement = this._parentView._linkifier.linkifyLocation(initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
+            urlElement.title = "";
+            this._initiatorCell.appendChild(urlElement);
+            this._appendSubtitle(this._initiatorCell, WebInspector.UIString("Script"));
+            this._initiatorCell.addStyleClass("network-script-initiated");
+            this._initiatorCell.request = request;
+            break;
+
+        default:
+            this._initiatorCell.title = "";
             this._initiatorCell.addStyleClass("network-dim-cell");
-            this._displayedInitiatorType = WebInspector.UIString("Other");
-            this._initiatorCell.setTextAndTitle(this._displayedInitiatorType);
+            this._initiatorCell.setTextAndTitle(WebInspector.UIString("Other"));
         }
     },
 
@@ -2457,19 +2448,27 @@ WebInspector.NetworkDataGridNode.SizeComparator = function(a, b)
 
 WebInspector.NetworkDataGridNode.InitiatorComparator = function(a, b)
 {
-    if (a._displayedInitiatorType < b._displayedInitiatorType)
+    var aInitiator = a._request.initiatorInfo();
+    var bInitiator = b._request.initiatorInfo();
+
+    if (aInitiator.type < bInitiator.type)
         return -1;
-    if (a._displayedInitiatorType > b._displayedInitiatorType)
+    if (aInitiator.type > bInitiator.type)
         return 1;
 
-    if (a._displayedInitiatorURL < b._displayedInitiatorURL)
+    if (aInitiator.source < bInitiator.source)
         return -1;
-    if (a._displayedInitiatorURL > b._displayedInitiatorURL)
+    if (aInitiator.source > bInitiator.source)
         return 1;
 
-    if (a._displayedInitiatorLineNumber < b._displayedInitiatorLineNumber)
+    if (aInitiator.lineNumber < bInitiator.lineNumber)
         return -1;
-    if (a._displayedInitiatorLineNumber > b._displayedInitiatorLineNumber)
+    if (aInitiator.lineNumber > bInitiator.lineNumber)
+        return 1;
+
+    if (aInitiator.columnNumber < bInitiator.columnNumber)
+        return -1;
+    if (aInitiator.columnNumber > bInitiator.columnNumber)
         return 1;
 
     return 0;

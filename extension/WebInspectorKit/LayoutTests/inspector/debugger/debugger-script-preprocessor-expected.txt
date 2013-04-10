@@ -1,12 +1,21 @@
+CONSOLE MESSAGE: line 14: Uncaught Error: internal preprocessor error
+CONSOLE MESSAGE: line 1: preprocessor threw exception
+CONSOLE MESSAGE: line 1: Uncaught Error: failingPreprocessor throws
+CONSOLE MESSAGE: line 1: Uncaught SyntaxError: Unexpected identifier
 Tests script preprocessor (ability to preprocess all scripts upon reload).
 
 Debugger was enabled.
 Page reloaded.
-inspector-test.js
-debugger-test.js
+inspector-test.js.js
+debugger-test.js.js
 debugger-script-preprocessor.html
+debugger-script-preprocessor.html
+dynamicScript1
+dynamicScript2
 
-
+.js
+Page reloaded.
+Page reloaded.
 Page reloaded.
 Debugger was disabled.
 

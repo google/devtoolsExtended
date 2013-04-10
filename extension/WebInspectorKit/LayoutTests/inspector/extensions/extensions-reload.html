@@ -1,7 +1,10 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../http/tests/inspector/extensions-test.js"></script>
+
+
 <script type="text/javascript">
 
 window.bar = "foo = " + window.foo;
@@ -29,6 +32,41 @@ function extension_testReloadInjectsCode(nextTest)
     evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithInjectedCodeLoaded);
     webInspector.inspectedWindow.reload({
         injectedScript: "window.foo = 42;"
+    });
+}
+
+function extension_testReloadPreprocessesCode(nextTest)
+{
+    var scripts =[];
+
+    function report(passDescription) 
+    {
+        function didQueryScripts(scripts) 
+        {
+            output(scripts.length + " scripts");
+            scripts.forEach(function(script){
+                output(script.url);    
+            });
+        }
+        output(passDescription);
+        webInspector.inspectedWindow.getResources(didQueryScripts)
+    }
+
+    function onPageWithPreprocessedCodeLoaded()
+    {
+        report("With preprocessingScript: ");
+        evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithoutPreprocessedCodeLoaded);
+        webInspector.inspectedWindow.reload({ });
+    }
+    function onPageWithoutPreprocessedCodeLoaded()
+    {
+        report("Without preprocessingScript: ");
+        nextTest();
+    }
+
+    evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithPreprocessedCodeLoaded);
+    webInspector.inspectedWindow.reload({
+        preprocessingScript: "function(src, url) {return src + '//@ sourceURL='+ url + '.js'; }"
     });
 }
 

@@ -141,7 +141,7 @@ WebInspector.TimelinePanel = function()
 
     this._mainThreadTasks = /** @type {!Array.<{startTime: number, endTime: number}>} */ ([]);
     this._cpuBarsElement = this._timelineGrid.gridHeaderElement.createChild("div", "timeline-cpu-bars");
-    this._mainThreadMonitoringEnabled = Capabilities.timelineCanMonitorMainThread && WebInspector.settings.showCpuOnTimelineRuler.get();
+    this._mainThreadMonitoringEnabled = WebInspector.settings.showCpuOnTimelineRuler.get();
     WebInspector.settings.showCpuOnTimelineRuler.addChangeListener(this._showCpuOnTimelineRulerChanged, this);
 
     this._createFileSelector();
@@ -346,8 +346,7 @@ WebInspector.TimelinePanel.prototype = {
     _registerShortcuts: function()
     {
         this.registerShortcuts(WebInspector.TimelinePanelDescriptor.ShortcutKeys.StartStopRecording, this._toggleTimelineButtonClicked.bind(this));
-        if (InspectorFrontendHost.canSave())
-            this.registerShortcuts(WebInspector.TimelinePanelDescriptor.ShortcutKeys.SaveToFile, this._saveToFile.bind(this));
+        this.registerShortcuts(WebInspector.TimelinePanelDescriptor.ShortcutKeys.SaveToFile, this._saveToFile.bind(this));
         this.registerShortcuts(WebInspector.TimelinePanelDescriptor.ShortcutKeys.LoadFromFile, this._selectFileToLoad.bind(this));
     },
 
@@ -363,8 +362,7 @@ WebInspector.TimelinePanel.prototype = {
     _contextMenu: function(event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
-        if (InspectorFrontendHost.canSave())
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save Timeline data\u2026" : "Save Timeline Data\u2026"), this._saveToFile.bind(this), this._operationInProgress);
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save Timeline data\u2026" : "Save Timeline Data\u2026"), this._saveToFile.bind(this), this._operationInProgress);
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Load Timeline data\u2026" : "Load Timeline Data\u2026"), this._selectFileToLoad.bind(this), this._operationInProgress);
         contextMenu.show();
     },
@@ -602,7 +600,6 @@ WebInspector.TimelinePanel.prototype = {
         var option = this._durationFilterSelector.selectedOption();
         var minimumRecordDuration = +option._durationMs / 1000.0;
         this._durationFilter.setMinimumRecordDuration(minimumRecordDuration);
-        this._overviewPane.setMinimumRecordDuration(minimumRecordDuration);
         this._durationFilterSelector.element.title = option.title;
         this._invalidateAndScheduleRefresh(true, true);
     },

@@ -39,6 +39,10 @@ input[type="search"]:focus, input[type="text"]:focus {
     bottom: 0;
 }
 
+.inline-block {
+    display: inline-block;
+}
+
 .hidden {
     display: none;
 }
@@ -75,23 +79,46 @@ body.inactive #toolbar {
     border-bottom: 1px solid rgb(64%, 64%, 64%);
 }
 
-body.undocked.platform-mac-leopard #toolbar,
-body.undocked.platform-mac-snowleopard #toolbar {
-    background: transparent;
-}
-
 body.dock-to-bottom #toolbar {
     padding-top: 0;
     border-top: 1px solid rgb(100, 100, 100);
-    cursor: ns-resize;
+    cursor: default;
 }
 
-body.dock-to-bottom.port-qt #toolbar {
-    cursor: auto;
+body.dock-to-bottom.platform-mac #toolbar {
+    border-top-color: white;
 }
 
 body.dock-to-bottom.inactive #toolbar {
     border-top: 1px solid rgb(64%, 64%, 64%);
+}
+
+body.platform-windows #toolbar, body.platform-windows.inactive #toolbar {
+    background-image: none;
+}
+
+body.undocked.platform-mac-leopard #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(175, 175, 175)), to(rgb(151, 151, 151))) !important;
+}
+
+body.undocked.platform-mac-leopard.inactive #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(221, 221, 221)), to(rgb(207, 207, 207))) !important;
+}
+
+body.undocked.platform-mac-snowleopard #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(189, 189, 189)), to(rgb(167, 167, 167))) !important;
+}
+
+body.undocked.platform-mac-snowleopard.inactive #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(228, 228, 228)), to(rgb(216, 216, 216))) !important;
+}
+
+body.undocked.platform-mac-mountain-lion #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(208, 208, 208)), to(rgb(200, 200, 200))) !important;
+}
+
+body.undocked.platform-mac-mountain-lion.inactive #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(238, 238, 238)), to(rgb(224, 224, 224))) !important;
 }
 
 .toolbar-item {
@@ -166,7 +193,7 @@ body.dock-to-bottom .toolbar-item:active .toolbar-icon {
 }
 
 .toolbar-label {
-    line-height: 23px;
+    line-height: 22px;
     text-shadow: rgba(255, 255, 255, 0.5) 0 1px 0;
 }
 
@@ -566,10 +593,6 @@ body.undocked .toolbar-item.close-left, body.undocked .toolbar-item.close-right 
     display: none;
 }
 
-body.dock-to-bottom.port-qt .toolbar-item.close-left, body.dock-to-bottom.port-qt .toolbar-item.close-right {
-    display: none;
-}
-
 body.platform-mac .toolbar-item.close-right {
     display: none;
 }
@@ -641,7 +664,7 @@ body.drawer-visible #main-panels {
     height: 23px;
     overflow: hidden;
     z-index: 12;
-    background-image: -webkit-linear-gradient(rgb(253,253,253), rgb(230,230,230) 75%, rgb(230,230,230));
+    background-image: -webkit-linear-gradient(rgb(243,243,243), rgb(235,235,235));
     border-top: 1px solid rgb(202, 202, 202);
     display: -webkit-flex;
 }
@@ -727,7 +750,7 @@ body.drawer-visible #floating-status-bar-container {
     background-color: rgba(0, 0, 0, 0.75);
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
     -webkit-mask-position: -288px -48px;
-    -webkit-mask-size: 320px 72px;
+    -webkit-mask-size: 320px 120px;
     z-index: 1;
 }
 
@@ -813,7 +836,7 @@ select.status-bar-item, select.status-bar-item:hover {
 
 .status-bar-item > .glyph {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 72px;
+    -webkit-mask-size: 320px 120px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -869,8 +892,7 @@ button.status-bar-item.settings-status-bar-item:active {
     -webkit-mask-position: -160px -24px;
 }
 
-body.remote .dock-status-bar-item,
-body.port-qt .dock-status-bar-item {
+body.remote .dock-status-bar-item {
     display: none;
 }
 
@@ -1034,6 +1056,10 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     -webkit-user-select: none;
 }
 
+.console-message > .outline-disclosure li.parent::before {
+    top: 0;
+}
+
 .console-message .bubble {
     display: inline-block;
     height: 14px;
@@ -1079,16 +1105,31 @@ body.platform-linux .monospace, body.platform-linux .source-code {
 }
 
 .console-group-title::before {
-    background-image: url(Images/disclosureTriangleSmallDown.png);
-    top: 0.6em;
-    width: 11px;
-    height: 12px;
-    left: -16px;
-    position: absolute;
+    -webkit-user-select: none;
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-size: 320px 120px;
+    float: left;
+    width: 8px;
+    content: "a";
+    color: transparent;
+    text-shadow: none;
+    margin-left: 3px;
+    margin-top: -7px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.console-group-title::before {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.console-group .console-group-title::before {
+    -webkit-mask-position: -20px -96px;
+    background-color: rgb(110, 110, 110);
 }
 
 .console-group.collapsed .console-group-title::before {
-    background-image: url(Images/disclosureTriangleSmallRight.png);
+    -webkit-mask-position: -4px -96px;
 }
 
 .console-group.collapsed > .console-group-messages {
@@ -1114,7 +1155,7 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     display: none;
 }
 
-.console-error-level .console-message-text, .console-error-level .section .header .title {
+.console-error-level .console-message-text, .console-error-level .section > .header .title {
     color: red !important;
 }
 
@@ -1173,28 +1214,19 @@ ol.watch-expressions > li.hovered {
     margin: 0 0 0 12px !important;
 }
 
-.console-group-messages .section .header {
+.console-group-messages .section > .header {
     padding: 0 8px 0 0;
     background-image: none;
     border: none;
     min-height: 0;
 }
 
-.console-group-messages .section .header::before {
-    position: absolute;
-    top: 1px;
-    left: 1px;
-    width: 8px;
-    height: 8px;
-    content: url(Images/treeRightTriangleBlack.png);
+.console-group-messages .section > .header::before {
+    margin-left: -12px;
 }
 
-.console-group-messages .section.expanded .header::before {
-    content: url(Images/treeDownTriangleBlack.png);
-}
-
-.console-group-messages .section .header .title {
-    color: black;
+.console-group-messages .section > .header .title {
+    color: #222;
     font-weight: normal;
     line-height: 13px;
 }
@@ -1235,7 +1267,7 @@ ol.watch-expressions > li.hovered {
     position: relative;
     display: inline-block;
     vertical-align: top;
-    color: black;
+    color: #222;
 }
 
 .console-formatted-node:hover {
@@ -1244,6 +1276,10 @@ ol.watch-expressions > li.hovered {
 
 .console-formatted-object .section, .console-formatted-node .section, .console-formatted-array .section {
     position: static;
+}
+
+.console-formatted-object .section > .header::before {
+    margin-top: 0;
 }
 
 .console-formatted-object .properties, .console-formatted-node .properties {
@@ -1451,32 +1487,47 @@ iframe.panel.extension {
 .outline-disclosure li.parent::before {
     float: left;
     width: 8px;
-    height: 8px;
     padding-right: 2px;
 }
 
 .outline-disclosure li.parent::before {
-    content: url(Images/treeRightTriangleBlack.png);
+    -webkit-user-select: none;
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-size: 320px 120px;
+    content: "a";
+    color: transparent;
+    text-shadow: none;
+    position: relative;
+    top: 2px;
+    margin-right: 1px;
+    height: 12px;
 }
 
-.outline-disclosure ol:focus li.parent.selected::before {
-    content: url(Images/treeRightTriangleWhite.png);
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.outline-disclosure li.parent::before {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
+.outline-disclosure li.parent::before {
+    -webkit-mask-position: -4px -96px;
+    background-color: rgb(110, 110, 110);
+}
+
+.outline-disclosure ol:focus li.parent.selected::before,
 .outline-disclosure ol.search-match-found li.parent.selected::before {
-    content: url(Images/treeRightTriangleWhite.png);
+    -webkit-mask-position: -4px -96px;
+    background-color: white;
 }
 
 .outline-disclosure li.parent.expanded::before {
-    content: url(Images/treeDownTriangleBlack.png);
+    -webkit-mask-position: -20px -96px;
 }
 
-.outline-disclosure ol:focus li.parent.expanded.selected::before {
-    content: url(Images/treeDownTriangleWhite.png);
-}
-
+.outline-disclosure ol:focus li.parent.expanded.selected::before,
 .outline-disclosure ol.search-match-found li.parent.expanded.selected::before {
-    content: url(Images/treeDownTriangleWhite.png);
+    -webkit-mask-position: -20px -96px;
+    background-color: white;
 }
 
 .outline-disclosure ol.children {
@@ -1512,7 +1563,6 @@ iframe.panel.extension {
 }
 
 .placard .title {
-    color: black;
     font-weight: normal;
     word-wrap: break-word;
     white-space: normal;
@@ -1552,41 +1602,54 @@ iframe.panel.extension {
     border-top: 1px solid rgb(231, 231, 231);
 }
 
-.section .header {
-    color: black;
-    padding: 0 8px 0 18px;
+.section > .header {
+    padding: 0 8px 0 5px;
     min-height: 18px;
     white-space: nowrap;
     -webkit-background-origin: padding;
     -webkit-background-clip: padding;
 }
 
-.section .header::before {
-    position: absolute;
-    top: 2px;
-    left: 7px;
+.section > .header::before {
+    -webkit-user-select: none;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.5;
+    content: "a";
+    color: transparent;
+    text-shadow: none;
+    float: left;
     width: 8px;
-    height: 8px;
-    content: url(Images/treeRightTriangleBlack.png);
-    opacity: 0.8;
+    margin-right: 4px;
+    margin-top: 2px;
 }
 
-.section.expanded .header::before {
-    content: url(Images/treeDownTriangleBlack.png);
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.section > .header::before {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
-.section .header .title, .event-bar .header .title {
+.section > .header::before {
+    background-position: -4px -96px;
+}
+
+.section.expanded > .header::before {
+    background-position: -20px -96px;
+}
+
+.section > .header .title, .event-bar .header .title {
     font-weight: normal;
     word-wrap: break-word;
     white-space: normal;
     line-height: 18px;
 }
 
-.section .header .title.blank-title {
+.section > .header .title.blank-title {
     font-style: italic;
 }
 
-.section .header label, .event-bar .header label {
+.section > .header label, .event-bar .header label {
     display: none;
 }
 
@@ -1594,7 +1657,7 @@ iframe.panel.extension {
     display: inline;
 }
 
-.section .header .subtitle, .event-bar .header .subtitle {
+.section > .header .subtitle, .event-bar .header .subtitle {
     float: right;
     margin-left: 5px;
     max-width: 55%;
@@ -1602,7 +1665,7 @@ iframe.panel.extension {
     overflow: hidden;
 }
 
-.section .header .subtitle a {
+.section > .header .subtitle a {
     color: inherit;
 }
 
@@ -1646,20 +1709,32 @@ iframe.panel.extension {
     margin-left: 1px;
 }
 
+
 .properties-tree li.parent::before {
-    content: url(Images/treeRightTriangleBlack.png);
-    opacity: 0.75;
-    float: left;
-    width: 8px;
-    height: 8px;
-    margin-top: 0;
-    padding-right: 3px;
     -webkit-user-select: none;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.5;
+    content: "a";
+    width: 8px;
+    float: left;
+    margin-right: 4px;
+    color: transparent;
+    text-shadow: none;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.properties-tree li.parent::before {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.properties-tree li.parent::before {
+    background-position: -4px -96px;
 }
 
 .properties-tree li.parent.expanded::before {
-    content: url(Images/treeDownTriangleBlack.png);
-    margin-top: 1px;
+    background-position: -20px -96px;
 }
 
 .properties-tree li .info {
@@ -1695,12 +1770,12 @@ iframe.panel.extension {
 }
 
 .editing, .editing * {
-    color: black !important;
+    color: #222 !important;
     text-decoration: none !important;
 }
 
 .child-editing {
-    color: black !important;
+    color: #222 !important;
     text-decoration: none !important;
     overflow: visible !important;
 }
@@ -1719,8 +1794,7 @@ li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-but
 }
 
 .properties-tree.watch-expressions {
-    padding-bottom: 8px;
-    padding-left: 4px !important;
+    padding-left: 0 !important;
 }
 
 .properties-tree.watch-expressions > li {
@@ -1801,11 +1875,13 @@ li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-but
 .swatch {
     margin-left: 1px;
     margin-right: 2px;
-    margin-bottom: -1px;
     width: 1em;
     height: 1em;
+    position: relative;
+    top: 1px;
     display: inline-block;
     background-image: url(Images/checker.png);
+    -webkit-user-select: none;
 }
 
 .swatch-inner {
@@ -1893,7 +1969,6 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
     padding: 2px 6px;
     line-height: 12px;
     font-weight: bold;
-    color: rgb(46, 46, 46);
     background: transparent;
     text-shadow: rgba(255, 255, 255, 0.5) 0 1px 0;
     -webkit-border-radius: 8px;
@@ -1923,29 +1998,17 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
 
 .scope-bar li.selected {
     background: rgba(0, 0, 0, 0.3);
-    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5) inset, 0 -1px 1px rgba(255, 255, 255, 0.25) inset, 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .scope-bar li:active {
     background: rgba(0, 0, 0, 0.5);
-    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5) inset, 0 -1px 1px rgba(255, 255, 255, 0.25) inset, 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-.console-warning-level, .console-error-level, .console-log-level, .console-debug-level {
-    display: none;
-}
 
-.filter-all .console-warning-level, .filter-warnings .console-warning-level,
-.filter-all .console-error-level, .filter-errors .console-error-level,
-.filter-all .console-log-level, .filter-logs .console-log-level,
-.filter-all .console-debug-level, .filter-debug .console-debug-level {
-    display: block;
-}
-
-.filter-all .console-warning-level.repeated-message, .filter-warnings .console-warning-level.repeated-message,
-.filter-all .console-error-level.repeated-message, .filter-errors .console-error-level.repeated-message,
-.filter-all .console-log-level.repeated-message, .filter-logs .console-log-level.repeated-message,
-.filter-all .console-debug-level.repeated-message, .filter-debug .console-debug-level.repeated-message {
+.console-warning-level.repeated-message,
+.console-error-level.repeated-message,
+.console-log-level.repeated-message,
+.console-debug-level.repeated-message{
     display: -webkit-flex;
 }
 
@@ -2329,8 +2392,7 @@ body.inactive li.selected .bubble.search-matches {
 }
 
 .source-frame-eval-expression {
-    border: 1px solid rgb(163, 41, 34);
-    margin: -1px;
+    outline: 1px solid rgb(163, 41, 34);
     background-color: rgb(255, 255, 194);
 }
 
@@ -2447,7 +2509,7 @@ body.platform-mac .soft-context-menu-item-mouse-over {
 }
 
 .soft-context-menu-item-submenu-arrow {
-    color: black;
+    color: #222;
     float: right;
     pointer-events: none;
 }
@@ -2587,13 +2649,29 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 }
 
 #search-results-pane-file-based li.parent::before {
-    content: url(Images/treeRightTriangleBlack.png);
-    position: relative;
-    left: -4px;
+    -webkit-user-select: none;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.5;
+    width: 8px;
+    content: "a";
+    color: transparent;
+    margin-left: -5px;
+    padding-right: 4px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+#search-results-pane-file-based li.parent::before {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+#search-results-pane-file-based li.parent::before {
+    background-position: -4px -96px;
 }
 
 #search-results-pane-file-based li.parent.expanded::before {
-    content: url(Images/treeDownTriangleBlack.png);
+    background-position: -20px -96px;
 }
 
 #search-results-pane-file-based .search-result {
@@ -2615,12 +2693,12 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 
 #search-results-pane-file-based .search-result .search-result-matches-count {
     margin-left: 5px;
-    color: #333;
+    color: #222;
 }
 
 #search-results-pane-file-based .show-more-matches {
     padding: 4px 0;
-    color: #333;
+    color: #222;
     cursor: pointer;
     font-size: 11px;
     margin-left: 20px;
@@ -2857,4 +2935,8 @@ body.platform-mac .progress-bar-container progress {
     -webkit-user-select: text;
     font-size: 11px;
     cursor: text;
+}
+
+.elements-tree-outline li.parent::before {
+    top: 0 !important;
 }

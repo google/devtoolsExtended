@@ -60,7 +60,6 @@ function defineCommonExtensionSymbols(apiPrivate)
     apiPrivate.Events = {
         AuditStarted: "audit-started-",
         ButtonClicked: "button-clicked-",
-        ItemSelected: "item-selected-",
         ConsoleMessageAdded: "console-message-added",
         ElementsPanelObjectSelected: "panel-objectSelected-elements",
         NetworkRequestFinished: "network-request-finished",
@@ -80,11 +79,9 @@ function defineCommonExtensionSymbols(apiPrivate)
         AddAuditResult: "addAuditResult",
         AddConsoleMessage: "addConsoleMessage",
         AddRequestHeaders: "addRequestHeaders",
-        AddSelectorItems: "addSelectorItems",
         CreatePanel: "createPanel",
         CreateSidebarPane: "createSidebarPane",
         CreateStatusBarButton: "createStatusBarButton",
-        CreateItemSelector: "createItemSelector",
         EvaluateOnInspectedPage: "evaluateOnInspectedPage",
         GetConsoleMessages: "getConsoleMessages",
         GetHAR: "getHAR",
@@ -402,28 +399,6 @@ function ElementsPanel()
 
 /**
  * @constructor
- */
-function ItemSelectorImpl(id) 
-{
-    this._id = id;
-    this.onSelectedItem = new EventSink(events.ItemSelected + id);
-}
-
-ItemSelectorImpl.prototype =
-{
-    addItems: function(items)
-    {
-        var request = {
-            command: commands.AddSelectorItems,
-            itemSelectorId: this._id,
-            items: items
-        };
-        extensionServer.sendRequest(request);
-    }
-}
-
-/**
- * @constructor
  * @extends {ExtensionViewImpl}
  */
 function ExtensionPanelImpl(id)
@@ -433,19 +408,6 @@ function ExtensionPanelImpl(id)
 }
 
 ExtensionPanelImpl.prototype = {
-    createItemSelector: function(title) 
-    {
-        var id = "itemSelector-" + extensionServer.nextObjectId();
-        var request = {
-            command: commands.CreateItemSelector,
-            panel: this._id,
-            id: id,
-            title: title
-        };
-        extensionServer.sendRequest(request);
-        return new ItemSelectorImpl(id);
-    },
-
     createStatusBarButton: function(iconPath, tooltipText, disabled)
     {
         var id = "button-" + extensionServer.nextObjectId();
@@ -995,17 +957,10 @@ if (!extensionServer)
 return new InspectorExtensionAPI();
 }
 
-// Default implementation; platforms will override.
-function buildPlatformExtensionAPI(extensionInfo)
-{
-    function platformExtensionAPI(coreAPI)
-    {
-        window.webInspector = coreAPI;
-    }
-    return platformExtensionAPI.toString();
-}
-
-
+/**
+ * @param {ExtensionDescriptor} extensionInfo
+ * @return {string}
+ */
 function buildExtensionAPIInjectedScript(extensionInfo)
 {
     return "(function(injectedScriptId){ " +

@@ -150,6 +150,10 @@
     color: rgb(65, 65, 65);
 }
 
+.timeline-category-statusbar-item input {
+    vertical-align: middle;
+}
+
 .timeline-category-statusbar-item .timeline-category-checkbox {
     width: 10px;
     height: 11px;
@@ -249,7 +253,7 @@
     color: rgba(0, 0, 0, 0.7);
 }
 
-#timeline-overview-timelines,
+#timeline-overview-events,
 #timeline-overview-memory {
     position: absolute;
     left: 0;
@@ -353,6 +357,10 @@
     -webkit-mask-position: -128px -48px;
 }
 
+.glue-async-status-bar-item.toggled-on:disabled .glyph {
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
 .timeline-frame-overview-status-bar-item.toggled-on .glyph {
     background-color: rgb(66, 129, 235) !important;
 }
@@ -426,7 +434,7 @@
     margin-left: 0;
     margin-right: 0;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 72px;
+    -webkit-mask-size: 320px 120px;
     background-color: black;
 }
 
@@ -546,7 +554,7 @@
     border-color: rgba(255, 178, 23, 0.5);
 }
 
-.resources-divider.last {
+.resources-divider:last-child {
     border-color: transparent;
 }
 
@@ -569,7 +577,7 @@
     overflow: hidden;
     background-color: rgb(220, 220, 220);
     opacity: 0.6;
-    color: black;
+    color: #222;
     text-align: center;
     padding-top: 3px;
     z-index: 350;
