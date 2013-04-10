@@ -64,11 +64,7 @@ cd $CWD
 
 copySubDir "Source/WebCore/inspector/front-end"
 copySubDir "LayoutTests/inspector"
-copySubDir "LayoutTests/platform/chromium/inspector"
 copySubDir "LayoutTests/http/tests/inspector"
-copySubDir "LayoutTests/platform/chromium/http/tests/inspector"
-copySubDir "Source/WebKit/chromium/src/js"
-
 
 echo "Copying built files from branch $WEBKIT_BRANCH_BUILT"
 
