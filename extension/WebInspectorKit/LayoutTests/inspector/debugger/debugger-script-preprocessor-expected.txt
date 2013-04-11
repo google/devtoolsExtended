@@ -13,7 +13,7 @@ debugger-script-preprocessor.html
 dynamicScript1
 dynamicScript2
 
-.js
+
 Page reloaded.
 Page reloaded.
 Page reloaded.

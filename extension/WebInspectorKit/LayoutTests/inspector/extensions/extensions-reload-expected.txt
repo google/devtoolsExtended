@@ -8,9 +8,23 @@ Page reloaded.
 With injected code: foo = 42
 Without injected code: foo = undefined
 RUNNING TEST: extension_testReloadPreprocessesCode
+Before preprocessingScript
+4 scripts
+file:///work/blink/src/third_party/WebKit/LayoutTests/inspector/extensions/extensions-reload.html
+file:///work/blink/src/third_party/WebKit/LayoutTests/http/tests/inspector/debugger-test.js
+file:///work/blink/src/third_party/WebKit/LayoutTests/http/tests/inspector/extensions-test.js
+file:///work/blink/src/third_party/WebKit/LayoutTests/http/tests/inspector/inspector-test.js
 Page reloaded.
+With preprocessingScript: 
+7 scripts
+file:///work/blink/src/third_party/WebKit/LayoutTests/inspector/extensions/extensions-reload.html
+file:///work/blink/src/third_party/WebKit/LayoutTests/http/tests/inspector/debugger-test.js
+file:///work/blink/src/third_party/WebKit/LayoutTests/http/tests/inspector/extensions-test.js
+file:///work/blink/src/third_party/WebKit/LayoutTests/http/tests/inspector/inspector-test.js.js
+file:///work/blink/src/third_party/WebKit/LayoutTests/http/tests/inspector/debugger-test.js.js
+file:///work/blink/src/third_party/WebKit/LayoutTests/http/tests/inspector/extensions-test.js.js
+file:///work/blink/src/third_party/WebKit/LayoutTests/http/tests/inspector/inspector-test.js
 Page reloaded.
-With Preprocessed code: foo = 24
-Without Preprocessed code: foo = undefined
+Without preprocessingScript: 
 All tests done.
 
