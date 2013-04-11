@@ -62,18 +62,17 @@ cr build
 git checkout "$WEBKIT_BRANCH"
 cd $CWD
 
-copySubDir "Source/WebCore/inspector/front-end"
+copySubDir "Source/devtools"
 copySubDir "LayoutTests/inspector"
 copySubDir "LayoutTests/http/tests/inspector"
 
 echo "Copying built files from branch $WEBKIT_BRANCH_BUILT"
 
-LOCAL_FRONT_END="$LOCAL_WEBKIT/Source/WebCore/inspector/front-end/"
+LOCAL_FRONT_END="$LOCAL_WEBKIT/Source/devtools/"
 mkdir -p "$LOCAL_FRONT_END"
 cp "$BUILT_FRONT_END/devtools_extension_api.js" "$LOCAL_FRONT_END"
 cp "$BUILT_FRONT_END/InspectorBackendCommands.js" "$LOCAL_FRONT_END"
 cp "$BUILT_FRONT_END/devtools.html" "$LOCAL_FRONT_END"
-cp "$CHROMIUM_WEBKIT/Source/WebCore/inspector/Inspector.json" "$LOCAL_FRONT_END"
 
 git add -A extension/WebInspectorKit/
 git commit -m "Sync to WebKit at $WEBKIT_GIT_HEAD" 
