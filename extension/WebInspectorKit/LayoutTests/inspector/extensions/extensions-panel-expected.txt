@@ -6,6 +6,7 @@ Running tests...
 RUNNING TEST: extension_testCreatePanel
 Panel created
 {
+    createItemSelector : <function>
     createStatusBarButton : <function>
     onHidden : {
         addListener : <function>
@@ -24,6 +25,12 @@ Panel created
 Panel shown
 focused: true
 Extension panel size correct
+RUNNING TEST: extension_testItemSelector
+ItemSelector has  2 items
+selected {"key":"key2","title":"title2","suffix":"(2)","subtitle":"subtitle2"}
+prompt ti
+selected undefined
+prompt undefined
 RUNNING TEST: extension_testSearch
 Panel hidden
 Panel searched:

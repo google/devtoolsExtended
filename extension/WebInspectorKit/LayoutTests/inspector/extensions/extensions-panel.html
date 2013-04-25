@@ -51,6 +51,21 @@ function initialize_extensionsPanelTest()
         click.initMouseEvent("click", true, true);
         xpathResult.singleNodeValue.dispatchEvent(click);
     }
+
+    InspectorTest.selectItem = function() 
+    {
+        if (!WebInspector.Dialog.currentInstance()) {
+            output("No Dialog.currentInstance");
+        } else {
+            var element = WebInspector.Dialog.currentInstance()._delegate.element;
+            element.querySelector("input").value = "ti";
+            var items = element.querySelectorAll(".item");
+            InspectorTest.addResult("ItemSelector has  " + items.length + " items");
+            var click = document.createEvent("MouseEvent");
+            click.initMouseEvent("click", true, true);
+            items[1].dispatchEvent(click);
+        }
+    }
 }
 
 function extension_testCreatePanel(nextTest)
@@ -159,6 +174,32 @@ function extension_testStatusBarButtons(nextTest)
     webInspector.panels.create("Buttons Panel", basePath + "extension-panel.png", basePath + "non-existent.html", onPanelCreated);
 }
 
+function extension_testItemSelector(nextTest)
+{
+    console.log("begin testItemSelector");
+    function onPanelCreated(panel) 
+    {
+        var itemSelector = panel.createItemSelector("TestItemSelector");
+        function onSelectedFile(item, promptValue)
+        {
+            output("selected " + JSON.stringify(item));
+            output("prompt " + promptValue);
+            if (!item)  // signal that the dialog closed
+                nextTest();
+        }
+        itemSelector.onSelectedItem.addListener(onSelectedFile);
+        var testItems = [
+            {key: 'key1', title: 'title1', suffix: '(1)', subtitle: 'subtitle1'},
+            {key: 'key2', title: 'title2', suffix: '(2)', subtitle: 'subtitle2'},
+        ];
+        itemSelector.addItems(testItems);
+
+        evaluateOnFrontend("InspectorTest.selectItem();");
+    }
+
+    var basePath = location.pathname.replace(/\/[^/]*$/, "/");
+    webInspector.panels.create("Test Panel", basePath + "extension-panel.png", basePath + "non-existent.html", onPanelCreated);
+}
 </script>
 </head>
 <body onload="runTest()">

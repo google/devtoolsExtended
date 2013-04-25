@@ -832,3 +832,107 @@ WebInspector.SelectUISourceCodeForProjectTypeDialog.show = function(name, type, 
     filteredItemSelectionDialog.renderAsTwoRows();
     WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);
 }
+
+
+/**
+ * @constructor
+ * @implements {WebInspector.SelectionDialogContentProvider}
+ * @param {WebInspector.Panel} panel
+ * @param {Object} itemsProvider
+ */
+
+WebInspector.ExtensionSelectionContentProvider = function(panel, itemsProvider) 
+{
+    WebInspector.SelectionDialogContentProvider.call(this);
+    this._panel = panel;
+    this._itemsProvider = itemsProvider;
+    this._items = [];
+}
+
+WebInspector.ExtensionSelectionContentProvider.prototype = {
+    /**
+     * @param {number} itemIndex
+     * @return {string}
+     */
+    itemTitleAt: function(itemIndex)
+    {
+        return this._items[itemIndex].title;
+    },
+    
+    /*
+     * @param {number} itemIndex
+     * @return {string}
+     */
+    itemSuffixAt: function(itemIndex)
+    {
+        return this._items[itemIndex].suffix;
+    },
+
+    /*
+     * @param {number} itemIndex
+     * @return {string}
+     */
+    itemSubtitleAt: function(itemIndex)
+    {
+        return this._items[itemIndex].subtitle;
+    },
+
+    /**
+     * @param {number} itemIndex
+     * @return {string}
+     */
+    itemKeyAt: function(itemIndex)
+    {
+        return this._items[itemIndex].key;
+    },
+
+    /**
+     * @return {number}
+     */
+    itemsCount: function()
+    {
+        return this._items.length;
+    },
+
+    /**
+     * @param {function(number, number, number, number)} callback
+     */
+    requestItems: function(callback)
+    {
+        /**
+         * @param {Array.<Object>} items
+         * @param {number} chunkIndex_opt
+         * @param {number} totalChunks_opt
+         */
+        function itemsCallback(items, chunkIndex_opt, totalChunks_opt)
+        {
+            var index = this._items.length;
+            items.forEach(function(item)
+            {
+                this._items.push(item);
+            }.bind(this));
+            callback(index, items.length, chunkIndex_opt, totalChunks_opt)
+        }
+        this._itemsProvider.requestItems(itemsCallback.bind(this));
+    },
+
+    /**
+     * @param {number} itemIndex
+     * @param {string} promptValue
+     */
+    selectItem: function(itemIndex, promptValue)
+    {
+        this._itemsProvider.selectItem(this._items[itemIndex], promptValue);
+    },
+
+    /**
+     * @param {string} query
+     * @return {string}
+     */
+    rewriteQuery: function(query)
+    {
+        return query;
+    }
+};
+
+WebInspector.ExtensionSelectionContentProvider.prototype.__proto__ = WebInspector.SelectionDialogContentProvider.prototype;
