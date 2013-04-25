@@ -208,7 +208,6 @@ function(            ChromeProxy,          appendFrame)  {
       var WebInspector = this.inspectorWindow.WebInspector;
       WebInspector.attached = true; // small icons for embed in orion
 
-      
       this.completeLoad = WebInspector.delayLoaded; // set by openInspector
     
       // Called asynchronously from WebInspector _initializeCapability
@@ -228,6 +227,8 @@ function(            ChromeProxy,          appendFrame)  {
       WebInspector._doLoadedDoneWithCapabilities = function() {
         var args = Array.prototype.slice.call(arguments, 0);
         this._doLoadedDoneWithCapabilities.apply(WebInspector, args);
+        
+        document.body.classList.add("compact");
         this.loadCompleted();
       }.bind(this);
       
