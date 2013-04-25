@@ -44,8 +44,9 @@ function allowSiteWhenDebuggerOpens(site, callback, extraURLParams) {
         } else {
            windowsAdapter.addTab(debuggerTab);
         }
-
-        var url = site + '?tabId=' + debuggeeTab.id + '&' + 'url=' + encodeURIComponent(onClickInfo.pageUrl);
+        var q = site.indexOf('?');
+        var separator = (q === -1) ? '?' : '&';
+        var url = site + separator + 'tabId=' + debuggeeTab.id + '&' + 'url=' + encodeURIComponent(onClickInfo.pageUrl);
         if (extraURLParams) 
           url += extraURLParams;
 
