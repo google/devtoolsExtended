@@ -7,7 +7,7 @@
 define(['appendFrame'], 
 function(appendFrame)  {
 
-  var debug = false;
+  var debug = true;
 
   var DevtoolsConnection = { 
 
@@ -38,7 +38,8 @@ function(appendFrame)  {
       if (debug) {
         console.log("DevtoolsConnection sending debuggee ", this.debuggee);
       }
-      this.portToDevtools = new ChannelPlate.Parent(childFrame, this.debuggee.devtoolsURL, this.onMessage.bind(this) );
+      this.portToDevtools = new ChannelPlate.Parent( this.onMessage.bind(this) );
+      this.portToDevtools.start(childFrame, this.debuggee.devtoolsURL);
       this.portToDevtools.postMessage({
         method: 'debuggee',
         arguments: [this.debuggee]
@@ -49,7 +50,8 @@ function(appendFrame)  {
       if (debug) {
         console.log("atopwi puts debuggee %o and hears %o", this.debuggee, message);
       }
-      if (message.data[0] && message.data[0] === 'loadCompleted') {
+      // Check that we get the signal from WebInspector
+      if (message[0] && message[0] === 'loadCompleted') {
         this.showInspectorIframe();
       }
     },

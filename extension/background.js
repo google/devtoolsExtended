@@ -52,7 +52,7 @@ window.debuggerOrDebuggee;
 
   function getJSONAsync(onJSON) {
     var websocketJSONURL = "http://localhost:9222/json";
-    XHRInBackground.prototype.xhr.call(null, websocketJSONURL, onJSON, notify.bind(null, "xhr failed"));
+    XHRInBackground.GET(websocketJSONURL, onJSON, notify.bind(null, "xhr failed"));
   }
   
   //--------------------------------------------------------------------------------------
