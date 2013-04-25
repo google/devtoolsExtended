@@ -38,12 +38,14 @@ function(appendFrame)  {
       if (debug) {
         console.log("DevtoolsConnection sending debuggee ", this.debuggee);
       }
-      this.portToDevtools = new ChannelPlate.Parent( this.onMessage.bind(this) );
-      this.portToDevtools.start(childFrame, this.debuggee.devtoolsURL);
-      this.portToDevtools.postMessage({
-        method: 'debuggee',
-        arguments: [this.debuggee]
-      });
+      ChannelPlate.Parent(childFrame, this.debuggee.devtoolsURL, function(rawPort){
+        // TODO use RemoteMethodCall to atopwi
+        this.portToDevtools = new ChannelPlate.Base(rawPort, this.onMessage.bind(this));
+        this.portToDevtools.postMessage({
+          method: 'debuggee',
+          arguments: [this.debuggee]
+        });  
+      }.bind(this));
     },
     
     onMessage: function(message) {
