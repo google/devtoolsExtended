@@ -72,7 +72,7 @@ function(            ChromeProxy,          appendFrame)  {
               //debugger event listeners are added during load
             }
           );
-
+ 
           this.attach(function() {
             console.log("Debuggee attach ", this.chrome);
           }.bind(this));    
@@ -81,7 +81,7 @@ function(            ChromeProxy,          appendFrame)  {
          console.error('Debuggee.attach ERROR:', msg);
         }
       );
-      
+     
       window.beforeUnload = function detach() {
         this.chromeConnection.detach();
       }.bind(this);
@@ -187,7 +187,7 @@ function(            ChromeProxy,          appendFrame)  {
     },
     
     interceptMessages: function() {
-      console.log("interceptMessages here");
+      console.log("interceptMessages from websockets here");
     },
 
     patchInspector: function(callback) {

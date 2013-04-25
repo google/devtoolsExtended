@@ -24,6 +24,10 @@
       "experimental",
       "notifications"
     ],
+    "page_action": {
+      //"default_icon": "icons/foo.png", // optional
+      "default_title": "Open DevtoolsExtended on DevtoolsExtended"    // optional; shown in tooltip
+    },
     "web_accessible_resources": [
       "*"
     ]
