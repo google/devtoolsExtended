@@ -1,18 +1,21 @@
 <html>
 <head><title>DevtoolsExtended Options</title>
 <script type="text/javascript" src="ensureOrigin.js"></script>
-<script type="text/javascript" src="saveRestoreOptions.js"></script>
+<script src="../crx2app/extension/crxEnd/ExtensionOptions.js"></script>
+<script type="text/javascript" src="options.js"></script>
 <link rel="stylesheet" type="text/css" href="options.css" />
 </head>
 <body>
 
 <h3>DevtoolsExtended extensions</h3>
 <div class='extensionInfos'>
+<form>
 <table>
 <tbody>
 <tr class='extensionInfos-column-names'>
   <th>Action</th>
   <th>Name</th>
+  <th>Enabled</th>
   <th>URL</th>
   <th>Remove</th>
 </tr>
@@ -25,6 +28,9 @@
   </td>
   <td>
     <input class="extensionInfo-name userInput"  type='text' disabled='disabled' value=''/>
+  </td>
+  <td>
+      <button class="extensionInfo-enable userInput" disabled='disabled'></button>
   </td>
   <td>
     <input class="extensionInfo-startPage userInput" type="url" size="80"  disabled='disabled' />
@@ -44,6 +50,7 @@
   </tr>
 </tbody>
 </table>
+</form>
 </div>
 <p>These extensions are <a href="http://developer.chrome.com/extensions/devtools.html">chrome devtools extensions</a> with two differences:
   <ol>
@@ -82,5 +89,4 @@
 <span id='warnReload' class='hidden warning'>To Complete Options Update, Please click <code>reload</code> the chrome://extensions page</span>
 </div>
 </body>
-<script type="text/javascript" src="options.js"></script>
 </html>

@@ -3,8 +3,61 @@
 
 /*global console window*/
 
+var optionsKey =  'DevtoolsExtended.options';
+
+function extractExtensionInfos(options) {
+  options.extensionInfos = [];
+  
+  var extensionInfosRows = document.querySelectorAll('.extensionInfos-row');
+  for (var i = 0; i < extensionInfosRows.length; i++) {
+      if (extensionInfosRows[i].classList.contains('extensionInfo-template')) {
+        continue;
+      }
+      var name = extensionInfosRows[i].querySelector('.extensionInfo-name').value;
+      var enabled = (extensionInfosRows[i].querySelector('.extensionInfo-enable').textContent == "yes");
+      var startPage =  extensionInfosRows[i].querySelector('.extensionInfo-startPage').value;
+      options.extensionInfos.push(
+        {
+          name: name,
+          enabled: enabled,
+          startPage: startPage
+        }
+      );
+  }
+  
+  var debugConnection = document.getElementById('debugConnection');
+  options.debugConnection = debugConnection.checked;
+
+  var debugMessages = document.getElementById('debugMessages');
+  options.debugMessages = debugMessages.checked;
+
+  var debugWarnings = document.getElementById('debugWarnings');
+  options.debugWarnings = debugWarnings.checked;
+  
+  var debugAdapters = document.getElementById('debugAdapters');
+  options.debugAdapters = debugAdapters.checked;
+  
+  var warnReload = document.getElementById('warnReload');
+  warnReload.classList.remove('hidden');  
+  return options;
+}
+
+var defaultOptions = {
+  extensionInfos: [  // Default extension list
+    {
+      name: "qpp",
+      enabled: false,
+      startPage: "chrome-extension://mpbflbdfncldfbjicfcfbaikknnbfmae/QuerypointDevtoolsPage.html" 
+    }
+  ]
+};
+
+var DevtoolsExtendedOptions = new ExtensionOptions(optionsKey, defaultOptions, extractExtensionInfos);
+
 function onClickDebug(event) {
-  saveOptions();
+  DevtoolsExtendedOptions.saveOptions();
+  event.preventDefault();
+  return false;
 }
 
 function setDebug(options, setting) {
@@ -22,7 +75,7 @@ function showNoExtensions(noshow) {
 }
 
 function restore() {
-  var options = restoreOptions();
+  var options = DevtoolsExtendedOptions.restoreOptions();
   if (options) {
 
     setDebug(options, 'debugConnection');
@@ -51,6 +104,12 @@ function cloneElementByClass(className) {
 
 function addExtensionInfosRow(extensionInfo) {
   var row = cloneElementByClass('extensionInfo-template');
+  var enabled = row.querySelector('.extensionInfo-enable');
+  if (extensionInfo.enabled) {
+    enabled.textContent = 'yes';
+  } else {
+    enabled.textContent = 'no';
+  }
   var input = row.getElementsByClassName('extensionInfo-startPage')[0];
   input.value = extensionInfo.startPage;
   input = row.querySelector('.extensionInfo-name');
@@ -67,7 +126,7 @@ function eachUserInput(row, fnc) {
 
 // From editing to saved
 function save(row) {
-  saveOptions();
+  DevtoolsExtendedOptions.saveOptions();
   console.log('save', row);
   eachUserInput(row, function(elt) {
     elt.setAttribute('disabled', 'disabled');
@@ -114,7 +173,7 @@ function removeRow(event) {
   var row = getRow(event);
   if (row) {
       row.parentElement.removeChild(row);
-      saveOptions();
+      DevtoolsExtendedOptions.saveOptions();
   }
 }
 
@@ -122,6 +181,17 @@ function highlightSave(event) {
   var save = document.getElementById("save");
   save.classList.add('youShouldSave');
   status.innerHTML = "";
+}
+
+function toggleEnable(event) {
+  var row = getRow(event);
+  var enabled = row.querySelector('.extensionInfo-enable');
+  console.log("enabled "+enabled.textContent);
+  if (enabled.textContent == 'yes') {
+    enabled.textContent = 'no';
+  } else {
+    enabled.textContent = 'yes';
+  }
 }
 
 
@@ -132,6 +202,10 @@ function addExtensionInfosRowClickHandler(row) {
       removeRow(event);
     else if (event.target.classList.contains('save') || event.target.classList.contains('edit'))
       saveOrEditRow(event);
+    else if (event.target.classList.contains('extensionInfo-enable'))
+      toggleEnable(event);
+    event.preventDefault();
+    event.stopPropagation();
   });
   return row;
 }
@@ -148,6 +222,8 @@ function addListeners() {
       cloneElementByClass('extensionInfo-template'))
     );
     showNoExtensions(false);
+    event.preventDefault();
+    return false;
   }, false);
 }
 
