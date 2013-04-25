@@ -9,3 +9,12 @@
 body.compact #toolbar {
     height: 24px; /* shorten the toolbar to avoid missing clicks on panel buttons */
 }
+
+body.compact #main {
+    top: 24px;
+}
+
+body.inactive #toolbar {
+    background-color: rgba(240, 235, 226, 1);
+    background-image: none !important;
+}
