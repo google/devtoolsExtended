@@ -2,7 +2,9 @@
 // Copyright 2012 Google Inc. johnjbarton@google.com
 
 (function(){
-  var options = new ExtensionOptions('crx2app.options', {
+  var crx2appKey = 'crx2app.options';
+  localStorage.removeItem(crx2appKey);
+  var options = new ExtensionOptions(crx2appKey, {
     allowedSites: [
       {
         name: 'DevtoolsExtended',
