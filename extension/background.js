@@ -33,7 +33,8 @@ window.debuggerOrDebuggee;
   var websocketJSONURL = "http://localhost:" + options.remoteDebugPort + "/json";
 
   function notify(whyFailed) {
-    webkitNotifications.createNotification("", "No Dogfood", whyFailed);
+    var notification = webkitNotifications.createNotification("", "No Dogfood", whyFailed);
+    notification.show();
   }
 
   function onJSON(matcher, data) {
@@ -165,6 +166,19 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
   // -------------------------------------------------
   // PageAction
 
+function onRequest(request, sender, sendResponse) {
+  // Show the page action for the tab that the sender (content script)
+  // was on.
+  chrome.pageAction.show(sender.tab.id);
+
+  // Return nothing to let the connection be cleaned up.
+  sendResponse({});
+};
+
+// Listen for the content script to send a message to the background page.
+chrome.extension.onRequest.addListener(onRequest);
+
+/*
   function onTabUpdate(tabId, changeInfo, tab) {
     // For debugger side we need an activator UI
     if (tab.url.indexOf('http://localhost:922') > -1) { // any http port in 922*
@@ -173,19 +187,34 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
   };
 
   chrome.tabs.onUpdated.addListener(onTabUpdate);
-
-  function onPageAction(tab) {
+*/
+  function openFromSync(tab) {
     debuggerOrDebuggee = 'debugger';
     chrome.storage.sync.get('remoteDebug', function onStorage(items) {
       console.log("storage.sync.get remoteDebug", items);
+      if (!items.remoteDebug) {
+        console.error("storage.sync does not have remoteDebug values");
+        var notification = webkitNotifications.createNotification(
+          'error.png',  // icon url - can be relative
+          'Error',  // notification title
+          'Activate Remote DevtoolsExtended by right click on debuggee'  // notification body text
+        );
+        notification.show();
+        return;
+      }
       var tabId = items.remoteDebug.focused;
       var tab = items.remoteDebug.tabs[tabId];
       if (!tab) {
-        console.error("Focused tab %s not amoung remote tabs %o", tabId, items.remoteDebug.tabs);
+        console.error("Focused tab %s not among remote tabs %o", tabId, items.remoteDebug.tabs);
         return;
       }
       openDebugger(tab);
     });
+
+  }
+
+  function onPageAction(tab) {
+    openFromSync(tab);
   }
 
   chrome.pageAction.onClicked.addListener(onPageAction);  

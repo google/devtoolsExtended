@@ -27,7 +27,18 @@
     "page_action": {
       //"default_icon": "icons/foo.png", // optional
       "default_title": "Open DevtoolsExtended on DevtoolsExtended"    // optional; shown in tooltip
-    },
+    },  
+    "content_scripts" : [
+    {
+      "matches" : [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js" : ["contentscript.js"],
+      "run_at" : "document_idle",
+      "all_frames" : false
+    }
+  ],
     "web_accessible_resources": [
       "*"
     ]
