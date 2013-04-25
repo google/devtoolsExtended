@@ -6,7 +6,7 @@
 var RemoteMethodCall = (function() {
 
   "use strict";
-  var DEBUG = false;
+  var DEBUG = true;
   var RESPONSE = 'Response';
   var ERROR = 'Error';
 
@@ -14,7 +14,7 @@ var RemoteMethodCall = (function() {
     // A ChannelPlate Listener that converts requests to method calls and 
     // returns to responses
 
-    function Responder(serverMethods, ctorOfOnMessage) {
+    function Responder(serverMethods, rawPort) {
       this.serverMethods = serverMethods;
     
       this.onMessage = function(message) {
@@ -52,7 +52,7 @@ var RemoteMethodCall = (function() {
         this.channelPlate.start.apply(this.channelPlate, arguments);
       }
 
-      this.channelPlate = new ctorOfOnMessage(this.onMessage.bind(this));
+      this.channelPlate = new ChannelPlate.Base(rawPort, this.onMessage.bind(this));
     }
 
     //---------------------------------------------------------------------------------------
@@ -64,7 +64,10 @@ var RemoteMethodCall = (function() {
       this.responseHandlers = [];
       this._serverProxy = this._createProxy(serverMethods);
       this.channelPlate = new ChannelPlateCtor(this._onMessage.bind(this));
+      this.instance = ++Requestor.instance;
     }
+
+    Requestor.instance = 0;
 
     Requestor.prototype = {
 
@@ -75,6 +78,9 @@ var RemoteMethodCall = (function() {
       request: function(method, args, onResponse, onError) {
         this.responseHandlers[++this.postId] = {method: method, onResponse: onResponse, onError: onError};
         this.channelPlate.postMessage([this.postId, method].concat(args));
+        if (DEBUG) {
+          console.log("Requestor "+ this.instance + " sent " + method, args);
+        }
       },
 
       _onMessage: function(event) {
@@ -82,24 +88,26 @@ var RemoteMethodCall = (function() {
         var postId = payloadArray.shift();
         var method = payloadArray.shift();
         var responseHandler = this.responseHandlers[postId];
-        if (method === responseHandler.method) {
-          var args = payloadArray;
-          var status = args.shift();
-          var callback = responseHandler.onResponse;
-          var errback = responseHandler.onError;
-          try {
-            if (callback && status === RESPONSE) {
-              callback.apply(this, args);
-            } else if (errback && status === ERROR) {
-              errback.apply(this, args);
-            }  
-          } catch(exc) {
-            console.error("Requestor callback failed: "+(exc.stack ?"\n %o":exc), exc.stack);
-          } finally {
-            delete this.responseHandlers[postId];
-          }
-        } else {
-          console.error("Requestor protocol error, remote method does not match local method");
+        if (!responseHandler) {
+          console.error("Requestor "+ this.instance + " _onMessage failed, no responseHandler for postId " + postId, this.responseHandlers);
+        }
+        if (method !== responseHandler.method) {
+          console.error("Requestor "+ this.instance + " protocol error, remote method does not match local method");
+        }
+        var args = payloadArray;
+        var status = args.shift();
+        var callback = responseHandler.onResponse;
+        var errback = responseHandler.onError;
+        try {
+          if (callback && status === RESPONSE) {
+            callback.apply(this, args);
+          } else if (errback && status === ERROR) {
+            errback.apply(this, args);
+          }  
+        } catch(exc) {
+          console.error("Requestor "+ this.instance + " callback failed: "+(exc.stack ?"\n %o":exc), exc.stack);
+        } finally {
+          delete this.responseHandlers[postId];
         }
       },
 

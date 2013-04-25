@@ -39,16 +39,17 @@ function onMessage(message) {
 
 // After we listen for messages we navigate the frame.
 
-var portToChild = new ChannelPlate.Parent(onMessage);
-portToChild.start(childFrame, "childFrame.html");
+ChannelPlate.Parent(childFrame, "childFrame.html", function(rawPort){
+    var portToChild = new ChannelPlate.Base(rawPort, onMessage);
+    // Low-level outgoing API call starts test
+    //
+    portToChild.postMessage ("hello child");
+});
 
 if (DEBUG) {
   console.log("parent listening for child");
 }
 
-// Low-level outgoing API call starts test
-//
-portToChild.postMessage ("hello child");
 
 
 function nextTest() {
@@ -69,9 +70,11 @@ function nextTest() {
         }
     } 
 
-    var server = new RemoteMethodCall.Responder(serverTestMethods, ChannelPlate.Parent);
-    server.start(clientFrame, "clientFrame.html");
-    
+    var server;
+    ChannelPlate.Parent(clientFrame, "clientFrame.html", function(rawPort){
+        server = new RemoteMethodCall.Responder(serverTestMethods, rawPort);
+    });
+
 }
 
 

@@ -76,6 +76,3 @@ XHRInBackground.PROPFIND = function(url, callback, errback) {
   this.request('PROPFIND', url, callback, errback);
 };
 
-
-var server = new RemoteMethodCall.Responder(XHRInBackground, ChannelPlate.ChromeBackgroundListener);
-    server.start();
