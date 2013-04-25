@@ -19,6 +19,7 @@
     var id = window.location.host + window.location.pathname;
     id = id.replace(/\//g, '_').replace(/\./g,'_', 'g');
     
+    window.extensionServer = null; // avoid NPE in injectedExtensionAPI
 
     // Build the chrome.devtools API
     //
