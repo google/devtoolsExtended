@@ -1,0 +1,53 @@
+<html>
+<script src="../WebInspectorKit/Source/WebCore/inspector/front-end/jsdifflib.js"></script>
+<script src="../WebInspectorKit/Source/WebCore/inspector/front-end/utilities.js"></script>
+<script src="../WebInspectorKit/Source/WebCore/inspector/front-end/DOMExtension.js"></script>
+<script src="../WebInspectorKit/Source/WebCore/inspector/front-end/treeoutline.js"></script>
+
+<link rel="stylesheet" type="text/css" href="../WebInspectorKit/Source/WebCore/inspector/front-end/inspector.css">
+<style>
+:focus {
+    outline: none;
+}
+
+.failed {
+    color: red;
+}
+
+.timeout {
+    color: brown;
+}
+
+iframe {
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+</style>
+
+<script src='test-runner.js'></script>
+<body>
+This is a standalone test suite for inspector front-end. Here is how you run it:
+<ul>
+<li>Check out WebKit source tree: git clone http://git.chromium.org/external/Webkit.git</li>
+<li>Run "Tools/Scripts/new-run-webkit-httpd --root=. --port=8002 --server=start"</li>
+<li>Run Chrome Canary (ToT Chromium) with following flags: "--remote-debugging-port=9222 --user-data-dir=testProfile http://localhost:8002/Source/WebCore/inspector/front-end/test-runner.html"</li>
+</ul>
+Filter: <input id="filter" type="text" size="40"></input><small><i>Click on results to load filter</i></small><br>
+<button class='load'>Load</button>
+<button class='run'>Run</button>
+<button class='debug' >Debug</button>
+<button class='interrupt'>Interrupt</button>
+
+
+<span>Passed: <span id="pass">0</span></span>
+<span>Failed: <span id="fail">0</span></span>
+<span>Timeout: <span id="timeout">0</span></span>
+<span>Skipped: <span id="skip">0</span></span>
+<span>Remaining: <span id="remaining">0</span><br>
+
+<ol id="outline" style="font-size: 12px !important" class="source-code outline-disclosure"></ol>
+
+</body>
+</html>
