@@ -490,9 +490,8 @@
     text-overflow : ellipsis;
 }
 
-.network-log-grid.data-grid .network-summary-bar img {
-    vertical-align: middle;
-    padding-right: 8px;
+.network-log-grid.data-grid .network-summary-bar .warning-icon-small {
+    margin-right: 8px;
 }
 
 #network-container {
@@ -516,10 +515,6 @@
 #network-container.brief-mode td,
 #network-container.brief-mode th {
     border-right: none;
-}
-
-#network-container.brief-mode th.corner {
-    display: none;
 }
 
 #network-container.brief-mode .network-log-grid.data-grid .data-grid-resizer {

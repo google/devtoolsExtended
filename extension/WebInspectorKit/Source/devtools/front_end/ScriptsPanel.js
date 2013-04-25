@@ -35,7 +35,6 @@ importScript("RevisionHistoryView.js");
 importScript("ScopeChainSidebarPane.js");
 importScript("ScriptsNavigator.js");
 importScript("ScriptsSearchScope.js");
-importScript("SnippetJavaScriptSourceFrame.js");
 importScript("StyleSheetOutlineDialog.js");
 importScript("TabbedEditorContainer.js");
 importScript("WatchExpressionsSidebarPane.js");
@@ -97,6 +96,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     this._navigatorController = new WebInspector.NavigatorOverlayController(this.editorView, this._navigator.view, this._editorContainer.view);
 
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ScriptSelected, this._scriptSelected, this);
+    this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ItemSearchStarted, this._itemSearchStarted, this);
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.SnippetCreationRequested, this._snippetCreationRequested, this);
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ItemRenamingRequested, this._itemRenamingRequested, this);
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.FileRenamed, this._fileRenamed, this);
@@ -391,7 +391,7 @@ WebInspector.ScriptsPanel.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {number} lineNumber
+     * @param {number=} lineNumber
      */
     showUISourceCode: function(uiSourceCode, lineNumber)
     {
@@ -431,6 +431,11 @@ WebInspector.ScriptsPanel.prototype = {
         this._editorContainer.showFile(uiSourceCode);
         this._updateScriptViewStatusBarItems();
 
+        if (this._currentUISourceCode.project().type() === WebInspector.projectTypes.Snippets)
+            this._runSnippetButton.element.removeStyleClass("hidden");
+        else
+            this._runSnippetButton.element.addStyleClass("hidden");
+
         return sourceFrame;
     },
 
@@ -443,10 +448,7 @@ WebInspector.ScriptsPanel.prototype = {
         var sourceFrame;
         switch (uiSourceCode.contentType()) {
         case WebInspector.resourceTypes.Script:
-            if (uiSourceCode.project().type() === WebInspector.projectTypes.Snippets)
-                sourceFrame = new WebInspector.SnippetJavaScriptSourceFrame(this, uiSourceCode);
-            else
-                sourceFrame = new WebInspector.JavaScriptSourceFrame(this, uiSourceCode);
+            sourceFrame = new WebInspector.JavaScriptSourceFrame(this, uiSourceCode);
             break;
         case WebInspector.resourceTypes.Document:
             sourceFrame = new WebInspector.JavaScriptSourceFrame(this, uiSourceCode);
@@ -553,7 +555,8 @@ WebInspector.ScriptsPanel.prototype = {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
         var sourceFrame = this._showFile(uiSourceCode);
         this._navigatorController.hideNavigatorOverlay();
-        sourceFrame.focus();
+        if (!this._navigatorController.isNavigatorPinned())
+            sourceFrame.focus();
         WebInspector.searchController.resetSearch();
     },
 
@@ -562,8 +565,14 @@ WebInspector.ScriptsPanel.prototype = {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data.uiSourceCode);
         var sourceFrame = this._showFile(uiSourceCode);
         this._navigatorController.hideNavigatorOverlay();
-        if (sourceFrame && event.data.focusSource)
+        if (sourceFrame && (!this._navigatorController.isNavigatorPinned() || event.data.focusSource))
             sourceFrame.focus();
+    },
+
+    _itemSearchStarted: function(event)
+    {
+        var searchText = /** @type {string} */ (event.data);
+        WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement, searchText);
     },
 
     _pauseOnExceptionStateChanged: function()
@@ -640,6 +649,18 @@ WebInspector.ScriptsPanel.prototype = {
         nextStateMap[stateEnum.PauseOnAllExceptions] = stateEnum.PauseOnUncaughtExceptions;
         nextStateMap[stateEnum.PauseOnUncaughtExceptions] = stateEnum.DontPauseOnExceptions;
         WebInspector.settings.pauseOnExceptionStateString.set(nextStateMap[this._pauseOnExceptionButton.state]);
+    },
+
+    /**
+     * @param {Event=} event
+     * @return {boolean}
+     */
+    _runSnippet: function(event)
+    {
+        if (this._currentUISourceCode.project().type() !== WebInspector.projectTypes.Snippets)
+            return false;
+        WebInspector.scriptSnippetModel.evaluateScriptSnippet(this._currentUISourceCode);
+        return true;
     },
 
     /**
@@ -758,6 +779,12 @@ WebInspector.ScriptsPanel.prototype = {
         var title, handler;
         var platformSpecificModifier = WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta;
 
+        // Run snippet.
+        handler = this._runSnippet.bind(this);
+        this._runSnippetButton = this._createButtonAndRegisterShortcuts("scripts-run-snippet", "", handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.RunSnippet);
+        debugToolbar.appendChild(this._runSnippetButton.element);
+        this._runSnippetButton.element.addStyleClass("hidden");
+
         // Continue.
         handler = this._togglePause.bind(this);
         this._pauseButton = this._createButtonAndRegisterShortcuts("scripts-pause", "", handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.PauseContinue);
@@ -793,9 +820,12 @@ WebInspector.ScriptsPanel.prototype = {
         return debugToolbar;
     },
 
+    /**
+     * @param {WebInspector.StatusBarButton} button
+     * @param {string} buttonTitle
+     */
     _updateButtonTitle: function(button, buttonTitle)
     {
-        button.buttonTitle = buttonTitle;
         var hasShortcuts = button.shortcuts && button.shortcuts.length;
         if (hasShortcuts)
             button.title = String.vsprintf(buttonTitle, [button.shortcuts[0].name]);
@@ -814,8 +844,6 @@ WebInspector.ScriptsPanel.prototype = {
     {
         var button = new WebInspector.StatusBarButton(buttonTitle, buttonId);
         button.element.addEventListener("click", handler, false);
-        button.className = "status-bar-item";
-        button.id = buttonId;
         button.shortcuts = shortcuts;
         this._updateButtonTitle(button, buttonTitle);
         this.registerShortcuts(shortcuts, handler);

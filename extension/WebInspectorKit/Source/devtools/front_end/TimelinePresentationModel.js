@@ -50,7 +50,7 @@ WebInspector.TimelinePresentationModel.categories = function()
         scripting: new WebInspector.TimelineCategory("scripting", WebInspector.UIString("Scripting"), 1, "#D8AA34", "#F3D07A", "#F1C453"),
         rendering: new WebInspector.TimelineCategory("rendering", WebInspector.UIString("Rendering"), 2, "#8266CC", "#AF9AEB", "#9A7EE6"),
         painting: new WebInspector.TimelineCategory("painting", WebInspector.UIString("Painting"), 2, "#5FA050", "#8DC286", "#71B363"),
-        other: new WebInspector.TimelineCategory("other", WebInspector.UIString("Other"), -1, "#BBBBBB", "#DDDDDD", "#EEEEEE")
+        other: new WebInspector.TimelineCategory("other", WebInspector.UIString("Other"), -1, "#BBBBBB", "#DDDDDD", "#DDDDDD")
     };
     return WebInspector.TimelinePresentationModel._categories;
 };
@@ -1000,8 +1000,11 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             case recordTypes.GCEvent:
                 contentHelper.appendTextRow(WebInspector.UIString("Collected"), Number.bytesToString(this.data["usedHeapSizeDelta"]));
                 break;
-            case recordTypes.TimerInstall:
             case recordTypes.TimerFire:
+                callSiteStackTraceLabel = WebInspector.UIString("Timer installed");
+                // Fall-through intended.
+
+            case recordTypes.TimerInstall:
             case recordTypes.TimerRemove:
                 contentHelper.appendTextRow(WebInspector.UIString("Timer ID"), this.data["timerId"]);
                 if (typeof this.timeout === "number") {
@@ -1010,6 +1013,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                 }
                 break;
             case recordTypes.FireAnimationFrame:
+                callSiteStackTraceLabel = WebInspector.UIString("Animation frame requested");
                 contentHelper.appendTextRow(WebInspector.UIString("Callback ID"), this.data["id"]);
                 break;
             case recordTypes.FunctionCall:
@@ -1214,8 +1218,12 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             break;
         }
 
-        if (details && !(details instanceof Node))
-            return this._createSpanWithText("" + details);
+        if (details) {
+            if (details instanceof Node)
+                details.tabIndex = -1;
+            else
+                return this._createSpanWithText("" + details);
+        }
 
         return details || null;
     },
@@ -1389,7 +1397,7 @@ WebInspector.TimelinePresentationModel.createStyleRuleForCategory = function(cat
         ".timeline-category-" + category.name + " .timeline-tree-icon"
 
     return selector + " { background-image: -webkit-linear-gradient(" +
-       category.fillColorStop0 + ", " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + " 75%, " + category.borderColor + ");" +
+       category.fillColorStop0 + ", " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + ");" +
        " border-color: " + category.borderColor +
        "}";
 }

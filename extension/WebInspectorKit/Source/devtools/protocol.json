@@ -737,7 +737,7 @@
                 "type": "object",
                 "description": "Console message.",
                 "properties": [
-                    { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "console-api", "storage", "appcache", "rendering", "css", "security", "other"], "description": "Message source." },
+                    { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "console-api", "storage", "appcache", "rendering", "css", "security", "other", "deprecation"], "description": "Message source." },
                     { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug"], "description": "Message severity." },
                     { "name": "text", "type": "string", "description": "Message text." },
                     { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "timing", "profile", "profileEnd"], "description": "Console message type." },
@@ -1758,7 +1758,8 @@
                     { "name": "contentColor", "$ref": "RGBA", "optional": true, "description": "The content box highlight fill color (default: transparent)." },
                     { "name": "paddingColor", "$ref": "RGBA", "optional": true, "description": "The padding highlight fill color (default: transparent)." },
                     { "name": "borderColor", "$ref": "RGBA", "optional": true, "description": "The border highlight fill color (default: transparent)." },
-                    { "name": "marginColor", "$ref": "RGBA", "optional": true, "description": "The margin highlight fill color (default: transparent)." }
+                    { "name": "marginColor", "$ref": "RGBA", "optional": true, "description": "The margin highlight fill color (default: transparent)." },
+                    { "name": "eventTargetColor", "$ref": "RGBA", "optional": true, "hidden": true, "description": "The event target element highlight fill color (default: transparent)." }
                 ],
                 "description": "Configuration data for the highlighting of page elements."
             }
@@ -1933,7 +1934,7 @@
                     { "name": "enabled", "type": "boolean", "description": "True to enable inspection mode, false to disable it." },
                     { "name": "highlightConfig", "$ref": "HighlightConfig", "optional": true, "description": "A descriptor for the highlight appearance of hovered-over nodes. May be omitted if <code>enabled == false</code>." }
                 ],
-                "description": "Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspect' command upon element selection."
+                "description": "Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection."
             },
             {
                 "name": "highlightRect",
@@ -2176,7 +2177,7 @@
     {
         "domain": "CSS",
         "hidden": true,
-        "description": "This domain exposes CSS read/write operations. All CSS objects, like stylesheets, rules, and styles, have an associated <code>id</code> used in subsequent operations on the related object. Each object type has a specific <code>id</code> structure, and those are not interchangeable between objects of different kinds. CSS objects can be loaded using the <code>get*ForNode()</code> calls (which accept a DOM node id). Alternatively, a client can discover all the existing stylesheets with the <code>getAllStyleSheets()</code> method and subsequently load the required stylesheet contents using the <code>getStyleSheet[Text]()</code> methods.",
+        "description": "This domain exposes CSS read/write operations. All CSS objects (stylesheets, rules, and styles) have an associated <code>id</code> used in subsequent operations on the related object. Each object type has a specific <code>id</code> structure, and those are not interchangeable between objects of different kinds. CSS objects can be loaded using the <code>get*ForNode()</code> calls (which accept a DOM node id). A client can also discover all the existing stylesheets with the <code>getAllStyleSheets()</code> method (or keeping track of the <code>styleSheetAdded</code>/<code>styleSheetRemoved</code> events) and subsequently load the required stylesheet contents using the <code>getStyleSheet[Text]()</code> methods.",
         "types": [
             {
                 "id": "StyleSheetId",
@@ -2351,7 +2352,7 @@
                     { "name": "status", "type": "string", "enum": ["active", "inactive", "disabled", "style"], "optional": true, "description": "The property status: \"active\" if the property is effective in the style, \"inactive\" if the property is overridden by a same-named property in this style later on, \"disabled\" if the property is disabled by the user, \"style\" (implied if absent) if the property is reported by the browser rather than by the CSS source parser." },
                     { "name": "range", "$ref": "SourceRange", "optional": true, "description": "The entire property range in the enclosing style declaration (if available)." }
                 ],
-                "description": "CSS style effective visual dimensions and source offsets."
+                "description": "CSS property declaration data."
             },
             {
                 "id": "CSSMedia",
@@ -2489,6 +2490,17 @@
                 "description": "Sets the new stylesheet text, thereby invalidating all existing <code>CSSStyleId</code>'s and <code>CSSRuleId</code>'s contained by this stylesheet."
             },
             {
+                "name": "setStyleText",
+                "parameters": [
+                    { "name": "styleId", "$ref": "CSSStyleId" },
+                    { "name": "text", "type": "string" }
+                ],
+                "returns": [
+                    { "name": "style", "$ref": "CSSStyle", "description": "The resulting style after the text modification." }
+                ],
+                "description": "Updates the CSSStyleDeclaration text."
+            },
+            {
                 "name": "setPropertyText",
                 "parameters": [
                     { "name": "styleId", "$ref": "CSSStyleId" },
@@ -2582,6 +2594,20 @@
                     { "name": "styleSheetId", "$ref": "StyleSheetId" }
                 ],
                 "description": "Fired whenever a stylesheet is changed as a result of the client operation."
+            },
+            {
+                "name": "styleSheetAdded",
+                "parameters": [
+                    { "name": "header", "$ref": "CSSStyleSheetHeader", "description": "Added stylesheet metainfo." }
+                ],
+                "description": "Fired whenever an active document stylesheet is added."
+            },
+            {
+                "name": "styleSheetRemoved",
+                "parameters": [
+                    { "name": "styleSheetId", "$ref": "StyleSheetId", "description": "Identifier of the removed stylesheet." }
+                ],
+                "description": "Fired whenever an active document stylesheet is removed."
             },
             {
                 "name": "namedFlowCreated",

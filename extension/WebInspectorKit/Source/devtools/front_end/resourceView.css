@@ -74,7 +74,8 @@
 }
 
 .resource-status-image {
-    margin-top: -3px;
+    margin-top: -2px;
+    margin-right: 3px;
     vertical-align: middle;
 }
 
@@ -106,4 +107,10 @@
 .resource-view.image .infoList dd::after {
     white-space: pre;
     content: "\A";
+}
+
+.script-view-fallback {
+    word-wrap: break-word;
+    -webkit-user-select: text;
+    background-color: inherit;
 }

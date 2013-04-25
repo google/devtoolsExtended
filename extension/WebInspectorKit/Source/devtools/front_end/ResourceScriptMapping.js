@@ -204,9 +204,9 @@ WebInspector.ResourceScriptMapping.prototype = {
 
     _initialize: function()
     {
-        /** @type {!Object.<string, !Array.<!WebInspector.UISourceCode>>} */
+        /** @type {!Object.<string, !Array.<!WebInspector.Script>>} */
         this._inlineScriptsForSourceURL = {};
-        /** @type {!Object.<string, !Array.<!WebInspector.UISourceCode>>} */
+        /** @type {!Object.<string, !Array.<!WebInspector.Script>>} */
         this._nonInlineScriptsForSourceURL = {};
     },
 
@@ -319,6 +319,8 @@ WebInspector.ResourceScriptFile.prototype = {
      */
     _isDiverged: function()
     {
+        if (this._uiSourceCode.formatted())
+            return false;
         if (this._uiSourceCode.isDirty())
             return true;
         if (!this._script)

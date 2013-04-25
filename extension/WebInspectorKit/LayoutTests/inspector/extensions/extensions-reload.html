@@ -64,7 +64,6 @@ function extension_testReloadPreprocessesCode(nextTest)
         nextTest();
     }
 
-    report("Before preprocessingScript");
     evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithPreprocessedCodeLoaded);
     webInspector.inspectedWindow.reload({
         preprocessingScript: "function(src, url) {return src + '//@ sourceURL='+ url + '.js'; }"

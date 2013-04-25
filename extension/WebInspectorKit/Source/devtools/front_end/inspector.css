@@ -122,6 +122,8 @@ body.undocked.platform-mac-mountain-lion.inactive #toolbar {
 }
 
 .toolbar-item {
+    display: inline-block;
+    float: left;
     margin: 0;
     padding-right: 6px;
     background-color: transparent;
@@ -136,21 +138,13 @@ body:not(.show-toolbar-icons) .toolbar-item {
     height: 24px;
 }
 
-body.dock-to-bottom:not(.show-toolbar-icons) .toolbar-item.toggleable {
-    padding: 0 11px;
-}
-
-body.dock-to-bottom:not(.show-toolbar-icons) .toolbar-item.toggleable.toggled-on {
-    padding: 0 9px;
-}
-
 body.show-toolbar-icons .toolbar-item.toggleable {
-    padding-top: 4px;
-    padding-bottom: 4px;
+    padding-top: 2px;
+    padding-bottom: 2px;
 }
 
 body.show-toolbar-icons.dock-to-bottom .toolbar-item.toggleable {
-    margin: 1px 0;
+    margin: 2px 0;
     padding-bottom: 2px;
 }
 
@@ -169,15 +163,17 @@ body.show-toolbar-icons.dock-to-bottom .toolbar-item.toggleable {
     vertical-align: top;
 }
 
-body.dock-to-bottom .toolbar-icon {
-    width: 24px;
-    height: 24px;
-    vertical-align: middle;
-    background-image: url(Images/toolbarIconsSmall.png);
+body.show-toolbar-icons .toolbar-icon {
+    display: block;
+    margin: auto;
 }
 
-body.show-toolbar-icons .toolbar-icon {
+body.show-toolbar-icons.dock-to-bottom .toolbar-icon {
+    width: 24px;
+    height: 24px;
     display: inline-block;
+    vertical-align: middle;
+    background-image: url(Images/toolbarIconsSmall.png);
 }
 
 body.dock-to-bottom .toolbar-icon.custom-toolbar-icon {
@@ -195,6 +191,29 @@ body.dock-to-bottom .toolbar-item:active .toolbar-icon {
 .toolbar-label {
     line-height: 22px;
     text-shadow: rgba(255, 255, 255, 0.5) 0 1px 0;
+    display: inline;
+}
+
+.toolbar-item.toggleable .close-button {
+    margin-left: 2px;
+    margin-right: -2px;
+    position: relative;
+    top: 2px;
+    opacity: 0.5;
+}
+
+.toolbar-item.toggleable .close-button:hover {
+    opacity: 1;
+}
+
+body.show-toolbar-icons.dock-to-bottom .toolbar-item.toggleable .close-button {
+    top: 3px;
+}
+
+#toolbar-dropdown .toolbar-items-separator {
+    border-bottom: 1px solid #aaa;
+    width: 100%;
+    margin: 5px 0;
 }
 
 body.show-toolbar-icons .toolbar-label {
@@ -209,6 +228,7 @@ body.show-toolbar-icons.dock-to-bottom .toolbar-label {
     display: inline-block;
     margin-left: 3px;
     top: 0;
+    vertical-align: middle;
 }
 
 body.dock-to-bottom #search-toolbar-label {
@@ -298,6 +318,7 @@ body.show-toolbar-icons #toolbar-dropdown .toolbar-item {
 }
 
 #toolbar-dropdown .toolbar-icon {
+    margin-left: 0;
     margin-right: 0.5em;
 }
 
@@ -311,24 +332,35 @@ body.show-toolbar-icons #toolbar-dropdown .toolbar-label {
 }
 
 #toolbar-panels-menu {
-    font-size: 17px;
-    font-weight: bold;
     border: 0;
-    background-color: transparent;
     -webkit-border-radius: 5px;
-    text-shadow: none;
     cursor: default;
-    margin: 0;
-    /* A line height of 0 allows precise text positioning using padding. */
-    line-height: 0;
-    padding: 13px 6px 11px;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-weight: bold;
+    line-height: 16px;
+    height: 22px;
+    padding: 0 4px 0 4px;
+    margin: 1px 3px;
 }
 
-#toolbar-panels-menu:hover {
+body.show-toolbar-icons #toolbar-panels-menu {
+    margin: 16px 3px;
+}
+
+body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
+    margin: 6px 3px;
+}
+
+#toolbar-panels-menu:hover:not(.disabled) {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(191, 191, 191, 0.7)), to(rgba(171, 171, 171, 0.5)));
 }
 
-#toolbar-panels-menu:active {
+#toolbar-panels-menu.disabled {
+    opacity: 0.4;
+    text-shadow: white 1px 1px 0;
+}
+
+#toolbar-panels-menu:active:not(.disabled) {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(111, 111, 111, 0.8)), to(rgba(91, 91, 91, 0.8)));
 }
 
@@ -570,20 +602,46 @@ body.dock-to-bottom .toolbar-item.console .toolbar-icon {
     background-position-x: -168px;
 }
 
-#close-button-left, #close-button-right {
+.close-button, .close-button-gray {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    display: inline-block;
+}
+
+.close-button {
     width: 14px;
     height: 14px;
-    background-image: url(Images/closeButtons.png);
-    background-position: 0 0;
+    background-position: -128px -216px;
 }
 
-#close-button-left:hover, #close-button-right:hover {
-    background-position: 14px 0;
+.close-button-gray {
+    width: 13px;
+    height: 13px;
+    background-position: -175px -216px;
 }
 
-#close-button-left:active, #close-button-right:active {
-    background-position: 28px 0;
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.close-button, .close-button-gray {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
+}
+
+.close-button:hover {
+    background-position: -96px -216px;
+}
+
+.close-button:active {
+    background-position: -111px -216px;
+}
+
+.close-button-gray:hover {
+    background-position: -143px -216px;
+}
+
+.close-button-gray:active {
+    background-position: -160px -216px;
+}
+
 
 .close-left {
     float: left;
@@ -660,9 +718,11 @@ body.drawer-visible #main-panels {
 }
 
 .status-bar {
+    position: relative;
     white-space: nowrap;
     height: 23px;
     overflow: hidden;
+    width: 100%;
     z-index: 12;
     background-image: -webkit-linear-gradient(rgb(243,243,243), rgb(235,235,235));
     border-top: 1px solid rgb(202, 202, 202);
@@ -700,7 +760,13 @@ body.drawer-visible #main-panels {
 }
 
 .animate #floating-status-bar-container {
-    -webkit-transition: padding 100ms linear;
+    -webkit-transition-property: padding-left, bottom;
+    -webkit-transition-duration: 100ms;
+    -webkit-transition-timing-function: linear;
+}
+
+body.drawer-overlay #floating-status-bar-container {
+    box-shadow: 1px 1px 5px 2px rgba(128, 128, 128, 0.7);
 }
 
 body.drawer-visible #floating-status-bar-container {
@@ -777,10 +843,6 @@ button.status-bar-item {
     margin: 0 -1px;
 }
 
-.status-bar button.status-bar-item img {
-    margin-top: 1px;
-}
-
 .status-bar select.status-bar-item:active,
 .status-bar button.status-bar-item:active {
     border-left: 1px solid rgb(120, 120, 120);
@@ -807,26 +869,41 @@ button.status-bar-item.extension {
 
 .status-bar-select-container {
     display: inline-block;
-    background-image: url(Images/disclosureTriangleSmallDown.png);
-    background-repeat: no-repeat;
-    background-position-x: right;
-    background-position-y: 5px;
-    padding-right: 10px;
-    border-right: 5px solid transparent;
+}
+
+.status-bar-select-arrow {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.7;
+    width: 10px;
+    height: 10px;
+    background-position: -20px -96px;
+    display: inline-block;
+    pointer-events: none;
+    position: relative;
+    top: 3px;
+    left: -3px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.status-bar-select-arrow {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 select.status-bar-item {
     min-width: 48px;
-    font-weight: bold;
     color: rgb(48, 48, 48);
     text-shadow: rgba(255, 255, 255, 0.75) 0 1px 0;
     -webkit-appearance: none;
     border: 0;
     border-radius: 0;
     padding: 0 15px 0 5px;
-    margin-right: -15px;
+    margin-right: -10px;
     position: relative;
-    top: -1px;
+    line-height: 20px;
+    font-family: inherit;
+    font-size: inherit;
 }
 
 select.status-bar-item, select.status-bar-item:hover {
@@ -904,35 +981,59 @@ body.remote .dock-status-bar-item {
     -webkit-mask-position: -64px 0;
 }
 
+.error-icon-small, .warning-icon-small, .red-ball, .green-ball, .orange-ball {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.error-icon-small, .warning-icon-small, .red-ball, .green-ball, .orange-ball {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.error-icon-small {
+    background-position: -213px -96px;
+}
+
+.warning-icon-small {
+    background-position: -202px -107px;
+}
+
+.red-ball {
+    background-position: -224px -96px;
+}
+
+.green-ball {
+    background-position: -235px -96px;
+}
+
+.orange-ball {
+    background-position: -246px -96px;
+}
+
 #error-warning-count {
-    padding: 5px 2px 6px 0px;
-    font-size: 10px;
+    padding: 4px 6px 6px 0px;
+    font-size: 11px;
     height: 19px;
     cursor: pointer;
+    line-height: 14px;
 }
 
 #error-warning-count:hover {
     border-bottom: 1px solid rgb(96, 96, 96);
 }
 
-#error-count-img {
-    content: url(Images/errorIcon.png);
-    width: 10px;
-    height: 10px;
+#error-warning-count .error-icon-small, #error-warning-count .warning-icon-small {
     vertical-align: -1px;
     margin-right: 2px;
 }
 
-#error-count + #warning-count-img {
+#error-warning-count .warning-icon-small {
     margin-left: 6px;
-}
-
-#warning-count-img {
-    content: url(Images/warningIcon.png);
-    width: 10px;
-    height: 10px;
-    vertical-align: -1px;
-    margin-right: 2px;
 }
 
 #drawer {
@@ -943,6 +1044,7 @@ body.remote .dock-status-bar-item {
     right: 0;
     height: 200px;
     background-color: white;
+    z-index: 1;
 }
 
 .animate #drawer {
@@ -1016,11 +1118,11 @@ body.platform-linux .monospace, body.platform-linux .source-code {
 }
 
 #console-prompt::before {
-    background-image: url(Images/userInputIcon.png);
+    background-position: -192px -96px;
 }
 
 .console-user-command-result.console-log-level::before {
-    background-image: url(Images/userInputResultIcon.png);
+    background-position: -202px -96px;
 }
 
 .console-message, .console-user-command {
@@ -1054,6 +1156,14 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     height: 10px;
     margin-top: -6px;
     -webkit-user-select: none;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.console-message::before, .console-user-command::before, #console-prompt::before, .console-group-title::before {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 .console-message > .outline-disclosure li.parent::before {
@@ -1163,17 +1273,25 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     color: blue;
 }
 
-.console-debug-level::before {
-    background-image: url(Images/searchSmallBrightBlue.png);
+.console-error-level::before, .console-warning-level::before, .console-debug-level::before {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    width: 10px;
+    height: 10px;
 }
 
-.console-error-level::before {
-    background-image: url(Images/errorIcon.png);
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.console-error-level::before, .console-warning-level::before, .console-debug-level::before {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 .console-warning-level::before {
-    background-image: url(Images/warningIcon.png);
-    margin-top: -7px;
+    background-position: -202px -107px;
+}
+
+.console-error-level::before {
+    background-position: -213px -96px;
 }
 
 .console-user-command .console-message {
@@ -1183,7 +1301,7 @@ body.platform-linux .monospace, body.platform-linux .source-code {
 }
 
 .console-user-command::before {
-    background-image: url(Images/userInputPreviousIcon.png);
+    background-position: -192px -107px;
 }
 
 .console-user-command > .console-message-text {
@@ -1424,8 +1542,7 @@ iframe.panel.extension {
     background-color: rgb(56, 121, 217);
 }
 
-.outline-disclosure ol.search-match-not-found li.selected .selection {
-    border: 1px solid rgb(56, 121, 217);
+.outline-disclosure ol:focus li.parent.selected::before {
     background-color: white;
 }
 
@@ -1460,15 +1577,7 @@ iframe.panel.extension {
     color: white;
 }
 
-.outline-disclosure ol.search-match-found li.selected {
-    color: white;
-}
-
 .outline-disclosure ol:focus li.selected * {
-    color: inherit;
-}
-
-.outline-disclosure ol.search-match-found li.selected * {
     color: inherit;
 }
 
@@ -1514,20 +1623,8 @@ iframe.panel.extension {
     background-color: rgb(110, 110, 110);
 }
 
-.outline-disclosure ol:focus li.parent.selected::before,
-.outline-disclosure ol.search-match-found li.parent.selected::before {
-    -webkit-mask-position: -4px -96px;
-    background-color: white;
-}
-
 .outline-disclosure li.parent.expanded::before {
     -webkit-mask-position: -20px -96px;
-}
-
-.outline-disclosure ol:focus li.parent.expanded.selected::before,
-.outline-disclosure ol.search-match-found li.parent.expanded.selected::before {
-    -webkit-mask-position: -20px -96px;
-    background-color: white;
 }
 
 .outline-disclosure ol.children {
@@ -1703,6 +1800,7 @@ iframe.panel.extension {
     overflow: hidden;
     -webkit-user-select: text;
     cursor: default;
+    padding-top: 2px;
 }
 
 .properties-tree li.parent {
@@ -1798,7 +1896,6 @@ li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-but
 }
 
 .properties-tree.watch-expressions > li {
-    padding-top: 2px;
     padding-left: 4px;
 }
 
@@ -1968,7 +2065,6 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
     margin: 0 2px;
     padding: 2px 6px;
     line-height: 12px;
-    font-weight: bold;
     background: transparent;
     text-shadow: rgba(255, 255, 255, 0.5) 0 1px 0;
     -webkit-border-radius: 8px;
@@ -2097,50 +2193,43 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
 
 .sidebar-tree-item .disclosure-button {
     float: left;
-    width: 16px;
-    height: 100%;
+    width: 10px;
+    height: 10px;
     border: 0;
-    background-color: transparent;
-    background-image: url(Images/disclosureTriangleSmallRight.png);
-    background-repeat: no-repeat;
-    background-position: center;
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-size: 320px 120px;
     -webkit-apearance: none;
+    background-color: rgba(0, 0, 0, 0.75);
+    position: relative;
+    top: 10px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.sidebar-tree-item .disclosure-button {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 .sidebar-tree.hide-disclosure-buttons .sidebar-tree-item .disclosure-button {
     display: none;
 }
 
-body.inactive .sidebar-tree-item .disclosure-button {
-    background-image: url(Images/disclosureTriangleSmallRightBlack.png);
-}
-
-body.inactive .sidebar-tree-item.expanded .disclosure-button {
-    background-image: url(Images/disclosureTriangleSmallDownBlack.png);
-}
-
-body.inactive .sidebar-tree-item .disclosure-button:active {
-    background-image: url(Images/disclosureTriangleSmallRightDownBlack.png);
+.sidebar-tree-item .disclosure-button {
+    -webkit-mask-position: -4px -96px;
 }
 
 .sidebar-tree-item.selected .disclosure-button {
-    background-image: url(Images/disclosureTriangleSmallRightWhite.png) !important;
+    background-color: white;
+    -webkit-mask-position: -4px -96px;
 }
 
 .sidebar-tree-item.expanded .disclosure-button {
-    background-image: url(Images/disclosureTriangleSmallDown.png);
+    -webkit-mask-position: -20px -96px;
 }
 
 .sidebar-tree-item.selected.expanded .disclosure-button {
-    background-image: url(Images/disclosureTriangleSmallDownWhite.png) !important;
-}
-
-.sidebar-tree-item.selected .disclosure-button:active {
-    background-image: url(Images/disclosureTriangleSmallRightDownWhite.png) !important;
-}
-
-.sidebar-tree-item .disclosure-button:active {
-    background-image: url(Images/disclosureTriangleSmallRightDown.png);
+    background-color: white;
+    -webkit-mask-position: -20px -96px;
 }
 
 .sidebar-tree-item .icon {
@@ -2298,8 +2387,7 @@ body.inactive li.selected .bubble.search-matches {
 }
 
 .storage-application-cache-status-icon, .storage-application-cache-connectivity-icon {
-    margin-bottom: -3px;
-    margin-left: 5px;
+    margin: 5px 5px 0;
     vertical-align: middle;
 }
 
@@ -2531,6 +2619,7 @@ body.platform-mac .soft-context-menu-item-mouse-over {
     margin-left: 4px;
     color: #303030;
     position: relative;
+    height: 19px;
 }
 
 body.platform-mac .search-drawer-header input[type="search"].search-config-search {
@@ -2562,21 +2651,10 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
     display: inline-block;
 }
 
-.drawer-header-close-button {
-    padding: 3px 8px;
-    font-size: 14px;
-    color:rgb(80, 80, 80);
-    opacity: 0.5;
+.drawer-header .close-button {
     position: relative;
-    top: 1px;
-}
-
-.drawer-header-close-button:hover {
-    opacity: 1;
-}
-
-.drawer-header-close-button:active {
-    opacity: 0.7;
+    top: 3px;
+    margin: 0 3px;
 }
 
 #bottom-status-bar-container {
@@ -2929,12 +3007,13 @@ body.platform-mac .progress-bar-container progress {
 
 .source-frame-cursor-position {
     padding-left: 6px;
-    padding-top: 5px;
+    padding-top: 4px;
     display: inline-block;
     pointer-events: auto;
     -webkit-user-select: text;
     font-size: 11px;
     cursor: text;
+    line-height: 14px;
 }
 
 .elements-tree-outline li.parent::before {

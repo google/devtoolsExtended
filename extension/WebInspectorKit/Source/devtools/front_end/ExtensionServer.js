@@ -312,7 +312,7 @@ WebInspector.ExtensionServer.prototype = {
         NetworkAgent.setUserAgentOverride(typeof options.userAgent === "string" ? options.userAgent : "");
         var injectedScript;
         if (options.injectedScript)
-            injectedScript = "(function(){" + options.injectedScript + "})()";     
+            injectedScript = "(function(){" + options.injectedScript + "})()";
         var preprocessingScript = options.preprocessingScript;
         PageAgent.reload(!!options.ignoreCache, injectedScript, preprocessingScript);
         return this._status.OK();

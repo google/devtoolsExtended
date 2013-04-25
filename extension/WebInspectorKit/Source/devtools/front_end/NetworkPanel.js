@@ -101,7 +101,7 @@ WebInspector.NetworkLogView.prototype = {
             this._setLargerRequests(this.useLargeRows);
 
         this._allowPopover = true;
-        this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
+        this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this), this._onHidePopover.bind(this));
         // Enable faster hint.
         this._popoverHelper.setTimeout(100);
 
@@ -237,6 +237,7 @@ WebInspector.NetworkLogView.prototype = {
         });
 
         this._dataGrid = new WebInspector.DataGrid(columns);
+        this._dataGrid.setName("networkLog");
         this._dataGrid.resizeMethod = WebInspector.DataGrid.ResizeMethod.Last;
         this._dataGrid.element.addStyleClass("network-log-grid");
         this._dataGrid.element.addEventListener("contextmenu", this._contextMenu.bind(this), true);
@@ -432,10 +433,7 @@ WebInspector.NetworkLogView.prototype = {
                 return;
             this._summaryBarElement._isDisplayingWarning = true;
 
-            var img = document.createElement("img");
-            img.src = "Images/warningIcon.png";
-            this._summaryBarElement.removeChildren();
-            this._summaryBarElement.appendChild(img);
+            this._summaryBarElement.createChild("div", "warning-icon-small");
             this._summaryBarElement.appendChild(document.createTextNode(
                 WebInspector.UIString("No requests captured. Reload the page to see detailed information on the network activity.")));
             return;
@@ -799,7 +797,6 @@ WebInspector.NetworkLogView.prototype = {
 
         this._mainRequestLoadTime = -1;
         this._mainRequestDOMContentTime = -1;
-        this._linkifier.reset();
     },
 
     get requests()
@@ -959,6 +956,11 @@ WebInspector.NetworkLogView.prototype = {
         else
             content = WebInspector.RequestTimingView.createTimingTable(anchor.parentElement.request);
         popover.show(content, anchor);
+    },
+
+    _onHidePopover: function()
+    {
+        this._linkifier.reset();
     },
 
     /**
@@ -1493,7 +1495,7 @@ WebInspector.NetworkPanel = function()
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, this._onSearchCountUpdated, this);
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.SearchIndexUpdated, this._onSearchIndexUpdated, this);
 
-    this._closeButtonElement = document.createElement("button");
+    this._closeButtonElement = this._viewsContainerElement.createChild("div", "close-button");
     this._closeButtonElement.id = "network-close-button";
     this._closeButtonElement.addEventListener("click", this._toggleGridMode.bind(this), false);
     this._viewsContainerElement.appendChild(this._closeButtonElement);
@@ -2013,9 +2015,11 @@ WebInspector.NetworkDataGridNode = function(parentView, request)
     WebInspector.DataGridNode.call(this, {});
     this._parentView = parentView;
     this._request = request;
+    this._linkifier = new WebInspector.Linkifier();
 }
 
 WebInspector.NetworkDataGridNode.prototype = {
+    /** override */
     createCells: function()
     {
         // Out of sight, out of mind: create nodes offscreen to save on render tree update times when running updateOffscreenRows()
@@ -2030,9 +2034,15 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._setCookiesCell = this._createDivInTD("setCookies");
         this._sizeCell = this._createDivInTD("size");
         this._timeCell = this._createDivInTD("time");
-        this._createTimelineCell();
+        this._timelineCell = this._createDivInTD("timeline");
+        this._createTimelineBar(this._timelineCell);
         this._nameCell.addEventListener("click", this._onClick.bind(this), false);
         this._nameCell.addEventListener("dblclick", this._openInNewTab.bind(this), false);
+    },
+
+    wasDetached: function()
+    {
+        this._linkifier.reset();
     },
 
     isFilteredOut: function()
@@ -2088,16 +2098,18 @@ WebInspector.NetworkDataGridNode.prototype = {
         return div;
     },
 
-    _createTimelineCell: function()
+    /**
+     * @param {!Element} cell
+     */
+    _createTimelineBar: function(cell)
     {
-        this._graphElement = document.createElement("div");
-        this._graphElement.className = "network-graph-side";
+        cell.className = "network-graph-side";
 
         this._barAreaElement = document.createElement("div");
         //    this._barAreaElement.className = "network-graph-bar-area hidden";
         this._barAreaElement.className = "network-graph-bar-area";
         this._barAreaElement.request = this._request;
-        this._graphElement.appendChild(this._barAreaElement);
+        cell.appendChild(this._barAreaElement);
 
         this._barLeftElement = document.createElement("div");
         this._barLeftElement.className = "network-graph-bar waiting";
@@ -2116,20 +2128,13 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._labelRightElement.className = "network-graph-label";
         this._barAreaElement.appendChild(this._labelRightElement);
 
-        this._graphElement.addEventListener("mouseover", this._refreshLabelPositions.bind(this), false);
-
-        this._timelineCell = document.createElement("td");
-        this._timelineCell.className = "timeline-column";
-        this._element.appendChild(this._timelineCell);
-        this._timelineCell.appendChild(this._graphElement);
+        cell.addEventListener("mouseover", this._refreshLabelPositions.bind(this), false);
     },
 
     refreshRequest: function()
     {
         this._refreshNameCell();
-
-        this._methodCell.setTextAndTitle(this._request.requestMethod);
-
+        this._refreshMethodCell();
         this._refreshStatusCell();
         this._refreshDomainCell();
         this._refreshTypeCell();
@@ -2140,9 +2145,10 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._refreshTimeCell();
 
         if (this._request.cached)
-            this._graphElement.addStyleClass("resource-cached");
+            this._timelineCell.addStyleClass("resource-cached");
 
         this._element.addStyleClass("network-item");
+        this._element.enableStyleClass("network-error-row", this._request.failed || (this._request.statusCode >= 400));
         this._updateElementStyleClasses(this._element);
     },
 
@@ -2180,6 +2186,11 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._nameCell.title = this._request.url;
     },
 
+    _refreshMethodCell: function()
+    {
+        this._methodCell.setTextAndTitle(this._request.requestMethod);
+    },
+
     _refreshStatusCell: function()
     {
         this._statusCell.removeChildren();
@@ -2190,23 +2201,18 @@ WebInspector.NetworkDataGridNode.prototype = {
                 this._statusCell.appendChild(document.createTextNode(failText));
                 this._appendSubtitle(this._statusCell, this._request.localizedFailDescription);
                 this._statusCell.title = failText + " " + this._request.localizedFailDescription;
-            } else {
+            } else
                 this._statusCell.setTextAndTitle(failText);
-            }
             this._statusCell.addStyleClass("network-dim-cell");
-            this.element.addStyleClass("network-error-row");
             return;
         }
 
         this._statusCell.removeStyleClass("network-dim-cell");
-        this.element.removeStyleClass("network-error-row");
 
         if (this._request.statusCode) {
             this._statusCell.appendChild(document.createTextNode("" + this._request.statusCode));
             this._appendSubtitle(this._statusCell, this._request.statusText);
             this._statusCell.title = this._request.statusCode + " " + this._request.statusText;
-            if (this._request.statusCode >= 400)
-                this.element.addStyleClass("network-error-row");
             if (this._request.cached)
                 this._statusCell.addStyleClass("network-dim-cell");
         } else {
@@ -2234,7 +2240,7 @@ WebInspector.NetworkDataGridNode.prototype = {
             this._typeCell.setTextAndTitle(this._request.mimeType);
         } else if (this._request.isPingRequest()) {
             this._typeCell.removeStyleClass("network-dim-cell");
-            this._typeCell.setTextAndTitle(this._request.requestContentType());
+            this._typeCell.setTextAndTitle(this._request.requestContentType() || "");
         } else {
             this._typeCell.addStyleClass("network-dim-cell");
             this._typeCell.setTextAndTitle(WebInspector.UIString("Pending"));
@@ -2265,7 +2271,7 @@ WebInspector.NetworkDataGridNode.prototype = {
             break;
 
         case WebInspector.NetworkRequest.InitiatorType.Script:
-            var urlElement = this._parentView._linkifier.linkifyLocation(initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
+            var urlElement = this._linkifier.linkifyLocation(initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
             urlElement.title = "";
             this._initiatorCell.appendChild(urlElement);
             this._appendSubtitle(this._initiatorCell, WebInspector.UIString("Script"));
@@ -2332,7 +2338,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._percentages = percentages;
 
         this._barAreaElement.removeStyleClass("hidden");
-        this._updateElementStyleClasses(this._graphElement);
+        this._updateElementStyleClasses(this._timelineCell);
 
         this._barLeftElement.style.setProperty("left", percentages.start + "%");
         this._barRightElement.style.setProperty("right", (100 - percentages.end) + "%");
@@ -2382,7 +2388,7 @@ WebInspector.NetworkDataGridNode.prototype = {
 
         const labelBefore = (labelLeftElementOffsetWidth > leftBarWidth);
         const labelAfter = (labelRightElementOffsetWidth > rightBarWidth);
-        const graphElementOffsetWidth = this._graphElement.offsetWidth;
+        const graphElementOffsetWidth = this._timelineCell.offsetWidth;
 
         if (labelBefore && (graphElementOffsetWidth * (this._percentages.start / 100)) < (labelLeftElementOffsetWidth + 10))
             var leftHidden = true;

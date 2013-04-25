@@ -72,7 +72,7 @@ WebInspector.DOMStorageItemsView.prototype = {
      */
     _domStorageItemsCleared: function(event)
     {
-        if (!this.isShowing())
+        if (!this.isShowing() || !this._dataGrid)
             return;
 
         this._dataGrid.rootNode().removeChildren();
@@ -86,7 +86,7 @@ WebInspector.DOMStorageItemsView.prototype = {
      */
     _domStorageItemRemoved: function(event)
     {
-        if (!this.isShowing())
+        if (!this.isShowing() || !this._dataGrid)
             return;
 
         var storageData = event.data;
@@ -110,7 +110,7 @@ WebInspector.DOMStorageItemsView.prototype = {
      */
     _domStorageItemAdded: function(event)
     {
-        if (!this.isShowing())
+        if (!this.isShowing() || !this._dataGrid)
             return;
 
         var storageData = event.data;
@@ -133,7 +133,7 @@ WebInspector.DOMStorageItemsView.prototype = {
      */
     _domStorageItemUpdated: function(event)
     {
-        if (!this.isShowing())
+        if (!this.isShowing() || !this._dataGrid)
             return;
 
         var storageData = event.data;
@@ -175,15 +175,14 @@ WebInspector.DOMStorageItemsView.prototype = {
 
         this._dataGrid = this._dataGridForDOMStorageItems(items);
         this._dataGrid.show(this.element);
-        this._dataGrid.autoSizeColumns(10);
         this.deleteButton.visible = (this._dataGrid.rootNode().children.length > 1);
     },
 
     _dataGridForDOMStorageItems: function(items)
     {
         var columns = [
-            {id: "key", title: WebInspector.UIString("Key"), editable: true},
-            {id: "value", title: WebInspector.UIString("Value"), editable: true}
+            {id: "key", title: WebInspector.UIString("Key"), editable: true, weight: 50},
+            {id: "value", title: WebInspector.UIString("Value"), editable: true, weight: 50}
         ];
 
         var nodes = [];
@@ -200,6 +199,7 @@ WebInspector.DOMStorageItemsView.prototype = {
         }
 
         var dataGrid = new WebInspector.DataGrid(columns, this._editingCallback.bind(this), this._deleteCallback.bind(this));
+        dataGrid.setName("DOMStorageItemsView");
         length = nodes.length;
         for (var i = 0; i < length; ++i)
             dataGrid.rootNode().appendChild(nodes[i]);

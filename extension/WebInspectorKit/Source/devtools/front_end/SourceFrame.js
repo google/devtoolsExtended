@@ -44,12 +44,9 @@ WebInspector.SourceFrame = function(contentProvider)
 
     var textEditorDelegate = new WebInspector.TextEditorDelegateForSourceFrame(this);
 
-    if (WebInspector.experimentsSettings.codemirror.isEnabled()) {
+    if (WebInspector.settings.codemirror.get()) {
         loadScript("CodeMirrorTextEditor.js");
         this._textEditor = new WebInspector.CodeMirrorTextEditor(this._url, textEditorDelegate);
-    } else if (WebInspector.experimentsSettings.aceTextEditor.isEnabled()) {
-        loadScript("AceTextEditor.js");
-        this._textEditor = new WebInspector.AceTextEditor(this._url, textEditorDelegate);
     } else
         this._textEditor = new WebInspector.DefaultTextEditor(this._url, textEditorDelegate);
 
@@ -548,15 +545,15 @@ WebInspector.SourceFrame.prototype = {
             this._textEditor.addDecoration(lineNumber, messageBubbleElement);
         }
 
-        var imageURL;
+        var imageElement = document.createElement("div");
         switch (msg.level) {
             case WebInspector.ConsoleMessage.MessageLevel.Error:
                 messageBubbleElement.addStyleClass("webkit-html-error-message");
-                imageURL = "Images/errorIcon.png";
+                imageElement.className = "error-icon-small";
                 break;
             case WebInspector.ConsoleMessage.MessageLevel.Warning:
                 messageBubbleElement.addStyleClass("webkit-html-warning-message");
-                imageURL = "Images/warningIcon.png";
+                imageElement.className = "warning-icon-small";
                 break;
         }
 
@@ -565,10 +562,7 @@ WebInspector.SourceFrame.prototype = {
         messageBubbleElement.appendChild(messageLineElement);
 
         // Create the image element in the Inspector's document so we can use relative image URLs.
-        var image = document.createElement("img");
-        image.src = imageURL;
-        image.className = "webkit-html-message-icon";
-        messageLineElement.appendChild(image);
+        messageLineElement.appendChild(imageElement);
         messageLineElement.appendChild(document.createTextNode(msg.message));
 
         rowMessage.element = messageLineElement;

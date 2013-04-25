@@ -77,13 +77,10 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         this._popoverHelper.hidePopover();
     },
 
-    /**
-     * @param {string} content
-     */
-    onUISourceCodeContentChanged: function(content, contentEncoded, mimeType)
+    onUISourceCodeContentChanged: function()
     {
         this._removeAllBreakpoints();
-        WebInspector.UISourceCodeFrame.prototype.onUISourceCodeContentChanged.call(this, content);
+        WebInspector.UISourceCodeFrame.prototype.onUISourceCodeContentChanged.call(this);
     },
 
     populateLineGutterContextMenu: function(contextMenu, lineNumber)
@@ -526,8 +523,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._muted)
             return;
 
-        var lineNumber = event.data.lineNumber;
-        var eventObject = /** @type {Event} */ (event.data.event);
+        var eventData = /** @type {WebInspector.TextEditor.GutterClickEventData} */ (event.data);
+        var lineNumber = eventData.lineNumber;
+        var eventObject = /** @type {Event} */ (eventData.event);
 
         if (eventObject.button != 0 || eventObject.altKey || eventObject.ctrlKey || eventObject.metaKey)
             return;

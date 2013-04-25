@@ -124,11 +124,9 @@ WebInspector.CanvasProfileView.prototype = {
      */
     _createControlButton: function(parent, className, title, clickCallback)
     {
-        var button = parent.createChild("button", "status-bar-item");
-        button.addStyleClass(className);
-        button.title = title;
-        button.createChild("img");
-        button.addEventListener("click", clickCallback, false);
+        var button = new WebInspector.StatusBarButton(title, className);
+        button.element.addEventListener("click", clickCallback, false);
+        parent.appendChild(button.element);
     },
 
     _onReplayContextChanged: function()
@@ -520,9 +518,9 @@ WebInspector.CanvasProfileType = function()
     WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.FrameExecutionContextListRemoved, this._frameRemoved, this);
 
     this._decorationElement = document.createElement("div");
-    this._decorationElement.addStyleClass("profile-canvas-decoration");
-    this._decorationElement.addStyleClass("hidden");
-    this._decorationElement.textContent = WebInspector.UIString("There is an uninstrumented canvas on the page. Reload the page to instrument it.");
+    this._decorationElement.className = "profile-canvas-decoration hidden";
+    this._decorationElement.createChild("div", "warning-icon-small");
+    this._decorationElement.appendChild(document.createTextNode(WebInspector.UIString("There is an uninstrumented canvas on the page. Reload the page to instrument it.")));
     var reloadPageButton = this._decorationElement.createChild("button");
     reloadPageButton.type = "button";
     reloadPageButton.textContent = WebInspector.UIString("Reload");

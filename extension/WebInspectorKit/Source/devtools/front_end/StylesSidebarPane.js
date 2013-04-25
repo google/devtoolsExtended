@@ -133,8 +133,8 @@ WebInspector.StylesSidebarPane.canonicalPropertyName = function(name)
 
 WebInspector.StylesSidebarPane.createExclamationMark = function(propertyName)
 {
-    var exclamationElement = document.createElement("img");
-    exclamationElement.className = "exclamation-mark";
+    var exclamationElement = document.createElement("div");
+    exclamationElement.className = "exclamation-mark warning-icon-small";
     exclamationElement.title = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[propertyName.toLowerCase()] ? WebInspector.UIString("Invalid property value.") : WebInspector.UIString("Unknown property name.");
     return exclamationElement;
 }
@@ -1206,17 +1206,11 @@ WebInspector.StylePropertiesSection.prototype = {
             return document.createTextNode(WebInspector.UIString("user stylesheet"));
         if (this.rule.isViaInspector) {
             var element = document.createElement("span");
-            /**
-             * @param {?WebInspector.Resource} resource
-             */
-            function callback(resource)
-            {
-                if (resource)
-                    element.appendChild(linkifyUncopyable(resource.url, this.rule.sourceLine));
-                else
-                    element.textContent = WebInspector.UIString("via inspector");
-            }
-            WebInspector.cssModel.getViaInspectorResourceForRule(this.rule, callback.bind(this));
+            var resource = WebInspector.cssModel.viaInspectorResourceForRule(this.rule);
+            if (resource)
+                element.appendChild(linkifyUncopyable(resource.url, this.rule.sourceLine));
+            else
+                element.textContent = WebInspector.UIString("via inspector");
             return element;
         }
     },
@@ -1762,8 +1756,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
 
                 function spectrumChanged(e)
                 {
-                    color = e.data;
-                    var colorString = color.toString();
+                    var colorString = /** @type {string} */ (e.data);
                     spectrum.displayText = colorString;
                     colorValueElement.textContent = colorString;
                     colorSwatch.setColorString(colorString);

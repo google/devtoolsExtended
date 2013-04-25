@@ -35,6 +35,7 @@ importScript("cm/xml.js");
 importScript("cm/htmlmixed.js");
 importScript("cm/matchbrackets.js");
 importScript("cm/closebrackets.js");
+importScript("cm/markselection.js");
 
 /**
  * @constructor
@@ -54,11 +55,15 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     this._codeMirror = window.CodeMirror(this.element, {
         lineNumbers: true,
-        gutters: ["CodeMirror-linenumbers", "breakpoints"],
+        gutters: ["CodeMirror-linenumbers"],
         matchBrackets: true,
+        smartIndent: false,
+        styleSelectedText: true,
+        electricChars: false,
         autoCloseBrackets: WebInspector.experimentsSettings.textEditorSmartBraces.isEnabled()
     });
 
+    var extraKeys = {};
     var indent = WebInspector.settings.textEditorIndent.get();
     if (indent === WebInspector.TextUtils.Indent.TabCharacter) {
         this._codeMirror.setOption("indentWithTabs", true);
@@ -66,7 +71,14 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     } else {
         this._codeMirror.setOption("indentWithTabs", false);
         this._codeMirror.setOption("indentUnit", indent.length);
+        extraKeys.Tab = function(codeMirror)
+        {
+            if (codeMirror.somethingSelected())
+                return CodeMirror.Pass;
+            codeMirror.replaceRange(indent, codeMirror.getCursor());
+        }
     }
+    this._codeMirror.setOption("extraKeys", extraKeys);
 
     this._tokenHighlighter = new WebInspector.CodeMirrorTextEditor.TokenHighlighter(this._codeMirror);
     this._blockIndentController = new WebInspector.CodeMirrorTextEditor.BlockIndentController(this._codeMirror);
@@ -87,9 +99,21 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     this.element.addEventListener("focus", this._handleElementFocus.bind(this), false);
     this.element.tabIndex = 0;
+    this._setupSelectionColor();
 }
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+    _setupSelectionColor: function()
+    {
+        if (WebInspector.CodeMirrorTextEditor._selectionStyleInjected)
+            return;
+        var style = document.createElement("style");
+        var backgroundColor = ".CodeMirror .CodeMirror-selected { background-color: " + WebInspector.getSelectionBackgroundColor() + ";}";
+        var foregroundColor = ".CodeMirror .CodeMirror-selectedtext { color: " + WebInspector.getSelectionForegroundColor() + "!important;}";
+        style.textContent = backgroundColor + foregroundColor;
+        document.head.appendChild(style);
+        WebInspector.CodeMirrorTextEditor._selectionStyleInjected = true;
+    },
 
     /**
      * @param {number} lineNumber
@@ -129,6 +153,17 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         return this._toRange(coords, coords);
     },
 
+    _convertTokenType: function(tokenType)
+    {
+        if (tokenType.startsWith("variable") || tokenType.startsWith("property") || tokenType === "def")
+            return "javascript-ident";
+        if (tokenType === "string-2")
+            return "javascript-regexp";
+        if (tokenType === "number" || tokenType === "comment" || tokenType === "string")
+            return "javascript-" + tokenType;
+        return null;
+    },
+
     /**
      * @param {number} lineNumber
      * @param {number} column
@@ -141,15 +176,14 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var token = this._codeMirror.getTokenAt(new CodeMirror.Pos(lineNumber, column || 1));
         if (!token || !token.type)
             return null;
-        var convertedType = null;
-        if (token.type.startsWith("variable") || token.type.startsWith("property") || token.type === "def") {
-            return {
-                startColumn: token.start,
-                endColumn: token.end - 1,
-                type: "javascript-ident"
-            };
-        }
-        return null;
+        var convertedType = this._convertTokenType(token.type);
+        if (!convertedType)
+            return null;
+        return {
+            startColumn: token.start,
+            endColumn: token.end - 1,
+            type: convertedType
+        };
     },
 
     /**
@@ -306,10 +340,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     addBreakpoint: function(lineNumber, disabled, conditional)
     {
-        var element = document.createElement("span");
-        element.textContent = lineNumber + 1;
-        element.className = "cm-breakpoint" + (disabled ? " cm-breakpoint-disabled" : "") + (conditional ? " cm-breakpoint-conditional" : "");
-        this._codeMirror.setGutterMarker(lineNumber, "breakpoints", element);
+        var className = "cm-breakpoint" + (conditional ? " cm-breakpoint-conditional" : "") + (disabled ? " cm-breakpoint-disabled" : "");
+        this._codeMirror.addLineClass(lineNumber, "wrap", className);
     },
 
     /**
@@ -317,7 +349,14 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     removeBreakpoint: function(lineNumber)
     {
-        this._codeMirror.setGutterMarker(lineNumber, "breakpoints", null);
+        var wrapClasses = this._codeMirror.getLineHandle(lineNumber).wrapClass;
+        if (!wrapClasses)
+            return;
+        var classes = wrapClasses.split(" ");
+        for(var i = 0; i < classes.length; ++i) {
+            if (classes[i].startsWith("cm-breakpoint"))
+                this._codeMirror.removeLineClass(lineNumber, "wrap", classes[i]);
+        }
     },
 
     /**
@@ -326,13 +365,13 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     setExecutionLine: function(lineNumber)
     {
         this._executionLine = this._codeMirror.getLineHandle(lineNumber);
-        this._codeMirror.addLineClass(this._executionLine, null, "cm-execution-line");
+        this._codeMirror.addLineClass(this._executionLine, "wrap", "cm-execution-line");
     },
 
     clearExecutionLine: function()
     {
         if (this._executionLine)
-            this._codeMirror.removeLineClass(this._executionLine, null, "cm-execution-line");
+            this._codeMirror.removeLineClass(this._executionLine, "wrap", "cm-execution-line");
         delete this._executionLine;
     },
 
@@ -542,6 +581,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         this._muteTextChangedEvent = true;
         this._codeMirror.setValue(text);
+        this._codeMirror.clearHistory();
         delete this._muteTextChangedEvent;
     },
 
@@ -728,8 +768,33 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
             codeMirror.execCommand("newlineAndIndent");
             codeMirror.setCursor(cursor);
             codeMirror.execCommand("newlineAndIndent");
+            codeMirror.execCommand("indentMore");
+        } else if (line.substr(cursor.ch-1, 1) === "{") {
+            codeMirror.execCommand("newlineAndIndent");
+            codeMirror.execCommand("indentMore");
         } else
             return CodeMirror.Pass;
+    },
+
+    "'}'": function(codeMirror)
+    {
+        var cursor = codeMirror.getCursor();
+        var line = codeMirror.getLine(cursor.line);
+        for(var i = 0 ; i < line.length; ++i)
+            if (!WebInspector.TextUtils.isSpaceChar(line.charAt(i)))
+                return CodeMirror.Pass;
+
+        codeMirror.replaceRange("}", cursor);
+        var matchingBracket = codeMirror.findMatchingBracket();
+        if (!matchingBracket.match)
+            return;
+
+        line = codeMirror.getLine(matchingBracket.to.line);
+        var desiredIndentation = 0;
+        while (desiredIndentation < line.length && WebInspector.TextUtils.isSpaceChar(line.charAt(desiredIndentation)))
+            ++desiredIndentation;
+
+        codeMirror.replaceRange(line.substr(0, desiredIndentation) + "}", new CodeMirror.Pos(cursor.line, 0), new CodeMirror.Pos(cursor.line, cursor.ch + 1));
     }
 }
 
