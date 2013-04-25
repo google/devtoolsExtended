@@ -47,8 +47,15 @@ var defaultOptions = {
     {
       name: "qpp",
       enabled: false,
-      startPage: "chrome-extension://mpbflbdfncldfbjicfcfbaikknnbfmae/QuerypointDevtoolsPage.html" 
-    }
+      startPage: "chrome-extension://mpbflbdfncldfbjicfcfbaikknnbfmae/QuerypointDevtoolsPage.html",
+      downloadURL: "https://github.com/google/qpp"
+    },
+    {
+      name: "devtools-save",
+      enabled: false,
+      startPage: "chrome-extension://jmacddndcaceecmiinjnmkfmccipdphp/devtoolsExtended-save.html",
+      downloadURL: "https://code.google.com/r/johnjbarton-devtools-save/"
+    },
   ]
 };
 
@@ -114,6 +121,10 @@ function addExtensionInfosRow(extensionInfo) {
   input.value = extensionInfo.startPage;
   input = row.querySelector('.extensionInfo-name');
   input.value = extensionInfo.name;
+  if (extensionInfo.downloadURL) {
+    var downloadURL = row.querySelector('.extensionInfo-downloadURL');
+    downloadURL.setAttribute('href', extensionInfo.downloadURL);
+  }
   addExtensionInfosRowClickHandler(row);
 }
 
