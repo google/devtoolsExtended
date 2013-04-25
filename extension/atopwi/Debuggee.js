@@ -255,7 +255,21 @@ function(            ChromeProxy,          appendFrame)  {
             }
             return info;
           }.bind(this));
-          WebInspector.addExtensions(infos);        
+          var totalExtensions = infos.length;
+          function countExtensions(event) {
+            if (event.data === "registerExtension") {
+              totalExtensions--;
+              if (!totalExtensions) {
+                window.removeEventListener('message', countExtensions);
+                var event = new CustomEvent("extensionsRegistered");
+                window.dispatchEvent(event)
+              }
+              console.log("Debuggee.loadExtensions " + totalExtensions + " left to register"); 
+            }
+          }
+          window.addEventListener('message', countExtensions);
+          WebInspector.addExtensions(infos);
+
         }
       }
     },
