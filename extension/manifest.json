@@ -21,7 +21,6 @@
       "webRequest",
       "debugger",
       "webRequestBlocking",
-      "experimental",
       "notifications"
     ],
     "page_action": {
