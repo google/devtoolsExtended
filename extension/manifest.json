@@ -21,7 +21,8 @@
       "webRequest",
       "debugger",
       "webRequestBlocking",
-      "notifications"
+      "notifications",
+      "storage"
     ],
     "page_action": {
       //"default_icon": "icons/foo.png", // optional

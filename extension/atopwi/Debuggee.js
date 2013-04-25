@@ -34,7 +34,7 @@ function(            ChromeProxy,          appendFrame)  {
           this.parseDebuggee(args[0]);
           if (this.websocketParam) {
             this.patchInspector(function() {
-              window.parent.document.title = "Dogfooder";
+              window.parent.document.title = "Remote DevtoolsExtended";
               console.log("websocketParam used "+window.parent.location.href);
             });
           } else {

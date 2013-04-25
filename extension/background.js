@@ -33,14 +33,14 @@
       notify("atopwi not among json entries from " + websocketJSONURL);
   }
 
-  function getDogfoodFromJSONEntry(entry) {
+  function getWebSocketURLFromJSONEntry(entry) {
     var wsParam = entry.webSocketDebuggerUrl.replace('://','=');
     return atopwiURL + '?' + wsParam;
   }
     
-  function openDogfooder(url) {
+  function openRemoteDevtools(url) {
     function onWindowCreated(win) {
-      console.log("Opened Dogfooder ");
+      console.log("Opened Remote DevtoolsExtended ");
     }
     var createData = {url: url, type: 'popup' };
     chrome.windows.create(createData, onWindowCreated);
@@ -54,23 +54,30 @@
   //--------------------------------------------------------------------------------------
   // context menu
   function onContextMenuClick(info, tab) {
-
-    function matchTabURL(entry){
-      if (entry.url == tab.url) { 
-        // accept the first matching entry, fails if user has multiple tabs on the same URL
-        var dogfoodURL = getDogfoodFromJSONEntry(entry);
-        var dogfoodTab = win.tabs[0]; // opened by contextMenu
-        chrome.tabs.update(dogfoodTab.id, {url: dogfoodURL}, function onUpdate() {
-          console.log("opened dogfood debugger " + dogfoodURL +  " from entry ", entry);
-        });
-      }
-    }
-
-    var onJSONMatch = onJSON.bind(null, matchTabURL);
-    getJSONAsync(onJSONMatch);
+    var sending = new Date().getTime(); 
+    chrome.storage.sync.set({remoteDebug: tab}, function(){
+      var sent = new Date().getTime();
+      console.log("sent tab in " + (sent - sending) + "ms", tab);
+    });
   }
 
-  //buildContextMenuItem("Dogfood", onContextMenuClick);
+  buildContextMenuItem("Remote DevtoolsExtended", onContextMenuClick);
+
+  chrome.storage.onChanged.addListener(function(changes, namespace) {
+    console.log("storage changes", changes);
+    for (key in changes) {
+      var storageChange = changes[key];
+      console.log('Storage key "%s" in namespace "%s" changed. ' +
+                'Old value was "%s", new value is "%s".',
+                key,
+                namespace,
+                storageChange.oldValue,
+                storageChange.newValue);
+      chrome.storage.sync.get(key, function onStorage(items) {
+         console.log("storage.sync.get "+key, items);
+      });
+     }
+  });
 
   // -------------------------------------------------
   // PageAction
@@ -86,16 +93,22 @@
 
   function onPageAction(tab) {
 
-    function findDevtoolsExtendedInJSON(entry) {
-      if (entry.title === "DevToolsExtended") {
-        openDogfooder(getDogfoodFromJSONEntry(entry));
-        return true;
+    chrome.storage.sync.get("remoteDebug", function onStorage(items) {
+      console.log("storage.sync.get remoteDebug", items);
+      var tab = items.remoteDebug;
+      function findDevtoolsExtendedInJSON(entry) {
+        console.log("trying entry "+entry.url + '===' + tab.url);
+        if (entry.url === tab.url) {
+          openRemoteDevtools(getWebSocketURLFromJSONEntry(entry));
+          return true;
+        }
       }
-    }
 
-    var matcher = findDevtoolsExtendedInJSON;
-    var onJSONMatch = onJSON.bind(null, matcher);
-    getJSONAsync(onJSONMatch);
+      var matcher = findDevtoolsExtendedInJSON;
+      var onJSONMatch = onJSON.bind(null, matcher);
+      getJSONAsync(onJSONMatch);
+    });
+
   }
   chrome.pageAction.onClicked.addListener(onPageAction);  
 
