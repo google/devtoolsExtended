@@ -925,7 +925,7 @@ ExtensionServerClient.prototype = {
     }
 }
 
-function populateInterfaceClass(interface, implementation)
+function populateInterfaceClass(iface, implementation)
 {
     for (var member in implementation) {
         if (member.charAt(0) === "_")
@@ -937,11 +937,11 @@ function populateInterfaceClass(interface, implementation)
         if (!descriptor)
             continue;
         if (typeof descriptor.value === "function")
-            interface[member] = descriptor.value.bind(implementation);
+            iface[member] = descriptor.value.bind(implementation);
         else if (typeof descriptor.get === "function")
-            interface.__defineGetter__(member, descriptor.get.bind(implementation));
+            iface.__defineGetter__(member, descriptor.get.bind(implementation));
         else
-            Object.defineProperty(interface, member, descriptor);
+            Object.defineProperty(iface, member, descriptor);
     }
 }
 
