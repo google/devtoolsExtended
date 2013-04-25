@@ -23,7 +23,14 @@ window.debuggerOrDebuggee;
   var fakeBlankURL = crx2appBase + '/workaroundBug108519.html';
   //**********
   
-  var websocketJSONURL = "http://localhost:9222/json";
+  var optionsString = window.localStorage.getItem('DevtoolsExtended.options');
+  var options = {remoteDebugPort: 9222};
+  if (optionsString) {
+    options = JSON.parse(optionsString);
+  }
+
+
+  var websocketJSONURL = "http://localhost:" + options.remoteDebugPort + "/json";
 
   function notify(whyFailed) {
     webkitNotifications.createNotification("", "No Dogfood", whyFailed);
@@ -51,7 +58,6 @@ window.debuggerOrDebuggee;
   }
 
   function getJSONAsync(onJSON) {
-    var websocketJSONURL = "http://localhost:9222/json";
     XHRInBackground.GET(websocketJSONURL, onJSON, notify.bind(null, "xhr failed"));
   }
   
