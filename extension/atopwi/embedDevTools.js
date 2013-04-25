@@ -7,7 +7,7 @@
 
 (function()  {
 
-  var debug = true;
+  var debug = false;
   
   window.WebInspector.delayLoaded = window.WebInspector.loaded;
   window.WebInspector.loaded = function() {

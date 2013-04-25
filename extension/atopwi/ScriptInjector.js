@@ -5,7 +5,7 @@
 
 var ScriptInjector = (function()  {
 
-  var debug = true;
+  var debug = false;
 
   var ScriptInjector = {
 

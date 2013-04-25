@@ -7,7 +7,7 @@
 define(['appendFrame'], 
 function(appendFrame)  {
 
-  var debug = true;
+  var debug = false;
 
   var DevtoolsConnection = { 
 

@@ -245,26 +245,34 @@ function(            ChromeProxy,          appendFrame)  {
       if (debug)
         console.log("loadExtensions", optionsString);
       if (optionsString) {
-        var options = JSON.parse(optionsString);
-        if (options.extensionInfos && options.extensionInfos.length) {
-          var infos = options.extensionInfos.map(function(info) {
-            // send the tabId to build
-            info.startPage += "?tabId="+this.tabId;
-            if (debug) {
-              console.log("extensionInfo ", info);
-            }
-            return info;
-          }.bind(this));
-          var totalExtensions = infos.length;
-          function countExtensions(event) {
-            if (event.data === "registerExtension") {
-              totalExtensions--;
-              if (!totalExtensions) {
-                window.removeEventListener('message', countExtensions);
-                var event = new CustomEvent("extensionsRegistered");
-                window.dispatchEvent(event)
-              }
-              console.log("Debuggee.loadExtensions " + totalExtensions + " left to register"); 
+        options = JSON.parse(optionsString);
+      }
+
+      if (options.extensionInfos && options.extensionInfos.length) {
+
+        var infos = options.extensionInfos.map(function(info) {
+          // send the tabId to build
+          info.startPage += "?tabId="+this.tabId;
+          if (debug) {
+            console.log("extensionInfo ", info);
+          }
+          return info;
+        }.bind(this));
+
+        var event = new CustomEvent("extensionsRegistering");
+        event.data = infos;
+        window.dispatchEvent(event);
+
+        var totalExtensions = infos.length;
+
+        function countExtensions(event) {
+          if (event.data === "registerExtension") {
+            totalExtensions--;
+            if (!totalExtensions) {
+              window.removeEventListener('message', countExtensions);
+              var event = new CustomEvent("extensionsRegistered");
+              event.data = infos;
+              window.dispatchEvent(event)
             }
           }
           window.addEventListener('message', countExtensions);
