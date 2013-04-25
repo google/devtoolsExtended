@@ -1,0 +1,18 @@
+<html>
+<head>
+<script src="../ChannelPlate.js"></script>
+<script>
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2011 Google Inc. johnjbarton@google.com
+
+var portToParent= new ChannelPlate.ChildIframe(function(message) {
+  console.log(window.location + ' heard ' + message.data, message);
+});
+console.log("child listening for parent");
+portToParent.postMessage("mommy?");
+</script>
+</head>
+<body>
+<p>Open the debugging console to see the conversation logged</p>
+</body>
+</html>
