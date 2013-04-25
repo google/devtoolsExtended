@@ -6,9 +6,8 @@
 // used by options.html and crxEnd.js 
 // options.allowedSites is array of {site: url, name: string}
 
-var optionsKey = window.location.hostname + '.options'
+var optionsKey = 'DevtoolsExtended.options';
   
-
 function saveOptions() {
   var options = restoreOptions() || {};
   options.extensionInfos = [];
@@ -39,12 +38,12 @@ function saveOptions() {
   
   var debugAdapters = document.getElementById('debugAdapters');
   options.debugAdapters = debugAdapters.checked;
-
-  var stringified = JSON.stringify(options);
-  window.localStorage.setItem(optionsKey, stringified);
   
   var warnReload = document.getElementById('warnReload');
   warnReload.classList.remove('hidden');  
+
+  var stringified = JSON.stringify(options);
+  window.localStorage.setItem(optionsKey, stringified);
 }
 
 function restoreOptions(defaultOptions) {

@@ -229,11 +229,16 @@ function(            ChromeProxy,          appendFrame)  {
     
     // When called as a WebApp, devtools extensions are loaded.
     loadExtensions: function() {
-      var optionsString = window.localStorage.getItem('options');
+      var optionsString = window.localStorage.getItem('DevtoolsExtended.options');
       if (optionsString) {
         var options = JSON.parse(optionsString);
         if (options.extensionInfos && options.extensionInfos.length) {
-          WebInspector.addExtensions(options.extensionInfos);
+          var infos = options.extensionInfos.map(function(info) {
+            // send the tabId to build
+            info.startPage += "?tabId="+this.tabId;
+            return info;
+          }.bind(this));
+          WebInspector.addExtensions(infos);        
         }
       }
     },
@@ -322,7 +327,7 @@ function(            ChromeProxy,          appendFrame)  {
         }); 
       }
     },
-    
+
 };
 
 return Debuggee;

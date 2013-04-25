@@ -130,7 +130,7 @@ function addExtensionInfosRowClickHandler(row) {
       console.log("row click", event);
     if (event.target.classList.contains('remove')) 
       removeRow(event);
-    else if (event.target.classList.contains('save'))
+    else if (event.target.classList.contains('save') || event.target.classList.contains('edit'))
       saveOrEditRow(event);
   });
   return row;
