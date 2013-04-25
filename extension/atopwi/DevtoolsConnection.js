@@ -13,12 +13,12 @@ function(appendFrame)  {
 
     openInspector: function(debuggee) {
       this.debuggee = debuggee;
-      this.listenDebuggee(this.getWebInspectorIframe());
+      this.listenDebuggee(this._addWebInspectorIframe());
     },
     
-    getWebInspectorIframe: function() {
+    _addWebInspectorIframe: function() {
       this.showWaiting();
-      return appendFrame('WebInspector', "about:blank");
+      return appendFrame('.WebInspectorContainer', "about:blank");
     },
  
     showWaiting: function() {
@@ -26,13 +26,12 @@ function(appendFrame)  {
     },
  
     showInspectorIframe: function() {
-      var inspectorElt = window.document.getElementById('WebInspector');
+      var inspectorElt = window.document.querySelector('.WebInspectorContainer');
       inspectorElt.classList.remove('hide');
       window.document.querySelector('.splash').classList.add('hide');
       if (debug) {
         console.log("append WebInspector from "+this.debuggee.devtoolsURL);
       }
-
     },
 
     listenDebuggee: function(childFrame) {

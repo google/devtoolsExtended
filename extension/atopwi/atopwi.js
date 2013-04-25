@@ -102,7 +102,7 @@ URLOptions.prototype = {
 };
 
 function onLoad() {
-
+    
   window.removeEventListener('load', onLoad, false);
 
   require({
