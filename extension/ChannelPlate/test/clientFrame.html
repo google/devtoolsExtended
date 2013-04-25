@@ -1,0 +1,48 @@
+<html>
+<head>
+<script src="../ChannelPlate.js"></script>
+<script src="../RemoteMethodCall.js"></script>
+<script>
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2013 Google Inc. johnjbarton@google.com
+
+var DEBUG = false;
+var TIME_LIMIT = 1000;
+
+function tookTooLong() {
+	console.log('FAIL: server did not respond within ' + TIME_LIMIT + ' millisecs.')
+}
+
+var timeoutId = setTimeout(tookTooLong, TIME_LIMIT);
+
+var serverMethods = {
+	add: function(lhs, rhs, resultsBack, errBack){},
+	div: function(lhs, rhs, resultsBack, errBack){}
+}
+
+var proxy = (new RemoteMethodCall.Requestor(serverMethods, ChannelPlate.ChildIframe)).serverProxy();
+
+proxy.add(2,2, function(result){
+	if (result === 4) {
+		console.log('PASS: ' + result);	
+	} else {
+		console.log('FAIL: ' + result)
+	}
+	proxy.div(2,0, 
+		function(result){
+			console.log('FAIL: ' + result);
+			clearTimeout(timeoutId);
+		}, 
+		function (err) {
+			console.log('PASS: ' + err);
+			clearTimeout(timeoutId);
+		}
+	);
+});
+
+</script>
+</head>
+<body>
+<p>Open the DEBUGging console to see the test results</p>
+</body>
+</html>

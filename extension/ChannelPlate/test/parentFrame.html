@@ -1,28 +1,79 @@
 <html>
 <head>
 <script src="../ChannelPlate.js"></script>
-
+<script src="../RemoteMethodCall.js"></script>
 </head>
 <body>
-<p>Open the debugging console to see the conversation logged</p>
+<p>Open the DEBUGging console to see the conversation logged</p>
 <!-- define the iframe with blank content -->
+<iframe class='ChannelPlateChild' src="about:blank"></iframe>
 <iframe class='ChannelPlateClient' src="about:blank"></iframe>
 </body>
 <script>
 // Google BSD license http://code.google.com/google_bsd_license.html
 // Copyright 2011 Google Inc. johnjbarton@google.com
 
+var DEBUG = false;
+var TIME_LIMIT = 1000;
+
+function tookTooLong() {
+    console.log('FAIL: child did not respond within ' + TIME_LIMIT + ' millisecs.');
+}
+
+var timeoutId = setTimeout(tookTooLong, TIME_LIMIT);
+
 // The iframe can be an HTML element or created by DOM calls
-var childFrame = document.querySelector('.ChannelPlateClient');
+var childFrame = document.querySelector('.ChannelPlateChild');
+
+// Low-level incoming API tests connection
+//
+function onMessage(message) {
+    if (message === 'mommy?') {
+        console.log("PASS: parent hears")
+    } else {
+        console.log('FAIL: ' + window.location +  ' heard: \"' + message + '\"');
+    }
+    clearTimeout(timeoutId);
+    nextTest();
+}
 
 // After we listen for messages we navigate the frame.
-var portToChild = new ChannelPlate.Parent(childFrame, "childFrame.html", function(message) {
-    console.log(window.location +  ' heard: \"' + message.data + '\"');
-  });
 
-console.log("parent listening for child");
+var portToChild = new ChannelPlate.Parent(onMessage);
+portToChild.start(childFrame, "childFrame.html");
 
+if (DEBUG) {
+  console.log("parent listening for child");
+}
+
+// Low-level outgoing API call starts test
+//
 portToChild.postMessage ("hello child");
+
+
+function nextTest() {
+    //---------- Test RMC -----------------------------------------------
+
+    var clientFrame = document.querySelector('.ChannelPlateClient');
+
+    var serverTestMethods = {
+        add: function(lhs, rhs, callback, errback) {
+            callback(lhs + rhs);
+        },
+        div: function(lhs, rhs, callback, errback){
+            if (rhs === 0) {
+                errback("divide by zero");
+            } else {
+                callback(lhs/rhs);
+            }
+        }
+    } 
+
+    var server = new RemoteMethodCall.Responder(serverTestMethods, ChannelPlate.Parent);
+    server.start(clientFrame, "clientFrame.html");
+    
+}
+
 
 </script>
 </html>
