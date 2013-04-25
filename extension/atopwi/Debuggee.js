@@ -27,7 +27,7 @@ function(            ChromeProxy,          appendFrame)  {
     attachToParent: function() {
       console.log(window.location + ' talking ');
       this.portToAtopwi = new ChannelPlate.ChildIframe(function(message){
-        console.log('Debuggee got message ', message);
+        if (debug) console.log('Debuggee got message ', message);
         var method = message.data.method;
         var args = message.data.arguments;
         if (method === "debuggee") {
@@ -241,12 +241,17 @@ function(            ChromeProxy,          appendFrame)  {
     // When called as a WebApp, devtools extensions are loaded.
     loadExtensions: function() {
       var optionsString = window.localStorage.getItem('DevtoolsExtended.options');
+      if (debug)
+        console.log("loadExtensions", optionsString);
       if (optionsString) {
         var options = JSON.parse(optionsString);
         if (options.extensionInfos && options.extensionInfos.length) {
           var infos = options.extensionInfos.map(function(info) {
             // send the tabId to build
             info.startPage += "?tabId="+this.tabId;
+            if (debug) {
+              console.log("extensionInfo ", info);
+            }
             return info;
           }.bind(this));
           WebInspector.addExtensions(infos);        
@@ -337,6 +342,7 @@ function(            ChromeProxy,          appendFrame)  {
             console.log("runTest response", response);
         }); 
       }
+      this.portToAtopwi.postMessage(['loadCompleted'])
     },
 
 };

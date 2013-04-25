@@ -13,19 +13,31 @@ function(appendFrame)  {
 
     openInspector: function(debuggee) {
       this.debuggee = debuggee;
-      this.listenDebuggee( this.showInspectorIframe());
+      this.listenDebuggee(this.getWebInspectorIframe());
+    },
+    
+    getWebInspectorIframe: function() {
+      this.showWaiting();
+      return appendFrame('WebInspector', "about:blank");
+    },
+ 
+    showWaiting: function() {
+      window.document.querySelector('.devtoolsBackendURL').textContent = this.debuggee.devtoolsURL;
     },
  
     showInspectorIframe: function() {
       var inspectorElt = window.document.getElementById('WebInspector');
       inspectorElt.classList.remove('hide');
-      console.log("append WebInspector from "+this.debuggee.devtoolsURL);
-      return appendFrame('WebInspector', "about:blank");
+      window.document.querySelector('.splash').classList.add('hide');
+      if (debug) {
+        console.log("append WebInspector from "+this.debuggee.devtoolsURL);
+      }
+
     },
 
     listenDebuggee: function(childFrame) {
       if (debug) {
-        console.log("DevtoolsConnection listening ");
+        console.log("DevtoolsConnection sending debuggee ", this.debuggee);
       }
       this.portToDevtools = new ChannelPlate.Parent(childFrame, this.debuggee.devtoolsURL, this.onMessage.bind(this) );
       this.portToDevtools.postMessage({
@@ -35,7 +47,12 @@ function(appendFrame)  {
     },
     
     onMessage: function(message) {
-      console.log("atopwi puts debuggee %o and hears: "+message, message);
+      if (debug) {
+        console.log("atopwi puts debuggee %o and hears %o", this.debuggee, message);
+      }
+      if (message.data[0] && message.data[0] === 'loadCompleted') {
+        this.showInspectorIframe();
+      }
     },
     
   };
