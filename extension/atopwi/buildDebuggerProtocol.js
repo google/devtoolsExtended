@@ -4,7 +4,7 @@
 (function buildDebuggerProtocol() {
 
   if (chrome && chrome.devtools) {
-    var protocolSrc = generateProxyDebugAPI.loadInspectorJSON("chrome-extension://ggimboaoffjaeoblofehalflljohnfbl/WebInspectorKit/Source/WebCore/inspector/front-end/Inspector.json");
+    var protocolSrc = generateProxyDebugAPI.loadInspectorJSON("chrome-extension://ggimboaoffjaeoblofehalflljohnfbl/WebInspectorKit/Source/devtools/front_end/Inspector.json");
     eval(protocolSrc);
   } else {
     console.error("buildDebuggerProtocol: no chrome.devtools in this scope; chrome:", chrome);

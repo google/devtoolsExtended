@@ -53,14 +53,14 @@ function URLOptions() {
     }
   }
   
-  var defaultPreset = localStorage.getItem('DevtoolsExtended.frontendURL') || window.DevtoolsExtendedBase + "/WebInspectorKit/Source/WebCore/inspector/front-end";
+  var defaultPreset = localStorage.getItem('DevtoolsExtended.frontendURL') || window.DevtoolsExtendedBase + "/WebInspectorKit/Source/devtools/front_end";
   preset(defaultPreset);
   
   document.querySelector('.crxFrontEnd').addEventListener('click', function() {
-    preset(window.DevtoolsExtendedBase + '/WebInspectorKit/Source/WebCore/inspector/front-end/');
+    preset(window.DevtoolsExtendedBase + '/WebInspectorKit/Source/devtools/front_end/');
   });
   document.querySelector('.testingFrontEnd').addEventListener('click', function() {
-    preset('http://localhost:9696/WebInspectorKit/Source/WebCore/inspector/front-end/');
+    preset('http://localhost:9696/WebInspectorKit/Source/devtools/front_end/');
   });
   
   document.querySelector('#doDebug').addEventListener('click', function() {

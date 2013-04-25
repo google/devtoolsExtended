@@ -1,5 +1,5 @@
 
-// Called in WebInspectorKit/Source/WebCore/inspector/front-end/devtools.htm
+// Called in WebInspectorKit/Source/devtools/front_end/devtools.htm
 
 require({
     paths: {

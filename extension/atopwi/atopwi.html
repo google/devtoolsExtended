@@ -10,18 +10,18 @@
     <div class='hide' id='error'></div>
     <div class='hide debuggeeSpec'>
           <h1> Chrome Devtools as Web App </h1>
-          front-end url presets: <button class='crxFrontEnd'>DevtoolsExtended Extension</button><button class='testingFrontEnd'>localhost testing</button> 
+          front_end url presets: <button class='crxFrontEnd'>DevtoolsExtended Extension</button><button class='testingFrontEnd'>localhost testing</button> 
           <form >
-            front-end url: <input class='frontendURL' type='url' size='128'/>
+            front_end url: <input class='frontendURL' type='url' size='128'/>
           </form>
           <h2>Backend Using Chrome extension crx2App</h2>
-          <p>The devtools front-end connects through postMessage() events to the chrome.debugger API and from there to the backend</p>
+          <p>The devtools front_end connects through postMessage() events to the chrome.debugger API and from there to the backend</p>
         <form >
           URL to debug: <input id='debuggeeSpecURLElt' type='url' size='128'/>
           <button id="doDebug">Debug</button>
         </form>
         <h2>OR: Backend Using Web Sockets</h2>
-        <p>The devtools front-end connects to localhost:9222</p>
+        <p>The devtools front_end connects to localhost:9222</p>
         <div class="WebSocketSelector">
             <!-- filled in by JavaScript -->
         </div>
