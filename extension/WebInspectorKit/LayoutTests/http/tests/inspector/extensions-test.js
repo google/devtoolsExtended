@@ -53,10 +53,12 @@ InspectorTest.runExtensionTests = function()
         if (error)
             return;
         var pageURL = result.value;
-        var extensionURL = (/^https?:/.test(pageURL) ?
-            pageURL.replace(/^(https?:\/\/[^/]*\/).*$/,"$1") :
-            pageURL.replace(/\/inspector\/extensions\/[^/]*$/, "/http/tests")) +
-            "/inspector/resources/extension-main.html";
+        console.log("runExtensionTests pageURL: "  + pageURL);
+        // The test extension is in /resources belog the pageURL 
+        var segments = pageURL.split('/');
+        segments.pop();
+        var extensionURL = segments.join('/') + "/resources/extension-main.html";
+        console.log("runExtensionTests extensionURL "+extensionURL)
         WebInspector.addExtensions([{ startPage: extensionURL, name: "test extension", exposeWebInspectorNamespace: true }]);
     });
 }

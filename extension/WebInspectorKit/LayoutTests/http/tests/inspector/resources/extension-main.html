@@ -1,6 +1,39 @@
 <html>
 <head>
+<!-- These files are equivalent to devtools_extension_api.js -->
+<script src='chrome-extension://ggimboaoffjaeoblofehalflljohnfbl/WebInspectorKit/Source/WebCore/inspector/front-end/ExtensionAPI.js'></script>
+<script src='chrome-extension://ggimboaoffjaeoblofehalflljohnfbl/WebInspectorKit/Source/WebKit/chromium/src/js/DevToolsExtensionAPI.js'></script>
+<script src='chrome-extension://ggimboaoffjaeoblofehalflljohnfbl/atopwi/buildExtensionAPI.js'></script>
+<script>
+webInspector = chrome.devtools;  // some LayoutTest-specific magic
+</script>
 <script src="extension-main.js"></script>
+<script>
+var SignalTokens = {
+    COMPLETE: "InspectorTest.testComplete: ",
+    RESULT: "InspectorTest.addResult: ",
+    CLEAR: "InspectorTest.clearResults: ",
+};
+var InspectorTest = {  
+    completeTest: function() 
+    {
+        console.log(SignalTokens.COMPLETE, InspectorTest.completeTestCallId);
+    },
+    addResult: function(text) 
+    {
+        console.log(SignalTokens.RESULT + text);
+    },
+    clearResults: function() 
+    {
+        console.log(SignalTokens.CLEAR);
+    }
+};
+
+function evaluateOnFrontend(expression)
+{
+    eval(expression);
+}
+</script>
 <script type="text/javascript">
 output("Started extension.");
 fetchTests();
