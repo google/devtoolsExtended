@@ -46,13 +46,13 @@ var defaultOptions = {
   extensionInfos: [  // Default extension list
     {
       name: "qpp",
-      enabled: false,
+      enabled: true,
       startPage: "chrome-extension://mpbflbdfncldfbjicfcfbaikknnbfmae/QuerypointDevtoolsPage.html",
       downloadURL: "https://github.com/google/qpp"
     },
     {
       name: "devtools-save",
-      enabled: false,
+      enabled: true,
       startPage: "chrome-extension://jmacddndcaceecmiinjnmkfmccipdphp/devtoolsExtended-save.html",
       downloadURL: "https://code.google.com/r/johnjbarton-devtools-save/"
     },
