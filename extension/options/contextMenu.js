@@ -41,13 +41,13 @@ function formDebuggerURL(allowedSite, debuggeeTabId, debuggeeURL) {
 }
 
 function buildContextMenuItem(title, opener) {
-  /**
-   * Create a context menu which will only show up on all pages
-   */
-  chrome.contextMenus.create({
-    "title" : title,
-    "type" : "normal",
-    "contexts" : ["page"],
-    "onclick" : opener
+  chrome.contextMenus.remove(title, function() { 
+    chrome.contextMenus.create({
+      "title" : title,
+      "type" : "normal",
+      "contexts" : ["page"],
+      "onclick" : opener
+    });  
   });
+ 
 }
