@@ -1,0 +1,61 @@
+<html>
+<head>
+<style>
+body {
+ background:  #FFFFC8;
+ font-family:Verdana,Geneva,sans-serif;
+}
+#warning {
+  text-align: center;
+  width: 100%;
+  height: 24px;
+  font-size: 18px;
+}
+</style>
+<script>
+/*globale window console */
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2011 Google Inc. johnjbarton@google.com
+
+
+function appendDomain(domain) {
+  var elt = document.getElementById('warning');
+  elt.innerHTML += " from " + domain;
+}
+
+function attachDomain() {
+  // extract the parameters
+  var loc = window.location.toString();
+  var splits = loc.split('?');
+  var params = splits[1];
+  if (params) {
+    splits = params.split('&');
+    splits.forEach(function (nvPair) {
+      var nvSplit = nvPair.split('=');
+      var name = nvSplit[0];  
+      var value = nvSplit[1];
+      if (value) {
+        if (name === 'debuggerDomain' && value !== 'undefined') {
+          appendDomain(value);
+        } // else ignore unknown param
+      } // else ignore invalid param
+    });
+  } // else no params specified, use default msg
+}
+
+function onLoad() {
+  try { 
+    attachDomain();
+  } catch (exc) {
+    console.error("warnDebugging fails "+exc);
+  }
+}
+
+window.addEventListener('load', onLoad, false);
+
+</script>
+</head>
+<body>
+<div id='warning'>Warning: this page is controlled by chrome.extension.debugger</div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "crx2app: Barrier Proxy Between WebApps and chrome.extension",
+  "version": "0.1",
+  "minimum_chrome_version": "17",
+  "description": "Allows a Web app to debug a Web app in another window",
+    // Assigns the name 'bbjpappmojnmallpnfgfkjmjnhhplgog'
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCi7gw0CBiJ5lf9IrTsCamnf25U6TEk3Zglel2JQbUDLgeTR7m8vo59K6tBHtMyeRpuMMsmcNJOQOtDYIwvjcYIZcbpHb5JrhDJMCCQSX2gs+2L0F4FY9yyhlijGcxUqN4nrkHHwNYcXz6n16/CsriFWDbGeY6vlipKgAuW0rWb7wIDAQAB",
+  "background_page" : "crxEnd/background.html",
+
+  "permissions" :
+    [
+      "*://*/*",
+      "tabs",
+      "contextMenus",
+      "webNavigation",
+      "debugger"
+    ],
+  "options_page": "crxEnd/options.html",
+  "page_action": {
+    "default_icon": "images/warningMediumIcon.png",
+    "default_title": "An external developer tool is controlling this tab"
+  },
+  "icons":
+    {
+      "16" : "images/orion16.png"
+    }
+}

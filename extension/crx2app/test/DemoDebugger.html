@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>crx2app: DemoDebugger test plugin</title>
+<script src="../extension/appEnd/proxyChromePipe.js"></script>
+<script src="../extension/lib/q/q.js"></script>
+<script src="../extension/lib/requirejs/require.js"></script>
+<script>
+
+/*globals window console Q require */
+
+window.crx2appBase ="chrome-extension://bbjpappmojnmallpnfgfkjmjnhhplgog";
+
+var tests = {
+  newTabCreated: Q.defer()
+};
+
+var tester = {
+  eventHandlers: {
+    tabs: {
+      onCreated: function(tab) {
+        if (tab.url === 'chrome://newtab/') {
+          tests.newTabCreated.resolve(true);
+        }
+      },
+      onUpdated: function(tab) {
+      }
+    },
+    windows: {
+      onCreated: function(window) {
+      }
+    }
+  }
+};
+
+function testConnection(debuggerProxy, chromeProxy) {
+    console.log("testing DemoDebugger");
+    // TODO some testing
+    var promise = tests.newTabCreated.promise;
+    Q.when(promise, function(promise) {
+    
+      debuggerProxy._detach(chromeProxy);
+    }).end();
+}
+function failConnection(err) {
+    console.err("Error "+err, err);
+}
+
+require({
+  paths: {
+    "crx2app": "../extension",
+    "browser/remote": "extension/rpc"
+  }
+}); 
+
+require.onError = function(err) {
+  console.error(err+"", {stack: err.stack.split('\n')});
+};
+
+require(['crx2app/appEnd/connection'], function(connection) {
+
+  function onMessage(event) {
+
+    // Mock Orion (outer window) calls us
+    if (event.data === 'go') {
+  
+      // dynamically load the debugger code
+
+      require(['DemoDebugger', 'crx2app/rpc/ChromeProxy'], 
+        function testIt(DemoDebugger,         ChromeProxy) {
+   
+          // wrap the connection in rpc stuff for chrome.* api
+          var chromeProxy = ChromeProxy.new(connection, tester.eventHandlers);
+     
+          // wrap the connection in more rpc stuff for remote debug protocol through chrome.debugger,
+          // and attach to a new tab, enable debugging and update the page to the given URL.
+          var testURL = window.location.toString();
+          chromeProxy.openDebuggerProxy(
+            testURL, 
+            DemoDebugger,
+            function(debuggerProxy) { // when we are attached to the given page, test it.
+              testConnection(debuggerProxy, chromeProxy);
+            }, 
+            failConnection 
+          );
+        }
+      );
+    }
+  }
+
+   connection.attach(function onConnectedToChrome() {
+  
+       // we have connected to the extension, so plugin to Orion.
+      
+       // listen for fake-Orion to tell us to do something
+       window.addEventListener('message', onMessage, false);
+
+       // The test driver just responds 'go' for our 'Ready' 
+       window.parent.postMessage("DemoDebugger", "*");
+    
+      console.log("Plugin Ready "+window.location+" posted "+"DemoDebugger");
+     });
+
+  function detach() {
+    connection.detach();
+  }
+
+  window.addEventListener('unload', detach, false);
+     
+});
+
+</script>
+</head>
+<body>
+<h1>DemoDebugger test plugin</h1>
+</body>
+</html>

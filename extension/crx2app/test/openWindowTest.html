@@ -1,0 +1,90 @@
+<html>
+<head>
+<title>crx2app: OpenWindow tester</title>
+<script src="../extension/appEnd/proxyChromePipe.js"></script>
+<script src="../extension/lib/q/q.js"></script>
+<script src="../test/openWindowTest.js"></script>
+<script>
+
+/*global getChromeExtensionPipe OpenWindowTest window Q console*/
+
+// We are a plugin in Orion, we have an internal chromeIframe talking to chrome.
+
+window.crx2appBase ="chrome-extension://bbjpappmojnmallpnfgfkjmjnhhplgog";
+
+var connection = getChromeExtensionPipe(window.crx2appBase);
+
+function detach() {
+  connection.detach();
+}
+
+// dynamic iframe load
+//
+function loadPlugin(url) {
+  var iframe = document.createElement('iframe');
+  iframe.addEventListener('unload', detach, false);
+  iframe.setAttribute('src', url);
+  var elt = document.getElementById('loadChromeIframe');
+  elt.appendChild(iframe);
+}
+
+function attach(event) {
+  // listen for a connection.
+  connection.attach(function() {
+    
+    // connected to chrome
+    
+    // setup OpenWindowTest
+    window.openWindowTest = new OpenWindowTest(connection);
+
+    // we have connected to the extension, plugin to Orion
+    window.parent.postMessage("openWindowTest", "*");
+    
+    console.log("Plugin Ready "+window.location);
+  });
+  
+  // dynamically load the chromeIframe, it will connect and fire the callback
+  // (if we load the iframe statically, 
+  // this outer load event will come *after* the iframe load event.)
+  loadPlugin(window.crx2appBase + "/appEnd/chromeIframe.html");
+}
+
+// Fire the test code.
+//
+function testConnection(connection) {
+    var win = window.openWindowTest.promiseWindow();
+    Q.when(win, function resolved(win) {
+      console.log("Window as promised ", win);
+    }, function rejected(msgObj) {
+      console.error("OpenWindowTest.promiseResponse invalid message", msgObj);
+    });
+}
+function onMessage(event) {
+  if (event.data === 'go') {
+    testConnection(connection);
+  }
+}
+
+function onLoad() {
+  // clean up
+  window.removeEventListener('load', onLoad, false);
+  
+  // listen for fake-Orion to tell us to do something
+  window.addEventListener('message', onMessage, false);
+  
+  // connect to the chromeIframe
+  attach();
+}
+
+// as soon as we load, setup the test
+//
+window.addEventListener('load', onLoad, false);
+
+</script>
+</head>
+<body>
+<h1>OpenWindow test iframe</h1>
+<div id="loadChromeIframe">
+</div>
+</body>
+</html>
