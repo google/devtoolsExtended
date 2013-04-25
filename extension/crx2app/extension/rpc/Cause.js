@@ -80,7 +80,7 @@ function filterAndCount(error, arrayOfCallSite) {
   var fileFilter = new FileFilter();
   for (var i = 0; i < arrayOfCallSite.length; i++) {
     var callsite = arrayOfCallSite[i];
-    var file = callsite.getFileName();
+    var file = callsite.getFileName() || "callsite_has_no_filename";
     if (!fileFilter.isSystem(file)) {
       file = removeCommonSegments(baseSegments, file.split('/')).join('/');
 
