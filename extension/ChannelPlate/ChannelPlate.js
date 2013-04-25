@@ -96,15 +96,17 @@ RequestResponder.prototype = Object.create(Base.prototype);
 
 RequestResponder.prototype.onMessage = function(message) {
   var payloadArray = message;
-  var postId = payloadArray.shift();
-  var method = payloadArray.shift();
-  if (method in this && (typeof this[method] === 'function') ) {
-    var args = payloadArray;
-    args.push(this.onReply.bind(this, postId, method));
-    args.push(this.onError.bind(this, postId, method));
-    this[method].apply(this, args);
-  } else {
-    this.onError(postId, method, "No Such Method");
+  if (payloadArray instanceof window.Array) {   
+    var postId = payloadArray.shift();
+    var method = payloadArray.shift();
+    if (method in this && (typeof this[method] === 'function') ) {
+      var args = payloadArray;
+      args.push(this.onReply.bind(this, postId, method));
+      args.push(this.onError.bind(this, postId, method));
+      this[method].apply(this, args);
+    } else {
+      this.onError(postId, method, "No Such Method");
+    }
   }
 };
 
