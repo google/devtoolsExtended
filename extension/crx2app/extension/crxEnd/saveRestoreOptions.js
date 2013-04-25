@@ -8,10 +8,9 @@
 
 var optionsKey = "crx2app.options";
 
-function saveOptions() {
-  var options = {
-      allowedSites: []
-  };
+function extractExtensionInfos(options) {
+  options.allowedSites = [];
+
   var allowedSitesTable = document.getElementById('origins');
   var originElts = allowedSitesTable.getElementsByClassName('origin');
   for(var i = 0; i < originElts.length; i++) {
@@ -39,25 +38,18 @@ function saveOptions() {
 
   var warnReload = document.getElementById('warnReload');
   warnReload.classList.remove('hidden');  
-
-  var stringified = JSON.stringify(options);
-  window.localStorage.setItem(optionsKey, stringified);
 }
 
-function restoreOptions(defaultOptions) {
-  var stringified = window.localStorage.getItem(optionsKey);
-  var options;
-  if (stringified) {
-    try {
-      options = JSON.parse(stringified);
-      return options;
-    } catch (exc) {
-      // ignore corrupt data
-    }  
-  }
-  if (defaultOptions) {
-    var stringified = JSON.stringify(defaultOptions);
-    window.localStorage.setItem(optionsKey, stringified);
-    return defaultOptions;
-  }
+var defaultOptions = {
+
+};
+
+var crx2appOptions = new ExtensionOptions(optionsKey, defaultOptions, extractExtensionInfos);
+
+function restoreOptions() {
+  return crx2appOptions.restoreOptions();
+}
+
+function saveOptions() {
+  crx2appOptions.saveOptions();
 }
