@@ -3,6 +3,8 @@
 var DevtoolsExtendedBase = 'chrome-extension://ggimboaoffjaeoblofehalflljohnfbl';
 window.crx2appBase = DevtoolsExtendedBase+'/crx2app/extension';
 
+var debug = false;
+
 function extractParamsFromURL() {
   var search = window.location.search;
   if (search) {
@@ -120,7 +122,7 @@ function onLoad() {
     var options = new URLOptions();
     var debuggeeSpec = options.getDebuggeeSpec();
     function onDebuggeeSpec(debuggeeSpec) {
-      console.log("openInspector ", debuggeeSpec);
+      if (debug) console.log("openInspector ", debuggeeSpec);
       DevtoolsConnection.openInspector(debuggeeSpec);      
     }
     if (debuggeeSpec && debuggeeSpec.ws !== 'jsonp') {

@@ -25,7 +25,7 @@ function(            ChromeProxy,          appendFrame)  {
   
   Debuggee.prototype = {
     attachToParent: function() {
-      console.log(window.location + ' talking ');
+      if (debug) console.log(window.location + ' talking ');
       this.portToAtopwi = new ChannelPlate.ChildIframe(function(message){
         if (debug) console.log('Debuggee got message ', message);
         var method = message.data.method;
@@ -34,12 +34,12 @@ function(            ChromeProxy,          appendFrame)  {
           this.parseDebuggee(args[0]);
           if (this.websocketParam) {
             this.patchInspector(function() {
-              console.log("websocketParam used ");
+              if (debug) console.log("websocketParam used ");
             });
           } else {
             if (this.url || this.tabId) {
               this.attachToChrome();
-              console.log("AttachedToChrome");
+              if (debug) console.log("AttachedToChrome");
             } else {
               console.error("Bad debuggeeSpec", args[0]);
             }
@@ -73,7 +73,7 @@ function(            ChromeProxy,          appendFrame)  {
           );
  
           this.attach(function() {
-            console.log("Debuggee attach ", this.chrome);
+            if (debug) console.log("Debuggee attach ", this.chrome);
           }.bind(this));    
         }.bind(this), 
         function errback(msg) {
@@ -186,7 +186,7 @@ function(            ChromeProxy,          appendFrame)  {
     },
     
     interceptMessages: function() {
-      console.log("interceptMessages from websockets here");
+      if (debug) console.log("interceptMessages from websockets here");
     },
 
     patchInspector: function(callback) {
@@ -275,7 +275,7 @@ function(            ChromeProxy,          appendFrame)  {
               event.data = infos;
               window.dispatchEvent(event)
             }
-            console.log("Debuggee.loadExtensions " + totalExtensions + " left to register"); 
+            if (debug) console.log("Debuggee.loadExtensions " + totalExtensions + " left to register"); 
           }
         }
         window.addEventListener('message', countExtensions);
@@ -343,13 +343,13 @@ function(            ChromeProxy,          appendFrame)  {
         return eval(src + "\n//@ sourceURL=testRunnerEvals.js");
       },
       notifyDone: function(message) {
-        console.log("notifyDone "+message);
+        if (debug) console.log("notifyDone "+message);
       }
     },
 
     listenForTestRunner: function() {
       chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
-        console.log("message from testRunner: ", message);
+        if (debug) console.log("message from testRunner: ", message);
         var method = this.testRunnerResponder[message.method];
         if (method) {
           sendResponse(method.apply(this.testRunnerResponder, message.arguments));
@@ -361,7 +361,7 @@ function(            ChromeProxy,          appendFrame)  {
     
     loadCompleted: function() {
       if (this.obeyTestRunner) {
-        console.log("loadCompleted, sending runTest with window.InspectorTest: ", window.InspectorTest);
+        if (debug) console.log("loadCompleted, sending runTest with window.InspectorTest: ", window.InspectorTest);
         chrome.extension.sendMessage({to: "testPage", method: "runTest", arguments: []}, function onResponse(response) {
             console.log("runTest response", response);
         }); 

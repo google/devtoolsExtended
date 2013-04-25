@@ -24,11 +24,11 @@ window.debuggerOrDebuggee;
   //**********
   
   var optionsString = window.localStorage.getItem('DevtoolsExtended.options');
-  var options = {remoteDebugPort: 9222};
+  var options = {};
   if (optionsString) {
     options = JSON.parse(optionsString);
   }
-
+  options.remoteDebugPort = options.remoteDebugPort || 9222;
 
   var websocketJSONURL = "http://localhost:" + options.remoteDebugPort + "/json";
 
