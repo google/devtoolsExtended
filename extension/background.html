@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!--
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2012 Google Inc. johnjbarton@google.com
+-->
+<html>
+  <head>
+  	<!-- crx2app: postMessage proxy built-in to DevtoolsExtended so
+  	     our extensions will also be authorized to use chrome.*
+  	 -->
+	<script src="crx2app/extension/crxEnd/PostSource.js"></script>
+	<script src="crx2app/extension/crxEnd/ensureOrigin.js"></script>
+	<script src="crx2app/extension/crxEnd/saveRestoreOptions.js"></script>
+	<script src="crx2app/extension/crxEnd/WindowsAdapter.js"></script>
+	<script src="crx2app/extension/crxEnd/TabsAdapter.js"></script>
+	<script src="crx2app/extension/crxEnd/DebuggerAdapter.js"></script>
+	<script src="crx2app/extension/crxEnd/crxEnd.js"></script>
+	<script src="options/contextMenu.js"></script>
+
+	<!-- for the constants -->
+	<script src="crx2app/extension/appEnd/appEnd.js"></script>
+	<script src="crx2app/extension/crxEnd/crxEndStart.js"></script>
+
+    <script src="options/contextMenu.js"></script>
+    <script src="background.js"></script>
+  </head>
+  <body>
+    <h1>DevtoolsExtended background page</h1>
+  </body>
+</html>

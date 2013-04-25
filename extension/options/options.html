@@ -1,0 +1,86 @@
+<html>
+<head><title>DevtoolsExtended Options</title>
+<script type="text/javascript" src="ensureOrigin.js"></script>
+<script type="text/javascript" src="saveRestoreOptions.js"></script>
+<link rel="stylesheet" type="text/css" href="options.css" />
+</head>
+<body>
+
+<h3>DevtoolsExtended extensions</h3>
+<div class='extensionInfos'>
+<table>
+<tbody>
+<tr class='extensionInfos-column-names'>
+  <th>Action</th>
+  <th>Name</th>
+  <th>URL</th>
+  <th>Remove</th>
+</tr>
+<tr class='extensionInfo-template extensionInfos-row stateSaved'>
+  <td>
+      <button class="action" class='change'> <!-- only one of these states will be visible at any time -->
+        <span class='edit'>Edit</span><!-- stateSaved, to go stateEditing -->
+        <span class='save'>Save</span> <!-- statePreviewing, go to stateSaved -->
+      </button>
+  </td>
+  <td>
+    <input class="extensionInfo-name userInput"  type='text' disabled='disabled' value=''/>
+  </td>
+  <td>
+    <input class="extensionInfo-startPage userInput" type="url" size="80"  disabled='disabled' />
+  </td>
+  <td>
+    <button class="action" class='revert'> <!-- only one of these states will be visible at any time -->
+      <span class='remove'>Remove</span><!-- stateSaved, delete; stateEditing, go to statePreviewing -->
+      <span class='cancel'>Cancel</span> <!-- statePreviewing, go to stateEditing -->
+    </button>
+  </td>
+</tr>
+<td class="no-extensions" colspan="4">No extensions defined</td>
+<tr>
+</tr>
+  <tr>
+    <td class='addExtensionInfosRow' colspan="4"><button>Add Extension</button></td>
+  </tr>
+</tbody>
+</table>
+</div>
+<p>These extensions are <a href="http://developer.chrome.com/extensions/devtools.html">chrome devtools extensions</a> with two differences:
+  <ol>
+    <li>HTML files must include these <code>.js</code> files:
+      <pre class="includes">
+&lt;!-- These files are equivalent to devtools_extension_api.js --&gt;
+&lt;script src='chrome-extension://fkhgelnmojgnpahkeemhnbjndeeocehc/WebInspectorKit/Source/WebCore/inspector/front-end/ExtensionAPI.js'&gt;&lt;/script&gt;
+&lt;script src='chrome-extension://fkhgelnmojgnpahkeemhnbjndeeocehc/WebInspectorKit/Source/WebKit/chromium/src/js/DevToolsExtensionAPI.js'&gt;&lt;/script&gt;
+&lt;script src='chrome-extension://fkhgelnmojgnpahkeemhnbjndeeocehc/atopwi/buildExtensionAPI.js'&gt;&lt;/script&gt;
+&lt;!-- RPC Wrapper for chrome.debugger.sendCommand --&gt;
+&lt;script src="chrome-extension://fkhgelnmojgnpahkeemhnbjndeeocehc/atopwi/DebuggerProtocol.js" &gt;&lt;/script&gt;
+</pre>    These files mimic code injected into devtools extension .html files.
+    </li>
+    <li>
+      More features are available:
+      <ul>
+        <li>remote debug protocol</li>
+        <li>ExtensionItemSelector</li>
+      </ul>
+    </li>
+  </ol>
+  Load these extensions as normal Chrome devtools extensions and put the URL <code>chrome-extension://id/path-to-html</code> in the table above.
+</p>
+<hr>
+<h3>Debugging Communications to chrome.devtools Extension</h3> 
+<div id="debugOptions">
+<br />
+  <div>Console Tracing Options For Debugging This Extension</div>
+  <input type='checkbox' id="debugConnection" class='debugOption' />Trace connection events<br />
+  <input type='checkbox' id="debugMessages" class='debugOption' />Trace messages<br />
+  <input type='checkbox' id="debugWarnings" class='debugOption' />Trace Warning IO<br />
+  <input type='checkbox' id="debugAdapters" class='debugOption' />Trace chrome.* adapters<br />
+</div>
+<br />
+<div>
+<span id='warnReload' class='hidden warning'>To Complete Options Update, Please click <code>reload</code> the chrome://extensions page</span>
+</div>
+</body>
+<script type="text/javascript" src="options.js"></script>
+</html>

@@ -1,0 +1,18 @@
+html, body, iframe {
+  height: 100%;
+  width: 100%;
+  margin: 0px;  /* kill off any margin so we control */
+  border: none;
+}
+body {
+  font-family:Verdana,Geneva,sans-serif;
+}
+.hide {
+  display: none;
+}
+#debuggee {
+  margin: 20px;
+}
+.debuggeeSpec {
+  margin: 20px;
+}

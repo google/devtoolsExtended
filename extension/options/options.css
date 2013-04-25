@@ -1,0 +1,76 @@
+body {
+  font-family:Verdana,Geneva,sans-serif;
+  background:  #FFFFC8;
+  padding: 10px;
+}
+
+.youShouldSave {
+  color: red;
+  font-weight: bold;
+  padding: 10px;
+}
+.warning {
+  border: 4px solid gray;
+  padding: 5px;
+  margin: 4px;
+}
+.tableSurround {
+  margin: 10px;
+  padding: 10px;
+}
+#origins iframe {
+  width: 100%;
+}
+.allowedSite-template {
+  visibility: hidden;
+}
+.extensionInfo-template {
+  visibility: hidden;
+}
+.edit {
+  display: none;
+}
+
+.save {
+  display: none;
+}
+.stateEditing .save {
+  display: inline;
+}
+.stateSaved .edit {
+  display: inline;
+}
+.remove {
+  display: none;
+}
+.cancel {
+  display: none;
+}
+.stateEditing .remove {
+  display: inline;
+}
+.statePreviewing .cancel {
+  display: inline;
+}
+.stateSaved .remove {
+  display: inline
+}
+
+.hidden {
+  display: none;
+}
+#warnReload {
+  color: red;
+}
+
+#files {
+  display: none;
+}
+
+output#list li {
+  list-style-type: none;
+}
+
+.includes {
+  font-size: smaller;
+}
