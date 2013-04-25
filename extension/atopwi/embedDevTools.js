@@ -23,6 +23,7 @@
        '../../../../../crx2app/extension/lib/requirejs/require.js',
        '../../../../../ChannelPlate/ChannelPlate.js',
        '../../../../../crx2app/extension/appEnd/appEnd.js',
+       '../../../../../options/defaultExtensions.js',
        '../../../../../atopwi/loadDebuggee.js'
       ],
 

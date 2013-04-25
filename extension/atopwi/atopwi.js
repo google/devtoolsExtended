@@ -55,10 +55,10 @@ function URLOptions() {
   preset(defaultPreset);
   
   document.querySelector('.crxFrontEnd').addEventListener('click', function() {
-    preset(window.DevtoolsExtendedBase + '/atopwi/devtoolsAdapter/');
+    preset(window.DevtoolsExtendedBase + '/WebInspectorKit/Source/WebCore/inspector/front-end/');
   });
   document.querySelector('.testingFrontEnd').addEventListener('click', function() {
-    preset('http://localhost:8081/out/Release/resources/inspector/');
+    preset('http://localhost:9696/WebInspectorKit/Source/WebCore/inspector/front-end/');
   });
   
   document.querySelector('#doDebug').addEventListener('click', function() {

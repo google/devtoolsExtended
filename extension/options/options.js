@@ -42,24 +42,7 @@ function extractExtensionInfos(options) {
   return options;
 }
 
-var defaultOptions = {
-  extensionInfos: [  // Default extension list
-    {
-      name: "qpp",
-      enabled: true,
-      startPage: "chrome-extension://mpbflbdfncldfbjicfcfbaikknnbfmae/QuerypointDevtoolsPage.html",
-      downloadURL: "https://github.com/google/qpp"
-    },
-    {
-      name: "devtools-save",
-      enabled: true,
-      startPage: "chrome-extension://jmacddndcaceecmiinjnmkfmccipdphp/devtoolsExtended-save.html",
-      downloadURL: "https://code.google.com/r/johnjbarton-devtools-save/"
-    },
-  ]
-};
-
-var DevtoolsExtendedOptions = new ExtensionOptions(optionsKey, defaultOptions, extractExtensionInfos);
+var DevtoolsExtendedOptions = new ExtensionOptions(optionsKey, defaultExtensions, extractExtensionInfos);
 
 function onClickDebug(event) {
   DevtoolsExtendedOptions.saveOptions();

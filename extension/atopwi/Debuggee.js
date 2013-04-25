@@ -7,7 +7,7 @@
 define(['crx2app/rpc/ChromeProxy', 'atopwi/appendFrame'], 
 function(            ChromeProxy,          appendFrame)  {
 
-  var debug = false;
+  var debug = true;
   
   function echoOk() {
     if (debug) {
@@ -34,8 +34,7 @@ function(            ChromeProxy,          appendFrame)  {
           this.parseDebuggee(args[0]);
           if (this.websocketParam) {
             this.patchInspector(function() {
-              window.parent.document.title = "Remote DevtoolsExtended";
-              console.log("websocketParam used "+window.parent.location.href);
+              console.log("websocketParam used ");
             });
           } else {
             if (this.url || this.tabId) {
@@ -244,6 +243,7 @@ function(            ChromeProxy,          appendFrame)  {
       var optionsString = window.localStorage.getItem('DevtoolsExtended.options');
       if (debug)
         console.log("loadExtensions", optionsString);
+      var options = defaultExtensions;
       if (optionsString) {
         options = JSON.parse(optionsString);
       }
@@ -258,6 +258,7 @@ function(            ChromeProxy,          appendFrame)  {
           }
           return info;
         }.bind(this));
+
 
         var event = new CustomEvent("extensionsRegistering");
         event.data = infos;
@@ -274,11 +275,11 @@ function(            ChromeProxy,          appendFrame)  {
               event.data = infos;
               window.dispatchEvent(event)
             }
+            console.log("Debuggee.loadExtensions " + totalExtensions + " left to register"); 
           }
-          window.addEventListener('message', countExtensions);
-          WebInspector.addExtensions(infos);
-
         }
+        window.addEventListener('message', countExtensions);
+        WebInspector.addExtensions(infos);
       }
     },
     
