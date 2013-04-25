@@ -86,18 +86,19 @@ URLOptions.prototype = {
     return devtoolsURL ;
   },
   
-  getDebuggeeSpec: function() {
+  getDebuggeeSpec: function(wsFromJSONP) {
     if (this.useWebSocket() || this.useCrx2app()) {
       return {
         url: this.params.url,
         tabId: this.params.tabId,
         devtoolsURL: this.devToolsURL(),
-        ws: this.params.ws,
+        ws: wsFromJSONP || this.params.ws,
         frontendURL: getFrontendURL(),
         tests: this.params.tests && this.params.tests === this.params.tabId
       };
     } // else none.
-  }
+  },
+
 };
 
 function onLoad() {
@@ -118,14 +119,17 @@ function onLoad() {
   require(['DevtoolsConnection'], function open(DevtoolsConnection) {
     var options = new URLOptions();
     var debuggeeSpec = options.getDebuggeeSpec();
-    if (debuggeeSpec) {
+    function onDebuggeeSpec(debuggeeSpec) {
       console.log("openInspector ", debuggeeSpec);
-      DevtoolsConnection.openInspector(debuggeeSpec);
+      DevtoolsConnection.openInspector(debuggeeSpec);      
+    }
+    if (debuggeeSpec && debuggeeSpec.ws !== 'jsonp') {
+      onDebuggeeSpec(debuggeeSpec);
     } else {
       var selector = document.querySelector('.WebSocketSelector');
       selector.innerHTML = '<iframe src="http://localhost:9222"></iframe>';
       var prompt = document.querySelector('.debuggeeSpec');
-      prompt.classList.remove('hide');
+      prompt.classList.remove('hide');    
     }
   });
   

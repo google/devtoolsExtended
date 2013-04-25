@@ -35,7 +35,9 @@ function halfWidthWindowOpener(url, onWindowCreated) {
 }
 
 function formDebuggerURL(allowedSite, debuggeeTabId, debuggeeURL) {
-  return allowedSite + '?tabId=' + debuggeeTabId + '&' + 'url=' + debuggeeURL;
+  var q = allowedSite.indexOf('?');
+  var separator = (q === -1) ? '?' : '&';
+  return allowedSite + separator + 'tabId=' + debuggeeTabId + '&' + 'url=' + debuggeeURL;
 }
 
 function buildContextMenuItem(title, opener) {

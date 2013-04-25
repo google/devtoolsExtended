@@ -31,16 +31,25 @@ function(            ChromeProxy,          appendFrame)  {
         var method = message.data.method;
         var args = message.data.arguments;
         if (method === "debuggee") {
-          var obj = args[0];
-           if (obj.url || obj.tabId) {
-             this.attachToChrome(obj);
-             console.log("Attached");
-            } 
+          this.parseDebuggee(args[0]);
+          if (this.websocketParam) {
+            this.patchInspector(function() {
+              window.parent.document.title = "Dogfooder";
+              console.log("websocketParam used "+window.parent.location.href);
+            });
+          } else {
+            if (this.url || this.tabId) {
+              this.attachToChrome();
+              console.log("AttachedToChrome");
+            } else {
+              console.error("Bad debuggeeSpec", args[0]);
+            }
+          } 
         }
       }.bind(this));
     },
   
-    attachToChrome: function(debuggeeSpec) {
+    attachToChrome: function() {
 
       this.chromeConnection = getChromeExtensionPipe();
       
@@ -61,27 +70,12 @@ function(            ChromeProxy,          appendFrame)  {
               windows: {}, 
               tabs: { onRemoved: function() { console.log('tab removed');}}
               //debugger event listeners are added during load
-            });
-          
-          
-          //this.open(debuggeeSpec);
-          this.parseDebuggee(debuggeeSpec);
+            }
+          );
+
           this.attach(function() {
-              console.log("Debuggee attach ", this.chrome);
-              // TODO remove this, it just helps us get a consistent starting point for dev.
-              /*this.chrome.debugger.sendCommand(
-                  {tabId: this.tabId}, 
-                  "Page.reload",
-                  {},
-                  function (response) {
-                      if (!response) {
-                          console.error("Page.reload failed");
-                      }
-                  }
-              );*/
-          }.bind(this));
-          
-    
+            console.log("Debuggee attach ", this.chrome);
+          }.bind(this));    
         }.bind(this), 
         function errback(msg) {
          console.error('Debuggee.attach ERROR:', msg);
@@ -101,6 +95,9 @@ function(            ChromeProxy,          appendFrame)  {
       }
       if ( !isNaN(tabId) ) {  // then we better have a URL
         this.tabId = tabId;
+      }
+      if (debuggeeSpec.ws) {
+        this.websocketParam = debuggeeSpec.ws;
       }
       if (debuggeeSpec.tests) {
         this.obeyTestRunner = true;
@@ -167,15 +164,8 @@ function(            ChromeProxy,          appendFrame)  {
        }.bind(this));
     },
 
-    patchInspector: function(callback) {
-      if (debug) {
-        console.log("DOMContentLoaded on inspectorWindow ", this);
-      }
-      this.inspectorWindow = window;
-
-      // Hack to prevent inspector.js from initializing 
-      InspectorFrontendHost.isStub = false;
-      
+    rerouteMessages: function() {
+              
       // Accept command from WebInspector and forward them to chrome.debugger
       var backend = this.inspectorWindow.InspectorBackend;
       backend.sendMessageObjectToBackend = this.sendMessageObject.bind(this);
@@ -193,6 +183,27 @@ function(            ChromeProxy,          appendFrame)  {
       this.inspectorWindow.InspectorFrontendHost.sendMessageToBackend = function() {
         throw new Error("Should not be called");
       };
+
+    },
+    
+    interceptMessages: function() {
+      console.log("interceptMessages here");
+    },
+
+    patchInspector: function(callback) {
+      if (debug) {
+        console.log("DOMContentLoaded on inspectorWindow ", this);
+      }
+      this.inspectorWindow = window;
+
+      // Hack to prevent inspector.js from initializing 
+      InspectorFrontendHost.isStub = false;
+      
+      if (this.websocketParam) {
+        this.interceptMessages();
+      } else {
+        this.rerouteMessages();
+      }
 
       var WebInspector = this.inspectorWindow.WebInspector;
       WebInspector.attached = true; // small icons for embed in orion

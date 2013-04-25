@@ -2,7 +2,7 @@
   "name": "DevtoolsExtended",
   "version": "0.1",
   "manifest_version": 2,
-  "content_security_policy": "default-src 'self' chrome-extension://mpbflbdfncldfbjicfcfbaikknnbfmae chrome-extension-resource: ; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'",
+  "content_security_policy": "default-src 'self' chrome-extension://mpbflbdfncldfbjicfcfbaikknnbfmae chrome-extension-resource: ; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval';  connect-src *",
   "minimum_chrome_version": "23",
   "description": "Chrome Devtools in a Chrome Extension, with an extended extension system ;-)",
   // Assigns the name 'ggimboaoffjaeoblofehalflljohnfbl',
@@ -14,14 +14,15 @@
   "options_page": "options/options.html",
   "permissions" :
     [
-      "*://*/*",
+      "<all_urls>",
       "tabs",
       "contextMenus",
       "webNavigation",
       "webRequest",
       "debugger",
       "webRequestBlocking",
-      "experimental"
+      "experimental",
+      "notifications"
     ],
     "web_accessible_resources": [
       "*"
