@@ -22,11 +22,9 @@
       "debugger",
       "webRequestBlocking",
       "experimental"
+    ],
+    "web_accessible_resources": [
+      "*"
     ]
-//   "content_scripts": [
-//     {
-//       "matches": ["*://*/*atopwi.html*"],
-//       "js": ["atopwi/devtoolsAdapter/webSocketOverrides.js"]
-//     }
-//   ]
+
 }
