@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>crx2app Barrier Proxy Test Page Wrapper</title>
+<style>
+iframe {
+  padding: 50px;
+  width: 80%;
+}
+.noOffer {
+  display: none;
+}
+.offer {
+  color: red;
+}
+</style>
+<script src="../extension/lib/q/q.js"></script>
+<script>
+
+/*global console window */
+
+function detach() {
+  console.log("Test page detach on unload");
+}
+
+function PluginController(name) {
+  this.name = name;
+  this.url = name +".html";
+
+  var elt = document.getElementById(this.name);
+  // listen for user clicks
+  elt.addEventListener('click', this.test.bind(this), false);
+  // release the button
+  elt.removeAttribute('disabled');
+}
+
+PluginController.prototype = {
+  offerExtension: function() {
+     this.extensionOfferTimeout = setTimeout(function delay(){
+       var offerExtension = document.getElementById('offerExtension');
+       offerExtension.classList.remove('noOffer');
+     }, 2000);
+  },
+  cancelExtensionOffer: function() {
+    window.clearTimeout(this.extensionOfferTimeout);
+  },
+  // simulate loading plugin
+  //
+  load: function(callback) {
+    if (!this.loaded) {
+      console.log("testDriver loading iframe");
+      var iframe = this._load();
+      this.onIntroduction = this.onIntroduction.bind(this, callback);
+      window.addEventListener('message', this.onIntroduction, false);
+      iframe.addEventListener('load', function() {
+        this.loaded = true;
+        console.log("testDriver loaded iframe");
+      }.bind(this), false);
+    } else {
+      callback();
+    }
+  },
+  
+  _load: function() {
+    var iframe = document.createElement('iframe');
+    iframe.addEventListener('unload', detach, false);
+    iframe.setAttribute('src', this.url);
+    var elt = document.getElementById('loadPluginsHere');
+    elt.appendChild(iframe);
+    this.offerExtension();
+    this.plugin = iframe;
+    return iframe;
+  },
+  
+  onIntroduction: function(callback, event) {
+    if (event.data === this.name) {
+      console.log("Test page got ack "+event.data);
+      this.cancelExtensionOffer();
+      window.removeEventListener('message', this.onIntroduction, false);
+      window.addEventListener('message', this.onMessage.bind(this), false);
+
+      callback();
+    }
+  },
+
+  onMessage: function(event) {
+      console.log("onMessage "+event.source.location+": ", event.data);
+  },
+  
+  test: function() {
+    this.load(function() {
+      console.log("testDriver posting go");
+      this.plugin.contentWindow.postMessage("go", "*");
+    }.bind(this));
+  }
+};
+
+function attach(event) {
+  window.openWindowPlugin = new PluginController('openWindowTest');
+  window.DemoDebuggerPlugin = new PluginController('DemoDebugger');
+}
+
+
+function onLoad() {
+  // clean up
+  window.removeEventListener('load', onLoad, false);
+  
+  attach();
+}
+
+// as soon as we load, setup the test
+//
+window.addEventListener('load', onLoad, false);
+
+</script>
+</head>
+<body>
+<h1>Test page for crx2app.</h1>
+<p> Loads iframe 'plugins' that use chromeIFrame to connect to chrome extension system.</p>
+<p id="offerExtension" class="noOffer offer">The <a href="https://github.com/johnjbarton/crx2app" target="_blank">crx2app extension</a> is required for these tests</p>
+<button id='openWindowTest' disabled >Push To Test Open Window</button>
+<button id='DemoDebugger' disabled >Push To Test Debugger</button>
+<dl id='result'>
+</dl>
+<div id="loadPluginsHere">
+</div>
+</body>
+</html>

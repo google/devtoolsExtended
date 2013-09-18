@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../appEnd/appEnd.js"></script>
+<script src="../appEnd/ProxyPoster.js"></script>
+<script>
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2011 Google Inc. johnjbarton@google.com
+
+/*global getChromeExtensionPipe ProxyPoster window*/
+
+function onLoad() {
+  
+  // The window.parent must listen for 'message' before allowing this iframe to reach 'load'
+  
+  var connection = getChromeExtensionPipe();
+  connection.attach(function() {
+  
+    // We have reached load in this iframe and we have connected to chrome
+  
+    // Send messages between chrome and window.parent
+    var proxyPoster = new ProxyPoster(connection);
+    proxyPoster.attach();
+
+    // prepare for unload
+    window.onbeforeunload = function() {
+      proxyPoster.detach();
+    };
+  });
+}
+
+window.addEventListener('load', onLoad, false);
+
+</script>
+</head>
+<body>
+<p>chrome extension iframe</p>
+</body>
+</html>
