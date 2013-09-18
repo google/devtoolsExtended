@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/1584/trunk/test/win/idl-rules
+END
+basic-idl.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1584/trunk/test/win/idl-rules/basic-idl.gyp
+END
+history_indexer.idl
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1308/trunk/test/win/idl-rules/history_indexer.idl
+END
+history_indexer_user.cc
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1308/trunk/test/win/idl-rules/history_indexer_user.cc
+END

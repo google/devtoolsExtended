@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/1382/trunk/test/many-actions
+END
+file0
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1381/trunk/test/many-actions/file0
+END
+many-actions.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1379/trunk/test/many-actions/many-actions.gyp
+END
+file1
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1381/trunk/test/many-actions/file1
+END
+many-actions-unsorted.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1381/trunk/test/many-actions/many-actions-unsorted.gyp
+END
+file2
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1381/trunk/test/many-actions/file2
+END
+file3
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1381/trunk/test/many-actions/file3
+END
+file4
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1381/trunk/test/many-actions/file4
+END
+gyptest-many-actions.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1378/trunk/test/many-actions/gyptest-many-actions.py
+END
+gyptest-many-actions-unsorted.py
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/1382/trunk/test/many-actions/gyptest-many-actions-unsorted.py
+END

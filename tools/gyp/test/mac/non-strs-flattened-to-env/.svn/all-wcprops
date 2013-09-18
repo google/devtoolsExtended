@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1622/trunk/test/mac/non-strs-flattened-to-env
+END
+main.c
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1143/trunk/test/mac/non-strs-flattened-to-env/main.c
+END
+Info.plist
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1143/trunk/test/mac/non-strs-flattened-to-env/Info.plist
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1622/trunk/test/mac/non-strs-flattened-to-env/test.gyp
+END

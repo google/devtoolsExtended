@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1187/trunk/test/msvs/list_excluded
+END
+hello.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1187/trunk/test/msvs/list_excluded/hello.cpp
+END
+hello_mac.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1187/trunk/test/msvs/list_excluded/hello_mac.cpp
+END
+hello_exclude.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1187/trunk/test/msvs/list_excluded/hello_exclude.gyp
+END
+gyptest-all.py
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1187/trunk/test/msvs/list_excluded/gyptest-all.py
+END

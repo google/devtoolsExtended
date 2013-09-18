@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/1606/trunk/test/mac/sdkroot
+END
+file.cc
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1238/trunk/test/mac/sdkroot/file.cc
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1606/trunk/test/mac/sdkroot/test.gyp
+END
+test_shorthand.sh
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1597/trunk/test/mac/sdkroot/test_shorthand.sh
+END

@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1596/trunk/test/mac/clang-cxx-library
+END
+libstdc++.cc
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1595/trunk/test/mac/clang-cxx-library/libstdc++.cc
+END
+libc++.cc
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1595/trunk/test/mac/clang-cxx-library/libc++.cc
+END
+clang-cxx-library.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/1596/trunk/test/mac/clang-cxx-library/clang-cxx-library.gyp
+END

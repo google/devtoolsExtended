@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1537/trunk/test/same-source-file-name
+END
+gyptest-fail-shared.py
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/1537/trunk/test/same-source-file-name/gyptest-fail-shared.py
+END
+gyptest-fail-static.py
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/1537/trunk/test/same-source-file-name/gyptest-fail-static.py
+END
+gyptest-default.py
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1414/trunk/test/same-source-file-name/gyptest-default.py
+END
+gyptest-pass-executable.py
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/1537/trunk/test/same-source-file-name/gyptest-pass-executable.py
+END
+gyptest-all.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1414/trunk/test/same-source-file-name/gyptest-all.py
+END

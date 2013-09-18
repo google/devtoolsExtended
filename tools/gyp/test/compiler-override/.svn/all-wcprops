@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/1721/trunk/test/compiler-override
+END
+compiler.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1470/trunk/test/compiler-override/compiler.gyp
+END
+compiler-global-settings.gyp.in
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/1470/trunk/test/compiler-override/compiler-global-settings.gyp.in
+END
+gyptest-compiler-global-settings.py
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/1665/trunk/test/compiler-override/gyptest-compiler-global-settings.py
+END
+my_ld.py
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/1470/trunk/test/compiler-override/my_ld.py
+END
+my_cxx.py
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1470/trunk/test/compiler-override/my_cxx.py
+END
+test.c
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1470/trunk/test/compiler-override/test.c
+END
+my_cc.py
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/1470/trunk/test/compiler-override/my_cc.py
+END
+compiler-host.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/1470/trunk/test/compiler-override/compiler-host.gyp
+END
+gyptest-compiler-env.py
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1721/trunk/test/compiler-override/gyptest-compiler-env.py
+END
+cxxtest.cc
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1470/trunk/test/compiler-override/cxxtest.cc
+END

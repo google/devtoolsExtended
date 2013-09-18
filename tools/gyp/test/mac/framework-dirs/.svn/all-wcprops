@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1433/trunk/test/mac/framework-dirs
+END
+framework-dirs.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1433/trunk/test/mac/framework-dirs/framework-dirs.gyp
+END
+calculate.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1433/trunk/test/mac/framework-dirs/calculate.c
+END

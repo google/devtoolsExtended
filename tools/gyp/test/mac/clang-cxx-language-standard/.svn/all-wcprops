@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1599/trunk/test/mac/clang-cxx-language-standard
+END
+c++98.cc
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1595/trunk/test/mac/clang-cxx-language-standard/c++98.cc
+END
+c++11.cc
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1595/trunk/test/mac/clang-cxx-language-standard/c++11.cc
+END
+clang-cxx-language-standard.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/!svn/ver/1599/trunk/test/mac/clang-cxx-language-standard/clang-cxx-language-standard.gyp
+END

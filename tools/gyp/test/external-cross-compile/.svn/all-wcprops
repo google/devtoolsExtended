@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1613/trunk/test/external-cross-compile
+END
+gyptest-cross.py
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/1613/trunk/test/external-cross-compile/gyptest-cross.py
+END

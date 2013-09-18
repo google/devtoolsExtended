@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1414/trunk/test/same-source-file-name/src/subdir1
+END
+func.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1414/trunk/test/same-source-file-name/src/subdir1/func.c
+END

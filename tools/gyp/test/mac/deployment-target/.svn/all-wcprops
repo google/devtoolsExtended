@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1595/trunk/test/mac/deployment-target
+END
+check-version-min.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1595/trunk/test/mac/deployment-target/check-version-min.c
+END
+deployment-target.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/1595/trunk/test/mac/deployment-target/deployment-target.gyp
+END

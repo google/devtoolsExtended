@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1137/trunk/test/mac/depend-on-bundle
+END
+Info.plist
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1137/trunk/test/mac/depend-on-bundle/Info.plist
+END
+bundle.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1137/trunk/test/mac/depend-on-bundle/bundle.c
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1137/trunk/test/mac/depend-on-bundle/test.gyp
+END
+executable.c
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1137/trunk/test/mac/depend-on-bundle/executable.c
+END

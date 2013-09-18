@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/1105/trunk/test/relative/foo/a
+END
+a.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1105/trunk/test/relative/foo/a/a.gyp
+END
+a.cc
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1105/trunk/test/relative/foo/a/a.cc
+END

@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1146/trunk/test/mac/postbuild-defaults
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1141/trunk/test/mac/postbuild-defaults/test.gyp
+END
+postbuild-defaults.sh
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/1146/trunk/test/mac/postbuild-defaults/postbuild-defaults.sh
+END
+main.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1141/trunk/test/mac/postbuild-defaults/main.c
+END
+Info.plist
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1146/trunk/test/mac/postbuild-defaults/Info.plist
+END

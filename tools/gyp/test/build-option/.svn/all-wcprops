@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/1499/trunk/test/build-option
+END
+hello.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1499/trunk/test/build-option/hello.gyp
+END
+gyptest-build.py
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1499/trunk/test/build-option/gyptest-build.py
+END
+hello.c
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1499/trunk/test/build-option/hello.c
+END

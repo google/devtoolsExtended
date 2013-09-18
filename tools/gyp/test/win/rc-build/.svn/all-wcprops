@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/1584/trunk/test/win/rc-build
+END
+hello.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1317/trunk/test/win/rc-build/hello.cpp
+END
+hello.rc
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1317/trunk/test/win/rc-build/hello.rc
+END
+targetver.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1317/trunk/test/win/rc-build/targetver.h
+END
+hello.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1317/trunk/test/win/rc-build/hello.h
+END
+hello.ico
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1317/trunk/test/win/rc-build/hello.ico
+END
+Resource.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1317/trunk/test/win/rc-build/Resource.h
+END
+hello.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1584/trunk/test/win/rc-build/hello.gyp
+END
+small.ico
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1317/trunk/test/win/rc-build/small.ico
+END

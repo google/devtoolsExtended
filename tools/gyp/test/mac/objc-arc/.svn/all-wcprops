@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/1681/trunk/test/mac/objc-arc
+END
+m-file.m
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1681/trunk/test/mac/objc-arc/m-file.m
+END
+cc-file.cc
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1681/trunk/test/mac/objc-arc/cc-file.cc
+END
+mm-file-no-arc.mm
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1681/trunk/test/mac/objc-arc/mm-file-no-arc.mm
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1681/trunk/test/mac/objc-arc/test.gyp
+END
+mm-file.mm
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1681/trunk/test/mac/objc-arc/mm-file.mm
+END
+c-file.c
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1681/trunk/test/mac/objc-arc/c-file.c
+END
+m-file-no-arc.m
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1681/trunk/test/mac/objc-arc/m-file-no-arc.m
+END

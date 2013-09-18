@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/!svn/ver/1604/trunk/test/linux
+END
+gyptest-implicit-rpath.py
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1604/trunk/test/linux/gyptest-implicit-rpath.py
+END

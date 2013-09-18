@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/1345/trunk/test/win/asm-files
+END
+asm-files.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1345/trunk/test/win/asm-files/asm-files.gyp
+END
+b.s
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/1345/trunk/test/win/asm-files/b.s
+END
+c.S
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/1345/trunk/test/win/asm-files/c.S
+END
+hello.cc
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1345/trunk/test/win/asm-files/hello.cc
+END

@@ -1,0 +1,37 @@
+10
+
+dir
+1735
+http://gyp.googlecode.com/svn/trunk/test/make_global_settings
+http://gyp.googlecode.com/svn
+
+
+
+2013-09-10T22:45:33.268090Z
+1721
+thakis@chromium.org
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+78cadc50-ecff-11dd-a971-7dbc132099af
+
+env-wrapper
+dir
+
+wrapper
+dir
+
+basics
+dir
+

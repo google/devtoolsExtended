@@ -1,0 +1,269 @@
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/1679/trunk/test/win/linker-flags
+END
+tsaware.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1551/trunk/test/win/linker-flags/tsaware.gyp
+END
+delay-load-dlls.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1584/trunk/test/win/linker-flags/delay-load-dlls.gyp
+END
+opt-ref.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1270/trunk/test/win/linker-flags/opt-ref.gyp
+END
+extra2.manifest
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1437/trunk/test/win/linker-flags/extra2.manifest
+END
+subsystem-windows.cc
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1260/trunk/test/win/linker-flags/subsystem-windows.cc
+END
+mapfile.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1679/trunk/test/win/linker-flags/mapfile.gyp
+END
+debug-info.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1274/trunk/test/win/linker-flags/debug-info.gyp
+END
+embed-manifest.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/1655/trunk/test/win/linker-flags/embed-manifest.gyp
+END
+library-adjust.cc
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1286/trunk/test/win/linker-flags/library-adjust.cc
+END
+no-default-libs.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1584/trunk/test/win/linker-flags/no-default-libs.gyp
+END
+additional-deps.cc
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/1252/trunk/test/win/linker-flags/additional-deps.cc
+END
+opt-icf.cc
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1271/trunk/test/win/linker-flags/opt-icf.cc
+END
+deffile-multiple.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1294/trunk/test/win/linker-flags/deffile-multiple.gyp
+END
+hello.cc
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1252/trunk/test/win/linker-flags/hello.cc
+END
+library-adjust.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/1286/trunk/test/win/linker-flags/library-adjust.gyp
+END
+deffile.def
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1294/trunk/test/win/linker-flags/deffile.def
+END
+nodefaultlib.cc
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1288/trunk/test/win/linker-flags/nodefaultlib.cc
+END
+generate-manifest.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1437/trunk/test/win/linker-flags/generate-manifest.gyp
+END
+library-directories-reference.cc
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/1278/trunk/test/win/linker-flags/library-directories-reference.cc
+END
+entrypointsymbol.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1412/trunk/test/win/linker-flags/entrypointsymbol.gyp
+END
+additional-options.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/1281/trunk/test/win/linker-flags/additional-options.gyp
+END
+delay-load.cc
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1263/trunk/test/win/linker-flags/delay-load.cc
+END
+incremental.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1277/trunk/test/win/linker-flags/incremental.gyp
+END
+mapfile.cc
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1679/trunk/test/win/linker-flags/mapfile.cc
+END
+fixed-base.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1279/trunk/test/win/linker-flags/fixed-base.gyp
+END
+nodefaultlib.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1288/trunk/test/win/linker-flags/nodefaultlib.gyp
+END
+program-database.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1532/trunk/test/win/linker-flags/program-database.gyp
+END
+large-address-aware.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1554/trunk/test/win/linker-flags/large-address-aware.gyp
+END
+no-default-libs.cc
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/1584/trunk/test/win/linker-flags/no-default-libs.cc
+END
+library-directories.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1309/trunk/test/win/linker-flags/library-directories.gyp
+END
+deffile.cc
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1659/trunk/test/win/linker-flags/deffile.cc
+END
+entrypointsymbol.cc
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1412/trunk/test/win/linker-flags/entrypointsymbol.cc
+END
+nxcompat.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1280/trunk/test/win/linker-flags/nxcompat.gyp
+END
+extra.manifest
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1437/trunk/test/win/linker-flags/extra.manifest
+END
+enable-uac.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1675/trunk/test/win/linker-flags/enable-uac.gyp
+END
+library-directories-define.cc
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/1278/trunk/test/win/linker-flags/library-directories-define.cc
+END
+subsystem.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1281/trunk/test/win/linker-flags/subsystem.gyp
+END
+deffile.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1294/trunk/test/win/linker-flags/deffile.gyp
+END
+profile.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1526/trunk/test/win/linker-flags/profile.gyp
+END
+outputfile.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1314/trunk/test/win/linker-flags/outputfile.gyp
+END
+additional-deps.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1281/trunk/test/win/linker-flags/additional-deps.gyp
+END
+opt-icf.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1281/trunk/test/win/linker-flags/opt-icf.gyp
+END
+aslr.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1281/trunk/test/win/linker-flags/aslr.gyp
+END
+opt-ref.cc
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1270/trunk/test/win/linker-flags/opt-ref.cc
+END

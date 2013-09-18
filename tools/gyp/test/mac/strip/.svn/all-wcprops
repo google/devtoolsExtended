@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/1730/trunk/test/mac/strip
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1316/trunk/test/mac/strip/test.gyp
+END
+file.c
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/1730/trunk/test/mac/strip/file.c
+END
+strip.saves
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1104/trunk/test/mac/strip/strip.saves
+END
+test-defaults.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1730/trunk/test/mac/strip/test-defaults.gyp
+END
+main.c
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/1730/trunk/test/mac/strip/main.c
+END

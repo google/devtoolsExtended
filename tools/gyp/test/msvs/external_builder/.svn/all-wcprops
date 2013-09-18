@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1621/trunk/test/msvs/external_builder
+END
+hello.z
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1619/trunk/test/msvs/external_builder/hello.z
+END
+gyptest-all.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1621/trunk/test/msvs/external_builder/gyptest-all.py
+END
+msbuild_rule.py
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1619/trunk/test/msvs/external_builder/msbuild_rule.py
+END
+external_builder.py
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1619/trunk/test/msvs/external_builder/external_builder.py
+END
+external.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1619/trunk/test/msvs/external_builder/external.gyp
+END
+msbuild_action.py
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/1619/trunk/test/msvs/external_builder/msbuild_action.py
+END
+hello.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1619/trunk/test/msvs/external_builder/hello.cpp
+END

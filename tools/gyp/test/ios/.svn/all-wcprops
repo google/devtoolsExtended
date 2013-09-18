@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/svn/!svn/ver/1631/trunk/test/ios
+END
+gyptest-deployment-target.py
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1595/trunk/test/ios/gyptest-deployment-target.py
+END
+gyptest-app-ios.py
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1630/trunk/test/ios/gyptest-app-ios.py
+END

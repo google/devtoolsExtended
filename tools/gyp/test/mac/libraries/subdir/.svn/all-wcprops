@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1594/trunk/test/mac/libraries/subdir
+END
+hello.cc
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1173/trunk/test/mac/libraries/subdir/hello.cc
+END
+README.txt
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1173/trunk/test/mac/libraries/subdir/README.txt
+END
+mylib.c
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1173/trunk/test/mac/libraries/subdir/mylib.c
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1594/trunk/test/mac/libraries/subdir/test.gyp
+END

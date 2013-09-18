@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1715/trunk/test/mac/bundle-resources
+END
+change.sh
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1715/trunk/test/mac/bundle-resources/change.sh
+END
+secret.txt
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1714/trunk/test/mac/bundle-resources/secret.txt
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1714/trunk/test/mac/bundle-resources/test.gyp
+END

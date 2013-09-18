@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/1183/trunk/test/msvs/uldi2010
+END
+hello2.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1183/trunk/test/msvs/uldi2010/hello2.c
+END
+gyptest-all.py
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1183/trunk/test/msvs/uldi2010/gyptest-all.py
+END
+hello.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1183/trunk/test/msvs/uldi2010/hello.gyp
+END
+hello.c
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1183/trunk/test/msvs/uldi2010/hello.c
+END

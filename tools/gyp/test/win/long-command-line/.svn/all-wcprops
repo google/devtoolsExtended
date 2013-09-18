@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1373/trunk/test/win/long-command-line
+END
+hello.cc
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1282/trunk/test/win/long-command-line/hello.cc
+END
+function.cc
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1373/trunk/test/win/long-command-line/function.cc
+END
+long-command-line.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/1373/trunk/test/win/long-command-line/long-command-line.gyp
+END

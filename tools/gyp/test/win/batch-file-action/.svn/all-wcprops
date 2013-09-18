@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1340/trunk/test/win/batch-file-action
+END
+infile
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1340/trunk/test/win/batch-file-action/infile
+END
+batch-file-action.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/1340/trunk/test/win/batch-file-action/batch-file-action.gyp
+END
+somecmd.bat
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1340/trunk/test/win/batch-file-action/somecmd.bat
+END

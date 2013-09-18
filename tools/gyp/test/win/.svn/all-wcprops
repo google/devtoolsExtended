@@ -1,0 +1,377 @@
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/svn/!svn/ver/1697/trunk/test/win
+END
+gyptest-rc-build.py
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1490/trunk/test/win/gyptest-rc-build.py
+END
+gyptest-link-delay-load-dlls.py
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/1281/trunk/test/win/gyptest-link-delay-load-dlls.py
+END
+gyptest-cl-pdbname.py
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1558/trunk/test/win/gyptest-cl-pdbname.py
+END
+gyptest-link-fixed-base.py
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1279/trunk/test/win/gyptest-link-fixed-base.py
+END
+gyptest-link-large-address-aware.py
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/1554/trunk/test/win/gyptest-link-large-address-aware.py
+END
+gyptest-cl-optimizations.py
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1697/trunk/test/win/gyptest-cl-optimizations.py
+END
+gyptest-cl-warning-level.py
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1262/trunk/test/win/gyptest-cl-warning-level.py
+END
+gyptest-macro-projectname.py
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1312/trunk/test/win/gyptest-macro-projectname.py
+END
+gyptest-macros-containing-gyp.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1347/trunk/test/win/gyptest-macros-containing-gyp.py
+END
+gyptest-link-mapfile.py
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1679/trunk/test/win/gyptest-link-mapfile.py
+END
+gyptest-link-library-directories.py
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/1278/trunk/test/win/gyptest-link-library-directories.py
+END
+gyptest-command-quote.py
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1431/trunk/test/win/gyptest-command-quote.py
+END
+gyptest-link-embed-manifest.py
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1655/trunk/test/win/gyptest-link-embed-manifest.py
+END
+gyptest-cl-force-include-files.py
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1540/trunk/test/win/gyptest-cl-force-include-files.py
+END
+gyptest-cl-exception-handling.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1281/trunk/test/win/gyptest-cl-exception-handling.py
+END
+gyptest-cl-runtime-checks.py
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1275/trunk/test/win/gyptest-cl-runtime-checks.py
+END
+gyptest-cl-default-char-is-unsigned.py
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/1539/trunk/test/win/gyptest-cl-default-char-is-unsigned.py
+END
+gyptest-cl-treat-wchar-t-as-built-in-type.py
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/1544/trunk/test/win/gyptest-cl-treat-wchar-t-as-built-in-type.py
+END
+gyptest-cl-character-set.py
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1281/trunk/test/win/gyptest-cl-character-set.py
+END
+gyptest-cl-runtime-library.py
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1281/trunk/test/win/gyptest-cl-runtime-library.py
+END
+gyptest-cl-additional-include-dirs.py
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1393/trunk/test/win/gyptest-cl-additional-include-dirs.py
+END
+gyptest-link-nxcompat.py
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1280/trunk/test/win/gyptest-link-nxcompat.py
+END
+gyptest-cl-buffer-security-check.py
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/1272/trunk/test/win/gyptest-cl-buffer-security-check.py
+END
+gyptest-quoting-commands.py
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1340/trunk/test/win/gyptest-quoting-commands.py
+END
+gyptest-macro-targetname.py
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1682/trunk/test/win/gyptest-macro-targetname.py
+END
+gyptest-link-library-adjust.py
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1286/trunk/test/win/gyptest-link-library-adjust.py
+END
+gyptest-link-large-pdb.py
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1603/trunk/test/win/gyptest-link-large-pdb.py
+END
+gyptest-link-uldi.py
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1336/trunk/test/win/gyptest-link-uldi.py
+END
+gyptest-link-subsystem.py
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1281/trunk/test/win/gyptest-link-subsystem.py
+END
+gyptest-link-deffile.py
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1294/trunk/test/win/gyptest-link-deffile.py
+END
+gyptest-cl-warning-as-error.py
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1264/trunk/test/win/gyptest-cl-warning-as-error.py
+END
+gyptest-link-profile.py
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1526/trunk/test/win/gyptest-link-profile.py
+END
+gyptest-link-aslr.py
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1281/trunk/test/win/gyptest-link-aslr.py
+END
+gyptest-link-restat-importlib.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1337/trunk/test/win/gyptest-link-restat-importlib.py
+END
+gyptest-link-incremental.py
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1281/trunk/test/win/gyptest-link-incremental.py
+END
+gyptest-link-shard.py
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1569/trunk/test/win/gyptest-link-shard.py
+END
+gyptest-macro-vcinstalldir.py
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1360/trunk/test/win/gyptest-macro-vcinstalldir.py
+END
+gyptest-lib-ltcg.py
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1553/trunk/test/win/gyptest-lib-ltcg.py
+END
+gyptest-link-defrelink.py
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1659/trunk/test/win/gyptest-link-defrelink.py
+END
+gyptest-long-command-line.py
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1282/trunk/test/win/gyptest-long-command-line.py
+END
+gyptest-link-tsaware.py
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1551/trunk/test/win/gyptest-link-tsaware.py
+END
+gyptest-link-nodefaultlib.py
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1288/trunk/test/win/gyptest-link-nodefaultlib.py
+END
+gyptest-link-default-libs.py
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1584/trunk/test/win/gyptest-link-default-libs.py
+END
+gyptest-link-opt-ref.py
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1270/trunk/test/win/gyptest-link-opt-ref.py
+END
+gyptest-cl-debug-format.py
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1276/trunk/test/win/gyptest-cl-debug-format.py
+END
+gyptest-link-debug-info.py
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1280/trunk/test/win/gyptest-link-debug-info.py
+END
+gyptest-midl-rules.py
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1577/trunk/test/win/gyptest-midl-rules.py
+END
+gyptest-cl-rtti.py
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1281/trunk/test/win/gyptest-cl-rtti.py
+END
+gyptest-cl-pdbname-override.py
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1560/trunk/test/win/gyptest-cl-pdbname-override.py
+END
+gyptest-cl-function-level-linking.py
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1281/trunk/test/win/gyptest-cl-function-level-linking.py
+END
+gyptest-cl-analysis.py
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/1522/trunk/test/win/gyptest-cl-analysis.py
+END
+gyptest-asm-files.py
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1345/trunk/test/win/gyptest-asm-files.py
+END
+gyptest-link-enable-uac.py
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1673/trunk/test/win/gyptest-link-enable-uac.py
+END
+gyptest-link-generate-manifest.py
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1437/trunk/test/win/gyptest-link-generate-manifest.py
+END
+gyptest-macros-in-inputs-and-outputs.py
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/1312/trunk/test/win/gyptest-macros-in-inputs-and-outputs.py
+END
+gyptest-link-outputfile.py
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1314/trunk/test/win/gyptest-link-outputfile.py
+END
+gyptest-link-additional-options.py
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1281/trunk/test/win/gyptest-link-additional-options.py
+END
+gyptest-link-opt-icf.py
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1271/trunk/test/win/gyptest-link-opt-icf.py
+END
+gyptest-link-entrypointsymbol.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1412/trunk/test/win/gyptest-link-entrypointsymbol.py
+END
+gyptest-link-additional-deps.py
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/1281/trunk/test/win/gyptest-link-additional-deps.py
+END
+gyptest-cl-additional-options.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1281/trunk/test/win/gyptest-cl-additional-options.py
+END
+gyptest-link-pdb.py
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1532/trunk/test/win/gyptest-link-pdb.py
+END

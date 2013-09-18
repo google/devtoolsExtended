@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1541/trunk/test/ninja/use-custom-environment-files
+END
+use-custom-environment-files.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/!svn/ver/1541/trunk/test/ninja/use-custom-environment-files/use-custom-environment-files.gyp
+END
+use-custom-environment-files.cc
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/!svn/ver/1541/trunk/test/ninja/use-custom-environment-files/use-custom-environment-files.cc
+END
+gyptest-use-custom-environment-files.py
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/!svn/ver/1541/trunk/test/ninja/use-custom-environment-files/gyptest-use-custom-environment-files.py
+END

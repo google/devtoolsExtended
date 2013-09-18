@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/1415/trunk/test/same-target-name-different-directory/src/subdir1
+END
+subdir1.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/1415/trunk/test/same-target-name-different-directory/src/subdir1/subdir1.gyp
+END

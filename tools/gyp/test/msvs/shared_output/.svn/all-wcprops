@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1471/trunk/test/msvs/shared_output
+END
+gyptest-shared_output.py
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/1471/trunk/test/msvs/shared_output/gyptest-shared_output.py
+END
+common.gypi
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1377/trunk/test/msvs/shared_output/common.gypi
+END
+hello.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1377/trunk/test/msvs/shared_output/hello.gyp
+END
+hello.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/1377/trunk/test/msvs/shared_output/hello.c
+END

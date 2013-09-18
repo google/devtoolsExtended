@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/!svn/ver/1721/trunk/test/no-cpp
+END
+gyptest-no-cpp.py
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1721/trunk/test/no-cpp/gyptest-no-cpp.py
+END

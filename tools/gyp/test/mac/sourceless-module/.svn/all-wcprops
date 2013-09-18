@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1729/trunk/test/mac/sourceless-module
+END
+fun.c
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1711/trunk/test/mac/sourceless-module/fun.c
+END
+empty.txt
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1729/trunk/test/mac/sourceless-module/empty.txt
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1729/trunk/test/mac/sourceless-module/test.gyp
+END
+empty.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1136/trunk/test/mac/sourceless-module/empty.c
+END

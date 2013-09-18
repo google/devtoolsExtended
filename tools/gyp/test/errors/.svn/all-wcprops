@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/!svn/ver/1613/trunk/test/errors
+END
+duplicate_node.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1496/trunk/test/errors/duplicate_node.gyp
+END
+missing_dep.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1496/trunk/test/errors/missing_dep.gyp
+END
+duplicate_rule.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1496/trunk/test/errors/duplicate_rule.gyp
+END
+missing_targets.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/1496/trunk/test/errors/missing_targets.gyp
+END
+gyptest-errors.py
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1613/trunk/test/errors/gyptest-errors.py
+END
+duplicate_targets.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1496/trunk/test/errors/duplicate_targets.gyp
+END
+duplicate_basenames.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1496/trunk/test/errors/duplicate_basenames.gyp
+END

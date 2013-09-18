@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/1465/trunk/test/same-rule-output-file-name
+END
+gyptest-all.py
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1413/trunk/test/same-rule-output-file-name/gyptest-all.py
+END

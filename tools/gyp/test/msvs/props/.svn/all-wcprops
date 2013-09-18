@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/1392/trunk/test/msvs/props
+END
+AppName.vsprops
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/1239/trunk/test/msvs/props/AppName.vsprops
+END
+hello.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1239/trunk/test/msvs/props/hello.gyp
+END
+AppName.props
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1239/trunk/test/msvs/props/AppName.props
+END
+hello.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1239/trunk/test/msvs/props/hello.c
+END
+gyptest-props.py
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1392/trunk/test/msvs/props/gyptest-props.py
+END

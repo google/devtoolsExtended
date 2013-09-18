@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1631/trunk/test/ios/app-bundle/TestApp
+END
+main.m
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1631/trunk/test/ios/app-bundle/TestApp/main.m
+END
+TestApp-Info.plist
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1630/trunk/test/ios/app-bundle/TestApp/TestApp-Info.plist
+END

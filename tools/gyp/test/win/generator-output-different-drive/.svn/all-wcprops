@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1684/trunk/test/win/generator-output-different-drive
+END
+gyptest-generator-output-different-drive.py
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/!svn/ver/1683/trunk/test/win/generator-output-different-drive/gyptest-generator-output-different-drive.py
+END
+prog.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/1684/trunk/test/win/generator-output-different-drive/prog.gyp
+END
+prog.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/1683/trunk/test/win/generator-output-different-drive/prog.c
+END

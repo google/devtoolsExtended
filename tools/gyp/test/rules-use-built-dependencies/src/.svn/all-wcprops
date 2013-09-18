@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1643/trunk/test/rules-use-built-dependencies/src
+END
+main.cc
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1643/trunk/test/rules-use-built-dependencies/src/main.cc
+END
+use-built-dependencies-rule.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/!svn/ver/1643/trunk/test/rules-use-built-dependencies/src/use-built-dependencies-rule.gyp
+END

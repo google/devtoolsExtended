@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/1133/trunk/test/mac/copy-dylib
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1133/trunk/test/mac/copy-dylib/test.gyp
+END
+empty.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1133/trunk/test/mac/copy-dylib/empty.c
+END

@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/1589/trunk/test/self-dependency
+END
+self_dependency.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/1589/trunk/test/self-dependency/self_dependency.gyp
+END
+dep.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1589/trunk/test/self-dependency/dep.gyp
+END
+gyptest-self-dependency.py
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/1589/trunk/test/self-dependency/gyptest-self-dependency.py
+END
+common.gypi
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1589/trunk/test/self-dependency/common.gypi
+END

@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1174/trunk/test/mac/postbuild-multiple-configurations
+END
+postbuild-touch-file.sh
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/!svn/ver/1174/trunk/test/mac/postbuild-multiple-configurations/postbuild-touch-file.sh
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/1174/trunk/test/mac/postbuild-multiple-configurations/test.gyp
+END
+main.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/1174/trunk/test/mac/postbuild-multiple-configurations/main.c
+END

@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1170/trunk/test/mac/global-settings/src/dir2
+END
+file.txt
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1170/trunk/test/mac/global-settings/src/dir2/file.txt
+END
+dir2.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1170/trunk/test/mac/global-settings/src/dir2/dir2.gyp
+END

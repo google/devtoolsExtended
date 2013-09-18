@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1504/trunk/test/same-gyp-name/library
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1504/trunk/test/same-gyp-name/library/test.gyp
+END

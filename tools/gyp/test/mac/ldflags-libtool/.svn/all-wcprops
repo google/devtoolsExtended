@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1479/trunk/test/mac/ldflags-libtool
+END
+file.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/1479/trunk/test/mac/ldflags-libtool/file.c
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1479/trunk/test/mac/ldflags-libtool/test.gyp
+END

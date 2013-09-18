@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/1239/trunk/test/msvs/config_attrs
+END
+hello.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1239/trunk/test/msvs/config_attrs/hello.gyp
+END
+hello.c
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1239/trunk/test/msvs/config_attrs/hello.c
+END
+gyptest-config_attrs.py
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1239/trunk/test/msvs/config_attrs/gyptest-config_attrs.py
+END

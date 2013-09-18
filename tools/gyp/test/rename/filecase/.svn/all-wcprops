@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/1548/trunk/test/rename/filecase
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1494/trunk/test/rename/filecase/test.gyp
+END
+test-casesensitive.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1494/trunk/test/rename/filecase/test-casesensitive.gyp
+END
+file.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1548/trunk/test/rename/filecase/file.c
+END

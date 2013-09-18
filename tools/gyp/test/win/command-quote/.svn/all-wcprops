@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/1431/trunk/test/win/command-quote
+END
+go.bat
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1349/trunk/test/win/command-quote/go.bat
+END
+a.S
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1349/trunk/test/win/command-quote/a.S
+END
+bat with spaces.bat
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1349/trunk/test/win/command-quote/bat%20with%20spaces.bat
+END
+command-quote.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/1431/trunk/test/win/command-quote/command-quote.gyp
+END

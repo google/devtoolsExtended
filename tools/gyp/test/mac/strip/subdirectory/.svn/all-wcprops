@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1316/trunk/test/mac/strip/subdirectory
+END
+subdirectory.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/1316/trunk/test/mac/strip/subdirectory/subdirectory.gyp
+END
+nested_file.c
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1316/trunk/test/mac/strip/subdirectory/nested_file.c
+END
+nested_strip.saves
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1316/trunk/test/mac/strip/subdirectory/nested_strip.saves
+END
+test_reading_save_file_from_postbuild.sh
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/!svn/ver/1316/trunk/test/mac/strip/subdirectory/test_reading_save_file_from_postbuild.sh
+END

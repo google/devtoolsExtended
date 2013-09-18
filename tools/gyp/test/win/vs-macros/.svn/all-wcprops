@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/1682/trunk/test/win/vs-macros
+END
+vcinstalldir.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1360/trunk/test/win/vs-macros/vcinstalldir.gyp
+END
+stuff.blah
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1312/trunk/test/win/vs-macros/stuff.blah
+END
+input-output-macros.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1312/trunk/test/win/vs-macros/input-output-macros.gyp
+END
+input.S
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1347/trunk/test/win/vs-macros/input.S
+END
+do_stuff.py
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1312/trunk/test/win/vs-macros/do_stuff.py
+END
+containing-gyp.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1347/trunk/test/win/vs-macros/containing-gyp.gyp
+END
+targetname.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1682/trunk/test/win/vs-macros/targetname.gyp
+END
+projectname.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1312/trunk/test/win/vs-macros/projectname.gyp
+END
+test_exists.py
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1358/trunk/test/win/vs-macros/test_exists.py
+END
+hello.cc
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1312/trunk/test/win/vs-macros/hello.cc
+END
+as.py
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1347/trunk/test/win/vs-macros/as.py
+END

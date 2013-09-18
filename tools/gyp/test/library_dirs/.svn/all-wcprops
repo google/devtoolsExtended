@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/1657/trunk/test/library_dirs
+END
+gyptest-library-dirs.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1657/trunk/test/library_dirs/gyptest-library-dirs.py
+END

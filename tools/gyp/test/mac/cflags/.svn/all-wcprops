@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/1685/trunk/test/mac/cflags
+END
+mfile.m
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1328/trunk/test/mac/cflags/mfile.m
+END
+ccfile.cc
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1328/trunk/test/mac/cflags/ccfile.cc
+END
+mmfile_withcflags.mm
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1328/trunk/test/mac/cflags/mmfile_withcflags.mm
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1685/trunk/test/mac/cflags/test.gyp
+END
+cppfile_withcflags.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1328/trunk/test/mac/cflags/cppfile_withcflags.cpp
+END
+cxxfile_withcflags.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1328/trunk/test/mac/cflags/cxxfile_withcflags.cxx
+END
+mmfile.mm
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1328/trunk/test/mac/cflags/mmfile.mm
+END
+cfile.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1328/trunk/test/mac/cflags/cfile.c
+END
+cxxfile.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1328/trunk/test/mac/cflags/cxxfile.cxx
+END
+cppfile.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1328/trunk/test/mac/cflags/cppfile.cpp
+END
+ccfile_withcflags.cc
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1328/trunk/test/mac/cflags/ccfile_withcflags.cc
+END

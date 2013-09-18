@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/1337/trunk/test/win/importlib
+END
+hello.cc
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1337/trunk/test/win/importlib/hello.cc
+END
+importlib.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1337/trunk/test/win/importlib/importlib.gyp
+END
+has-exports.cc
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1337/trunk/test/win/importlib/has-exports.cc
+END

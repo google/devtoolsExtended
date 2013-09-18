@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1645/trunk/test/actions/generated-header
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1645/trunk/test/actions/generated-header/test.gyp
+END
+action.py
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1645/trunk/test/actions/generated-header/action.py
+END
+main.cc
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1645/trunk/test/actions/generated-header/main.cc
+END

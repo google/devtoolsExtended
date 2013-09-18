@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1728/trunk/test/mac/unicode-settings
+END
+test_bundle_display_name.sh
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/1728/trunk/test/mac/unicode-settings/test_bundle_display_name.sh
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1728/trunk/test/mac/unicode-settings/test.gyp
+END
+file.cc
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1728/trunk/test/mac/unicode-settings/file.cc
+END

@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1408/trunk/test/win/rc-build/subdir
+END
+hello2.rc
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1408/trunk/test/win/rc-build/subdir/hello2.rc
+END
+include.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1408/trunk/test/win/rc-build/subdir/include.h
+END

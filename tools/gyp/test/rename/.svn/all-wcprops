@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/!svn/ver/1548/trunk/test/rename
+END
+gyptest-filecase.py
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/1494/trunk/test/rename/gyptest-filecase.py
+END

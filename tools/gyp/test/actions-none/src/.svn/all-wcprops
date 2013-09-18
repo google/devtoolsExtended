@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/1283/trunk/test/actions-none/src
+END
+none_with_source_files.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/1283/trunk/test/actions-none/src/none_with_source_files.gyp
+END
+fake_cross.py
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1283/trunk/test/actions-none/src/fake_cross.py
+END
+foo.cc
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1283/trunk/test/actions-none/src/foo.cc
+END

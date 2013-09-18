@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/!svn/ver/1702/trunk/tools/emacs
+END
+run-unit-tests.sh
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1474/trunk/tools/emacs/run-unit-tests.sh
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/1474/trunk/tools/emacs/README
+END
+gyp.el
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/1702/trunk/tools/emacs/gyp.el
+END
+gyp-tests.el
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1593/trunk/tools/emacs/gyp-tests.el
+END

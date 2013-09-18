@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/1553/trunk/test/win/lib-flags
+END
+ltcg.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1553/trunk/test/win/lib-flags/ltcg.gyp
+END
+answer.cc
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1553/trunk/test/win/lib-flags/answer.cc
+END
+answer.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1553/trunk/test/win/lib-flags/answer.h
+END

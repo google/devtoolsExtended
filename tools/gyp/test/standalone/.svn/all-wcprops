@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/1476/trunk/test/standalone
+END
+standalone.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1476/trunk/test/standalone/standalone.gyp
+END
+gyptest-standalone.py
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1476/trunk/test/standalone/gyptest-standalone.py
+END

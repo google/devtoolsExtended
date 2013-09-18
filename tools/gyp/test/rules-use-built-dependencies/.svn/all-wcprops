@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1643/trunk/test/rules-use-built-dependencies
+END
+gyptest-use-built-dependencies.py
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/!svn/ver/1643/trunk/test/rules-use-built-dependencies/gyptest-use-built-dependencies.py
+END

@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1410/trunk/test/rules/src/noaction
+END
+file1.in
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1410/trunk/test/rules/src/noaction/file1.in
+END
+no_action_with_rules_fails.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/1410/trunk/test/rules/src/noaction/no_action_with_rules_fails.gyp
+END

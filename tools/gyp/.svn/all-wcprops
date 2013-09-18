@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 24
+/svn/!svn/ver/1735/trunk
+END
+gyptest.py
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/!svn/ver/1710/trunk/gyptest.py
+END
+setup.py
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/svn/!svn/ver/1713/trunk/setup.py
+END
+gyp_main.py
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/!svn/ver/1713/trunk/gyp_main.py
+END
+gyp_dummy.c
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/!svn/ver/771/trunk/gyp_dummy.c
+END
+codereview.settings
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/819/trunk/codereview.settings
+END
+DEPS
+K 25
+svn:wc:ra_dav:version-url
+V 29
+/svn/!svn/ver/1613/trunk/DEPS
+END
+OWNERS
+K 25
+svn:wc:ra_dav:version-url
+V 30
+/svn/!svn/ver/909/trunk/OWNERS
+END
+gyp
+K 25
+svn:wc:ra_dav:version-url
+V 28
+/svn/!svn/ver/1670/trunk/gyp
+END
+PRESUBMIT.py
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/1613/trunk/PRESUBMIT.py
+END
+LICENSE
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/svn/!svn/ver/721/trunk/LICENSE
+END
+pylintrc
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/svn/!svn/ver/1103/trunk/pylintrc
+END
+gyp.bat
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/svn/!svn/ver/1667/trunk/gyp.bat
+END
+AUTHORS
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/svn/!svn/ver/1655/trunk/AUTHORS
+END
+.gitignore
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/!svn/ver/1003/trunk/.gitignore
+END

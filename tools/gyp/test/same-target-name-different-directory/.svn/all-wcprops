@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1465/trunk/test/same-target-name-different-directory
+END
+gyptest-all.py
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/1428/trunk/test/same-target-name-different-directory/gyptest-all.py
+END

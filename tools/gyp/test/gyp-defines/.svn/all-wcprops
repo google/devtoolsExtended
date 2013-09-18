@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/1548/trunk/test/gyp-defines
+END
+gyptest-regyp.py
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1545/trunk/test/gyp-defines/gyptest-regyp.py
+END
+defines.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1435/trunk/test/gyp-defines/defines.gyp
+END
+gyptest-multiple-values.py
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1548/trunk/test/gyp-defines/gyptest-multiple-values.py
+END
+echo.py
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1432/trunk/test/gyp-defines/echo.py
+END

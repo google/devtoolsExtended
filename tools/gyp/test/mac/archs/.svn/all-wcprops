@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/1692/trunk/test/mac/archs
+END
+my_main_file.cc
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1198/trunk/test/mac/archs/my_main_file.cc
+END
+header.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1692/trunk/test/mac/archs/header.h
+END
+test-archs-multiarch.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1692/trunk/test/mac/archs/test-archs-multiarch.gyp
+END
+test-no-archs.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1198/trunk/test/mac/archs/test-no-archs.gyp
+END
+empty_main.cc
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1692/trunk/test/mac/archs/empty_main.cc
+END
+file.mm
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/1692/trunk/test/mac/archs/file.mm
+END
+test-archs-x86_64.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1198/trunk/test/mac/archs/test-archs-x86_64.gyp
+END
+my_file.cc
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1198/trunk/test/mac/archs/my_file.cc
+END

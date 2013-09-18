@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1359/trunk/test/win/command-quote/subdir/and/another
+END
+in-subdir.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/1359/trunk/test/win/command-quote/subdir/and/another/in-subdir.gyp
+END

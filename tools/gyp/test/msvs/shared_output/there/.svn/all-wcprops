@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1377/trunk/test/msvs/shared_output/there
+END
+there.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1377/trunk/test/msvs/shared_output/there/there.gyp
+END
+there.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1377/trunk/test/msvs/shared_output/there/there.c
+END

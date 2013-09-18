@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/1678/trunk/test/mac/xcode-gcc
+END
+warn_about_invalid_offsetof_macro.cc
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/1395/trunk/test/mac/xcode-gcc/warn_about_invalid_offsetof_macro.cc
+END
+valid_cc.cc
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1405/trunk/test/mac/xcode-gcc/valid_cc.cc
+END
+aliasing.cc
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1678/trunk/test/mac/xcode-gcc/aliasing.cc
+END
+warn_about_missing_newline.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/1395/trunk/test/mac/xcode-gcc/warn_about_missing_newline.c
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/1405/trunk/test/mac/xcode-gcc/test.gyp
+END
+test-clang.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1678/trunk/test/mac/xcode-gcc/test-clang.gyp
+END
+valid_mm.mm
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/1405/trunk/test/mac/xcode-gcc/valid_mm.mm
+END
+valid_c.c
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1405/trunk/test/mac/xcode-gcc/valid_c.c
+END
+valid_m.m
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1405/trunk/test/mac/xcode-gcc/valid_m.m
+END

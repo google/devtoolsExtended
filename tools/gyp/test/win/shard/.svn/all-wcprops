@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/1569/trunk/test/win/shard
+END
+hello2.cc
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1569/trunk/test/win/shard/hello2.cc
+END
+hello3.cc
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1569/trunk/test/win/shard/hello3.cc
+END
+hello4.cc
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1569/trunk/test/win/shard/hello4.cc
+END
+shard.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1569/trunk/test/win/shard/shard.gyp
+END
+hello1.cc
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1569/trunk/test/win/shard/hello1.cc
+END

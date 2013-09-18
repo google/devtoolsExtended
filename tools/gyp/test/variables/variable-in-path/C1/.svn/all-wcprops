@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1445/trunk/test/variables/variable-in-path/C1
+END
+hello.cc
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1445/trunk/test/variables/variable-in-path/C1/hello.cc
+END

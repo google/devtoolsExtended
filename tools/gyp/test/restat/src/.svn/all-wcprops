@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/1295/trunk/test/restat/src
+END
+restat.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1295/trunk/test/restat/src/restat.gyp
+END
+create_intermediate.py
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/1125/trunk/test/restat/src/create_intermediate.py
+END
+touch.py
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1234/trunk/test/restat/src/touch.py
+END

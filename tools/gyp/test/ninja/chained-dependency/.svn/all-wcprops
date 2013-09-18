@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1295/trunk/test/ninja/chained-dependency
+END
+chained-dependency.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/1295/trunk/test/ninja/chained-dependency/chained-dependency.gyp
+END
+gyptest-chained-dependency.py
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/1219/trunk/test/ninja/chained-dependency/gyptest-chained-dependency.py
+END
+chained.c
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1188/trunk/test/ninja/chained-dependency/chained.c
+END

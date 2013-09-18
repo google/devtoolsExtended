@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/1603/trunk/test/win/large-pdb
+END
+main.cc
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/1600/trunk/test/win/large-pdb/main.cc
+END
+large-pdb.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1603/trunk/test/win/large-pdb/large-pdb.gyp
+END
+dllmain.cc
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1600/trunk/test/win/large-pdb/dllmain.cc
+END

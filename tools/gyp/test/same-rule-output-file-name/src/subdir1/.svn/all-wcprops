@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1413/trunk/test/same-rule-output-file-name/src/subdir1
+END
+subdir1.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/1413/trunk/test/same-rule-output-file-name/src/subdir1/subdir1.gyp
+END

@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/1613/trunk/test/actions-none
+END
+gyptest-none.py
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1613/trunk/test/actions-none/gyptest-none.py
+END

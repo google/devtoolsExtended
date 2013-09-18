@@ -1,0 +1,269 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1679/trunk/test/win/compiler-flags
+END
+runtime-library-mdd.cc
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1253/trunk/test/win/compiler-flags/runtime-library-mdd.cc
+END
+additional-include-dirs.cc
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/1393/trunk/test/win/compiler-flags/additional-include-dirs.cc
+END
+force-include-files.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/1540/trunk/test/win/compiler-flags/force-include-files.gyp
+END
+exception-handling.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1281/trunk/test/win/compiler-flags/exception-handling.gyp
+END
+rtti-on.cc
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1254/trunk/test/win/compiler-flags/rtti-on.cc
+END
+default-char-is-unsigned.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/1539/trunk/test/win/compiler-flags/default-char-is-unsigned.gyp
+END
+warning-level2.cc
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1262/trunk/test/win/compiler-flags/warning-level2.cc
+END
+function-level-linking.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/1281/trunk/test/win/compiler-flags/function-level-linking.gyp
+END
+analysis.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/1522/trunk/test/win/compiler-flags/analysis.gyp
+END
+pdbname-override.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/1560/trunk/test/win/compiler-flags/pdbname-override.gyp
+END
+warning-level4.cc
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1262/trunk/test/win/compiler-flags/warning-level4.cc
+END
+character-set.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1281/trunk/test/win/compiler-flags/character-set.gyp
+END
+runtime-library.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1281/trunk/test/win/compiler-flags/runtime-library.gyp
+END
+additional-options.cc
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1259/trunk/test/win/compiler-flags/additional-options.cc
+END
+hello.cc
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1243/trunk/test/win/compiler-flags/hello.cc
+END
+buffer-security-check.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/1272/trunk/test/win/compiler-flags/buffer-security-check.gyp
+END
+treat-wchar-t-as-built-in-type2.cc
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/1544/trunk/test/win/compiler-flags/treat-wchar-t-as-built-in-type2.cc
+END
+runtime-library-mtd.cc
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1253/trunk/test/win/compiler-flags/runtime-library-mtd.cc
+END
+character-set-mbcs.cc
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1243/trunk/test/win/compiler-flags/character-set-mbcs.cc
+END
+character-set-unicode.cc
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/1243/trunk/test/win/compiler-flags/character-set-unicode.cc
+END
+additional-options.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1281/trunk/test/win/compiler-flags/additional-options.gyp
+END
+pdbname.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1301/trunk/test/win/compiler-flags/pdbname.gyp
+END
+runtime-checks.cc
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1275/trunk/test/win/compiler-flags/runtime-checks.cc
+END
+default-char-is-unsigned.cc
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/1539/trunk/test/win/compiler-flags/default-char-is-unsigned.cc
+END
+runtime-library-md.cc
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1253/trunk/test/win/compiler-flags/runtime-library-md.cc
+END
+warning-level.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1281/trunk/test/win/compiler-flags/warning-level.gyp
+END
+debug-format.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/1276/trunk/test/win/compiler-flags/debug-format.gyp
+END
+exception-handling-on.cc
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/1258/trunk/test/win/compiler-flags/exception-handling-on.cc
+END
+runtime-checks.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1281/trunk/test/win/compiler-flags/runtime-checks.gyp
+END
+warning-level1.cc
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1262/trunk/test/win/compiler-flags/warning-level1.cc
+END
+rtti.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1281/trunk/test/win/compiler-flags/rtti.gyp
+END
+treat-wchar-t-as-built-in-type.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/1544/trunk/test/win/compiler-flags/treat-wchar-t-as-built-in-type.gyp
+END
+warning-level3.cc
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1262/trunk/test/win/compiler-flags/warning-level3.cc
+END
+warning-as-error.cc
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1264/trunk/test/win/compiler-flags/warning-as-error.cc
+END
+additional-include-dirs.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/1393/trunk/test/win/compiler-flags/additional-include-dirs.gyp
+END
+runtime-library-mt.cc
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1253/trunk/test/win/compiler-flags/runtime-library-mt.cc
+END
+treat-wchar-t-as-built-in-type1.cc
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/1544/trunk/test/win/compiler-flags/treat-wchar-t-as-built-in-type1.cc
+END
+uninit.cc
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1522/trunk/test/win/compiler-flags/uninit.cc
+END
+pdbname.cc
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1301/trunk/test/win/compiler-flags/pdbname.cc
+END
+warning-as-error.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/1264/trunk/test/win/compiler-flags/warning-as-error.gyp
+END
+buffer-security.cc
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1272/trunk/test/win/compiler-flags/buffer-security.cc
+END
+force-include-files.cc
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1540/trunk/test/win/compiler-flags/force-include-files.cc
+END
+function-level-linking.cc
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/1255/trunk/test/win/compiler-flags/function-level-linking.cc
+END
+optimizations.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1679/trunk/test/win/compiler-flags/optimizations.gyp
+END

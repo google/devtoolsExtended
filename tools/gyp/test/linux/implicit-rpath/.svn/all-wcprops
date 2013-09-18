@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/1604/trunk/test/linux/implicit-rpath
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1604/trunk/test/linux/implicit-rpath/test.gyp
+END
+file.c
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1559/trunk/test/linux/implicit-rpath/file.c
+END
+main.c
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1559/trunk/test/linux/implicit-rpath/main.c
+END

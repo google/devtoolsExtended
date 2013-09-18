@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/1657/trunk/test/library_dirs/subdir
+END
+README.txt
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1657/trunk/test/library_dirs/subdir/README.txt
+END
+test.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1657/trunk/test/library_dirs/subdir/test.gyp
+END
+mylib.cc
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1657/trunk/test/library_dirs/subdir/mylib.cc
+END
+mylib.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1657/trunk/test/library_dirs/subdir/mylib.h
+END
+hello.cc
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1657/trunk/test/library_dirs/subdir/hello.cc
+END
