@@ -1,3 +1,11 @@
 .toolbar-icon {
 	display: none !important;
 }
+
+.toolbar-item.toggleable {
+    padding-bottom: 4px;
+}
+
+body.compact #toolbar {
+    height: 24px; /* shorten the toolbar to avoid missing clicks on panel buttons */
+}
