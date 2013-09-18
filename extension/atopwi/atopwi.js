@@ -3,6 +3,8 @@
 var DevtoolsExtendedBase = 'chrome-extension://ggimboaoffjaeoblofehalflljohnfbl';
 window.crx2appBase = DevtoolsExtendedBase+'/crx2app/extension';
 
+var debug = false;
+
 function extractParamsFromURL() {
   var search = window.location.search;
   if (search) {
@@ -55,10 +57,10 @@ function URLOptions() {
   preset(defaultPreset);
   
   document.querySelector('.crxFrontEnd').addEventListener('click', function() {
-    preset(window.DevtoolsExtendedBase + '/atopwi/devtoolsAdapter/');
+    preset(window.DevtoolsExtendedBase + '/WebInspectorKit/Source/WebCore/inspector/front-end/');
   });
   document.querySelector('.testingFrontEnd').addEventListener('click', function() {
-    preset('http://localhost:8081/out/Release/resources/inspector/');
+    preset('http://localhost:9696/WebInspectorKit/Source/WebCore/inspector/front-end/');
   });
   
   document.querySelector('#doDebug').addEventListener('click', function() {
@@ -86,22 +88,23 @@ URLOptions.prototype = {
     return devtoolsURL ;
   },
   
-  getDebuggeeSpec: function() {
+  getDebuggeeSpec: function(wsFromJSONP) {
     if (this.useWebSocket() || this.useCrx2app()) {
       return {
         url: this.params.url,
         tabId: this.params.tabId,
         devtoolsURL: this.devToolsURL(),
-        ws: this.params.ws,
+        ws: wsFromJSONP || this.params.ws,
         frontendURL: getFrontendURL(),
         tests: this.params.tests && this.params.tests === this.params.tabId
       };
     } // else none.
-  }
+  },
+
 };
 
 function onLoad() {
-
+    
   window.removeEventListener('load', onLoad, false);
 
   require({
@@ -118,14 +121,17 @@ function onLoad() {
   require(['DevtoolsConnection'], function open(DevtoolsConnection) {
     var options = new URLOptions();
     var debuggeeSpec = options.getDebuggeeSpec();
-    if (debuggeeSpec) {
-      console.log("openInspector ", debuggeeSpec);
-      DevtoolsConnection.openInspector(debuggeeSpec);
+    function onDebuggeeSpec(debuggeeSpec) {
+      if (debug) console.log("openInspector ", debuggeeSpec);
+      DevtoolsConnection.openInspector(debuggeeSpec);      
+    }
+    if (debuggeeSpec && debuggeeSpec.ws !== 'jsonp') {
+      onDebuggeeSpec(debuggeeSpec);
     } else {
       var selector = document.querySelector('.WebSocketSelector');
       selector.innerHTML = '<iframe src="http://localhost:9222"></iframe>';
       var prompt = document.querySelector('.debuggeeSpec');
-      prompt.classList.remove('hide');
+      prompt.classList.remove('hide');    
     }
   });
   

@@ -5,7 +5,7 @@
 
 var optionsKey =  'DevtoolsExtended.options';
 
-function extractExtensionInfos(options) {
+function extractOptionsFromUI(options) {
   options.extensionInfos = [];
   
   var extensionInfosRows = document.querySelectorAll('.extensionInfos-row');
@@ -24,7 +24,9 @@ function extractExtensionInfos(options) {
         }
       );
   }
-  
+
+  options.remoteDebugPort = document.querySelector('.remoteDebugPort').value;
+
   var debugConnection = document.getElementById('debugConnection');
   options.debugConnection = debugConnection.checked;
 
@@ -42,17 +44,7 @@ function extractExtensionInfos(options) {
   return options;
 }
 
-var defaultOptions = {
-  extensionInfos: [  // Default extension list
-    {
-      name: "qpp",
-      enabled: false,
-      startPage: "chrome-extension://mpbflbdfncldfbjicfcfbaikknnbfmae/QuerypointDevtoolsPage.html" 
-    }
-  ]
-};
-
-var DevtoolsExtendedOptions = new ExtensionOptions(optionsKey, defaultOptions, extractExtensionInfos);
+var DevtoolsExtendedOptions = new ExtensionOptions(optionsKey, defaultExtensions, extractOptionsFromUI);
 
 function onClickDebug(event) {
   DevtoolsExtendedOptions.saveOptions();
@@ -89,10 +81,14 @@ function restore() {
       extensionInfos.forEach(addExtensionInfosRow);
       showNoExtensions(false);
     }
+    setRemoteDebugPort(options.remoteDebugPort);
   }
   // the default UI will work for no-options-set-yet
 }
 
+function setRemoteDebugPort(port) {
+  document.querySelector('.remoteDebugPort').value = port || 9222;
+}
 
 function cloneElementByClass(className) {
   var template = document.querySelector('.'+className);
@@ -114,6 +110,10 @@ function addExtensionInfosRow(extensionInfo) {
   input.value = extensionInfo.startPage;
   input = row.querySelector('.extensionInfo-name');
   input.value = extensionInfo.name;
+  if (extensionInfo.downloadURL) {
+    var downloadURL = row.querySelector('.extensionInfo-downloadURL');
+    downloadURL.setAttribute('href', extensionInfo.downloadURL);
+  }
   addExtensionInfosRowClickHandler(row);
 }
 
@@ -225,6 +225,13 @@ function addListeners() {
     event.preventDefault();
     return false;
   }, false);
+
+  var remotePort = document.querySelector('.remoteDebugPort');
+  remotePort.addEventListener('change', function(event) {
+    DevtoolsExtendedOptions.saveOptions();  // see extractOptionsFromUI
+    event.preventDefault();
+    return false;
+  });
 }
 
 function onLoad() {

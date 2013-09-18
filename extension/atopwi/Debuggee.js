@@ -7,7 +7,7 @@
 define(['crx2app/rpc/ChromeProxy', 'atopwi/appendFrame'], 
 function(            ChromeProxy,          appendFrame)  {
 
-  var debug = false;
+  var debug = true;
   
   function echoOk() {
     if (debug) {
@@ -25,22 +25,30 @@ function(            ChromeProxy,          appendFrame)  {
   
   Debuggee.prototype = {
     attachToParent: function() {
-      console.log(window.location + ' talking ');
+      if (debug) console.log(window.location + ' talking ');
       this.portToAtopwi = new ChannelPlate.ChildIframe(function(message){
-        console.log('Debuggee got message ', message);
+        if (debug) console.log('Debuggee got message ', message);
         var method = message.data.method;
         var args = message.data.arguments;
         if (method === "debuggee") {
-          var obj = args[0];
-           if (obj.url || obj.tabId) {
-             this.attachToChrome(obj);
-             console.log("Attached");
-            } 
+          this.parseDebuggee(args[0]);
+          if (this.websocketParam) {
+            this.patchInspector(function() {
+              if (debug) console.log("websocketParam used ");
+            });
+          } else {
+            if (this.url || this.tabId) {
+              this.attachToChrome();
+              if (debug) console.log("AttachedToChrome");
+            } else {
+              console.error("Bad debuggeeSpec", args[0]);
+            }
+          } 
         }
       }.bind(this));
     },
   
-    attachToChrome: function(debuggeeSpec) {
+    attachToChrome: function() {
 
       this.chromeConnection = getChromeExtensionPipe();
       
@@ -61,33 +69,18 @@ function(            ChromeProxy,          appendFrame)  {
               windows: {}, 
               tabs: { onRemoved: function() { console.log('tab removed');}}
               //debugger event listeners are added during load
-            });
-          
-          
-          //this.open(debuggeeSpec);
-          this.parseDebuggee(debuggeeSpec);
+            }
+          );
+ 
           this.attach(function() {
-              console.log("Debuggee attach ", this.chrome);
-              // TODO remove this, it just helps us get a consistent starting point for dev.
-              /*this.chrome.debugger.sendCommand(
-                  {tabId: this.tabId}, 
-                  "Page.reload",
-                  {},
-                  function (response) {
-                      if (!response) {
-                          console.error("Page.reload failed");
-                      }
-                  }
-              );*/
-          }.bind(this));
-          
-    
+            if (debug) console.log("Debuggee attach ", this.chrome);
+          }.bind(this));    
         }.bind(this), 
         function errback(msg) {
          console.error('Debuggee.attach ERROR:', msg);
         }
       );
-      
+     
       window.beforeUnload = function detach() {
         this.chromeConnection.detach();
       }.bind(this);
@@ -101,6 +94,9 @@ function(            ChromeProxy,          appendFrame)  {
       }
       if ( !isNaN(tabId) ) {  // then we better have a URL
         this.tabId = tabId;
+      }
+      if (debuggeeSpec.ws) {
+        this.websocketParam = debuggeeSpec.ws;
       }
       if (debuggeeSpec.tests) {
         this.obeyTestRunner = true;
@@ -167,15 +163,8 @@ function(            ChromeProxy,          appendFrame)  {
        }.bind(this));
     },
 
-    patchInspector: function(callback) {
-      if (debug) {
-        console.log("DOMContentLoaded on inspectorWindow ", this);
-      }
-      this.inspectorWindow = window;
-
-      // Hack to prevent inspector.js from initializing 
-      InspectorFrontendHost.isStub = false;
-      
+    rerouteMessages: function() {
+              
       // Accept command from WebInspector and forward them to chrome.debugger
       var backend = this.inspectorWindow.InspectorBackend;
       backend.sendMessageObjectToBackend = this.sendMessageObject.bind(this);
@@ -194,10 +183,30 @@ function(            ChromeProxy,          appendFrame)  {
         throw new Error("Should not be called");
       };
 
+    },
+    
+    interceptMessages: function() {
+      if (debug) console.log("interceptMessages from websockets here");
+    },
+
+    patchInspector: function(callback) {
+      if (debug) {
+        console.log("DOMContentLoaded on inspectorWindow ", this);
+      }
+      this.inspectorWindow = window;
+
+      // Hack to prevent inspector.js from initializing 
+      InspectorFrontendHost.isStub = false;
+      
+      if (this.websocketParam) {
+        this.interceptMessages();
+      } else {
+        this.rerouteMessages();
+      }
+
       var WebInspector = this.inspectorWindow.WebInspector;
       WebInspector.attached = true; // small icons for embed in orion
 
-      
       this.completeLoad = WebInspector.delayLoaded; // set by openInspector
     
       // Called asynchronously from WebInspector _initializeCapability
@@ -217,6 +226,8 @@ function(            ChromeProxy,          appendFrame)  {
       WebInspector._doLoadedDoneWithCapabilities = function() {
         var args = Array.prototype.slice.call(arguments, 0);
         this._doLoadedDoneWithCapabilities.apply(WebInspector, args);
+        
+        document.body.classList.add("compact");
         this.loadCompleted();
       }.bind(this);
       
@@ -230,16 +241,45 @@ function(            ChromeProxy,          appendFrame)  {
     // When called as a WebApp, devtools extensions are loaded.
     loadExtensions: function() {
       var optionsString = window.localStorage.getItem('DevtoolsExtended.options');
+      if (debug)
+        console.log("loadExtensions", optionsString);
+      var options = defaultExtensions;
       if (optionsString) {
-        var options = JSON.parse(optionsString);
-        if (options.extensionInfos && options.extensionInfos.length) {
-          var infos = options.extensionInfos.map(function(info) {
-            // send the tabId to build
-            info.startPage += "?tabId="+this.tabId;
-            return info;
-          }.bind(this));
-          WebInspector.addExtensions(infos);        
+        options = JSON.parse(optionsString);
+      }
+
+      if (options.extensionInfos && options.extensionInfos.length) {
+
+        var infos = options.extensionInfos.map(function(info) {
+          // send the tabId to build
+          info.startPage += "?tabId="+this.tabId;
+          if (debug) {
+            console.log("extensionInfo ", info);
+          }
+          return info;
+        }.bind(this));
+
+
+        var event = new CustomEvent("extensionsRegistering");
+        event.data = infos;
+        window.dispatchEvent(event);
+
+        var totalExtensions = infos.length;
+
+        function countExtensions(event) {
+          if (event.data === "registerExtension") {
+            totalExtensions--;
+            if (!totalExtensions) {
+              window.removeEventListener('message', countExtensions);
+              var event = new CustomEvent("extensionsRegistered");
+              event.data = infos;
+              window.dispatchEvent(event)
+            }
+            if (debug) console.log("Debuggee.loadExtensions " + totalExtensions + " left to register"); 
+          }
         }
+        window.addEventListener('message', countExtensions);
+        WebInspector.addExtensions(infos);
       }
     },
     
@@ -303,13 +343,13 @@ function(            ChromeProxy,          appendFrame)  {
         return eval(src + "\n//@ sourceURL=testRunnerEvals.js");
       },
       notifyDone: function(message) {
-        console.log("notifyDone "+message);
+        if (debug) console.log("notifyDone "+message);
       }
     },
 
     listenForTestRunner: function() {
       chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
-        console.log("message from testRunner: ", message);
+        if (debug) console.log("message from testRunner: ", message);
         var method = this.testRunnerResponder[message.method];
         if (method) {
           sendResponse(method.apply(this.testRunnerResponder, message.arguments));
@@ -321,11 +361,12 @@ function(            ChromeProxy,          appendFrame)  {
     
     loadCompleted: function() {
       if (this.obeyTestRunner) {
-        console.log("loadCompleted, sending runTest with window.InspectorTest: ", window.InspectorTest);
+        if (debug) console.log("loadCompleted, sending runTest with window.InspectorTest: ", window.InspectorTest);
         chrome.extension.sendMessage({to: "testPage", method: "runTest", arguments: []}, function onResponse(response) {
             console.log("runTest response", response);
         }); 
       }
+      this.portToAtopwi.postMessage(['loadCompleted'])
     },
 
 };

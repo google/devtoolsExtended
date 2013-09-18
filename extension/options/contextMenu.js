@@ -35,17 +35,19 @@ function halfWidthWindowOpener(url, onWindowCreated) {
 }
 
 function formDebuggerURL(allowedSite, debuggeeTabId, debuggeeURL) {
-  return allowedSite + '?tabId=' + debuggeeTabId + '&' + 'url=' + debuggeeURL;
+  var q = allowedSite.indexOf('?');
+  var separator = (q === -1) ? '?' : '&';
+  return allowedSite + separator + 'tabId=' + debuggeeTabId + '&' + 'url=' + debuggeeURL;
 }
 
 function buildContextMenuItem(title, opener) {
-  /**
-   * Create a context menu which will only show up on all pages
-   */
-  chrome.contextMenus.create({
-    "title" : title,
-    "type" : "normal",
-    "contexts" : ["page"],
-    "onclick" : opener
+  chrome.contextMenus.remove(title, function() { 
+    chrome.contextMenus.create({
+      "title" : title,
+      "type" : "normal",
+      "contexts" : ["page"],
+      "onclick" : opener
+    });  
   });
+ 
 }

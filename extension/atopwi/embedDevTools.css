@@ -18,3 +18,7 @@ body.inactive #toolbar {
     background-color: rgba(240, 235, 226, 1);
     background-image: none !important;
 }
+
+#toolbar .close-right { /* We don't need this in a popup window */
+    display: none;
+}

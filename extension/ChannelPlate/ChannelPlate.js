@@ -2,8 +2,13 @@
 // Copyright 2011 Google Inc. johnjbarton@google.com
 
 // ChannelPlate:  a switchplate, covering over API differences in MessageChannel APIs.
+//  Pass your onMessage handler to the constructor, 
+//  send your messages via method postMessage(message)
 
 var ChannelPlate = (function channelPlateModule() {
+
+"use strict";
+var DEBUG = false;
 
 // ----------------------------------------------------------------------------
 // Utilities
@@ -47,22 +52,13 @@ function getWebOrigin(href) {
 
 function Base(rawPort, onMessage) {
   if (rawPort) {
-    this.port = rawPort;
-    if (this.port.onMessage) { // chrome extension 
-      this.port.onMessage.addListener(onMessage);
-    } else {  // W3c
-      this.port.onmessage = onMessage;
-    }
+    this._assign(rawPort, onMessage); 
   }
 }
 
-Base.prototype = {
+Base.channelPlates = 0;
 
-  accept: function(port, onMessage) {
-    this.port = port;
-    this.port.onMessage.addListener(onMessage);
-    this.drainQueue();
-  },
+Base.prototype = {
 
   postMessage: function(message) {
     if (this.port) {
@@ -73,7 +69,34 @@ Base.prototype = {
     }
   },
 
-  drainQueue: function() {
+  set onmessage(onMessage) {
+    function repackage(event) {
+      onMessage(event.data, event);
+    }
+    if (this.port.onMessage) { // chrome extension 
+      this.port.onMessage.addListener(onMessage);
+    } else {  // W3c, implicitly calls start()
+      this.port.onmessage = repackage;
+    }
+    if (this.port.plate !== this) 
+      console.error("mismatched plates");
+  }, 
+
+  accept: function(port, onMessage) {
+    this._assign(port, onMessage);
+    this._drainQueue();
+  },
+
+  _assign: function(port, onMessage) {
+    this.port = port;
+    this.plateNumber = ++Base.channelPlates;
+    this.port.plate = this;
+    if (onMessage) {
+      this.onmessage = onMessage;
+    }
+  },
+
+  _drainQueue: function() {
     if (this.queue) {
       this.queue.forEach(function(message) {
         this.postMessage(message);
@@ -83,40 +106,6 @@ Base.prototype = {
   }
 };
 
-//-----------------------------------------------------------------------------
-// Simple RPC using [seqId, methodName, arg1, arg2, ...]
-// Replies [seqId, methodName, return1, return2, ...] OR
-//  Errs [seqId, methodName_err, return1, return2, ...]
-
-function RequestResponder(rawPort) {
-  Base.call(this, rawPort);
-}
-
-RequestResponder.prototype = Object.create(Base.prototype);
-
-RequestResponder.prototype.onMessage = function(message) {
-  var payloadArray = message;
-  if (payloadArray instanceof window.Array) {   
-    var postId = payloadArray.shift();
-    var method = payloadArray.shift();
-    if (method in this && (typeof this[method] === 'function') ) {
-      var args = payloadArray;
-      args.push(this.onReply.bind(this, postId, method));
-      args.push(this.onError.bind(this, postId, method));
-      this[method].apply(this, args);
-    } else {
-      this.onError(postId, method, "No Such Method");
-    }
-  }
-};
-
-RequestResponder.prototype.onReply =function(postId, method, args) {
-  this.postMessage([postId, method].concat(args));
-};
-
-RequestResponder.prototype.onError = function(postId, method, args) {
-  this.postMessage([postId, method + "_err"].concat(args));
-};
 
 //-----------------------------------------------------------------------------
 //  Client using eventWindow.postMessaage to send port
@@ -133,9 +122,9 @@ function Talker(eventWindow, onMessage) {
   
   // One of the ports is kept as the local port
   this.port = this.channel.port1;
-  console.log(window.location + " posting port");
+  
   // The other port is sent to the remote side
-  eventWindow.postMessage('ChannelPlate', this.targetOrigin, [this.channel.port2]);
+  eventWindow.postMessage(['ChannelPlate', window.location.href], this.targetOrigin, [this.channel.port2]);
 
   // Implicitly start the port
   this.port.onmessage = onMessage;
@@ -166,81 +155,75 @@ function WebPage(onMessage) {
 WebPage.prototype = Object.create(Talker.prototype);
 
 //-----------------------------------------------------------------------------
-// web window Server, listening for connection 
+// web window Server, listening for connection  
 
-function Listener(clientURL, onMessage) {
-  assertFunction(onMessage);
-
+function Listener(clientWebOriginOrURL, onConnect) {
   // If the url is relative the origin will match window.location
-  this.targetOrigin = getWebOrigin(clientURL) || getWebOrigin(window.location.toString());
+  var targetOrigin = getWebOrigin(clientWebOriginOrURL) || getWebOrigin(window.location.toString());
 
-  // The instance properties will not be set until we are sent a valid event
-  //
-  var onChannelPlate = function(event) {
-    if (event.data !== 'ChannelPlate') {
+  function onChannelPlate(event) {
+    if (!event.data || !event.data[0] || event.data[0] !== 'ChannelPlate') {
       // We are a port-creator for ChannelPlate, nothing else.
       return;
     } 
 
-    if (event.origin !== "null" && this.targetOrigin !== event.origin) {
+    if (event.origin !== "null" && targetOrigin !== event.origin) {
       // The event.origin was either unexpected or unset.
       return;
     }
 
-    this.port = event.ports[0];
-    this.port.onmessage = onMessage;
+    onConnect(event.ports[0], event.data[1]);
+  }
 
-    // Send pending messages
-    this.drainQueue();
-    
-    // Once we bind to the child window stop listening for it to connect.
-    //
-    window.removeEventListener('message', onChannelPlate);
-  }.bind(this);
+  if (DEBUG) {
+    console.log('start listening in ' + window.location.href);
+  }
 
   window.addEventListener('message', onChannelPlate);
-  
 }
-
-Listener.prototype = Object.create(Base.prototype);
 
 //-----------------------------------------------------------------------------
 // For communicating from a window to an iframe child
 
-function Parent(childIframe, childURL, onMessage) {
-  Listener.call(this, childURL, onMessage);
-  childIframe.src = childURL;
+function Parent(existingChildIframe, srcURLToAssign, onConnect) {
+  function filterOnConnect(rawPort, url) {
+    if (url.indexOf(srcURLToAssign) !== -1)
+      onConnect(rawPort, url);
+  }
+  Listener(srcURLToAssign, filterOnConnect);
+  if (!existingChildIframe) {
+    throw new Error("First argument must be an existing iframe");
+  }
+  existingChildIframe.src = srcURLToAssign;    
 }
 
-Parent.prototype = Object.create(Listener.prototype);
 
 //-----------------------------------------------------------------------------
 // For background pages listening for foreground connections
 // Create a new Listener port for each foreground contact
 
-function ChromeBackground(rawPort) {
-  Base.call(this, rawPort, this.onMessage.bind(this));
-}
-
-ChromeBackground.prototype = Object.create(RequestResponder.prototype);
-
-// Class methods
-ChromeBackground.foregroundPorts = {};
-
-ChromeBackground.startAccepter = function(TypeCtorOfPort) {
-  function onConnect(port) {
-    console.log("onConnect ", port)
-    if (!this.foregroundPorts.hasOwnProperty(port.name)) {
-      console.log(window.location + " accept "+ port.name);
-      this.foregroundPorts[port.name] = new TypeCtorOfPort(port);
-      port.onDisconnect.addListener(function() {
-        console.log("onDisconnect "+port.name);
-        delete this.foregroundPorts[port.name];
-      }.bind(this))
+function ChromeBackgroundListener(onConnect) {
+  
+  var onRawConnect = function(rawPort) {
+    if (DEBUG) { 
+      console.log("onConnect ", rawPort)
     }
-  }
-  chrome.extension.onConnect.addListener(onConnect.bind(this));
-}
+    if (DEBUG) {
+      console.log(window.location + " accept "+ rawPort.name);
+    }
+
+    onConnect(rawPort);
+    
+    rawPort.onDisconnect.addListener(function() {
+      if (DEBUG) {
+        console.log("onDisconnect " + rawPort.name);  
+      }
+    }.bind(this));
+  }.bind(this);
+
+  chrome.extension.onConnect.addListener(onConnect);        
+  
+};
 
 //-----------------------------------------------------------------------------
 // For foreground pages to contact background pages.
@@ -260,7 +243,7 @@ ContentScriptTalker.prototype = Object.create(Base.prototype);
 
 
 function DevtoolsTalker(onMessage) {
-  var name = "devtools-" + chrome.devtools.inspectedWindow.tabId;
+  var name = encodeURIComponent(window.location.href).replace(/[!'()*]/g, '_');
   ContentScriptTalker.call(this, name, onMessage);
 }
 
@@ -362,15 +345,13 @@ function ContentScriptProxy() {
 ContentScriptProxy.prototype = ProxyBasePrototype;
 
 //-----------------------------------------------------------------------------
-//  Ferry messages to window.parent
-function IframeProxy() {
-
-}
 
 //-----------------------------------------------------------------------------
 // Define our exports
 
 return {
+  // Base class for accepted connetion ports
+  Base: Base,
   // Base class for waiting for connection events
   Listener: Listener,  
   // Waits for connection events from iframes
@@ -381,8 +362,6 @@ return {
   ChildIframe: ChildIframe,
   // Starts channels from web pages to chrome content scripts
   WebPage: WebPage,
-  // Waits for connection events from content scripts
-  ChromeBackground: ChromeBackground,
   // Starts channels from chrome content scripts to background 
   ContentScriptTalker: ContentScriptTalker,
   // Starts channels from devtools to background
@@ -391,6 +370,8 @@ return {
   ContentScriptProxy: ContentScriptProxy,
   // Waits for devtools and background then forward between
   ChromeDevtoolsProxy: ChromeDevtoolsProxy,
+  // Waits for extension connection, creates ChannelPlate connection.
+  ChromeBackgroundListener: ChromeBackgroundListener,
 };
 
 }());

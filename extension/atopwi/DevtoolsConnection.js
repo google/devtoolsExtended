@@ -13,29 +13,49 @@ function(appendFrame)  {
 
     openInspector: function(debuggee) {
       this.debuggee = debuggee;
-      this.listenDebuggee( this.showInspectorIframe());
+      this.listenDebuggee(this._addWebInspectorIframe());
+    },
+    
+    _addWebInspectorIframe: function() {
+      this.showWaiting();
+      return appendFrame('.WebInspectorContainer', "about:blank");
+    },
+ 
+    showWaiting: function() {
+      window.document.querySelector('.devtoolsBackendURL').textContent = this.debuggee.devtoolsURL;
     },
  
     showInspectorIframe: function() {
-      var inspectorElt = window.document.getElementById('WebInspector');
+      var inspectorElt = window.document.querySelector('.WebInspectorContainer');
       inspectorElt.classList.remove('hide');
-      console.log("append WebInspector from "+this.debuggee.devtoolsURL);
-      return appendFrame('WebInspector', "about:blank");
+      window.document.querySelector('.splash').classList.add('hide');
+      if (debug) {
+        console.log("append WebInspector from "+this.debuggee.devtoolsURL);
+      }
     },
 
     listenDebuggee: function(childFrame) {
       if (debug) {
-        console.log("DevtoolsConnection listening ");
+        console.log("DevtoolsConnection sending debuggee ", this.debuggee);
       }
-      this.portToDevtools = new ChannelPlate.Parent(childFrame, this.debuggee.devtoolsURL, this.onMessage.bind(this) );
-      this.portToDevtools.postMessage({
-        method: 'debuggee',
-        arguments: [this.debuggee]
-      });
+      ChannelPlate.Parent(childFrame, this.debuggee.devtoolsURL, function(rawPort){
+        // TODO use RemoteMethodCall to atopwi
+        this.portToDevtools = new ChannelPlate.Base(rawPort, this.onMessage.bind(this));
+        this.portToDevtools.postMessage({
+          method: 'debuggee',
+          arguments: [this.debuggee]
+        });  
+      }.bind(this));
     },
     
     onMessage: function(message) {
-      console.log("atopwi puts debuggee %o and hears: "+message, message);
+      if (debug) {
+        console.log("atopwi puts debuggee %o and hears %o", this.debuggee, message);
+      }
+      // Check that we get the signal from WebInspector
+      if (message[0] && message[0] === 'loadCompleted') {
+        this.showInspectorIframe();
+      }
     },
     
   };

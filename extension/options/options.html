@@ -2,6 +2,7 @@
 <head><title>DevtoolsExtended Options</title>
 <script type="text/javascript" src="ensureOrigin.js"></script>
 <script src="../crx2app/extension/crxEnd/ExtensionOptions.js"></script>
+<script type="text/javascript" src="defaultExtensions.js"></script>
 <script type="text/javascript" src="options.js"></script>
 <link rel="stylesheet" type="text/css" href="options.css" />
 </head>
@@ -27,6 +28,7 @@
       </button>
   </td>
   <td>
+    <a class="extensionInfo-downloadURL" href="" title="Hint for finding this extension; right click open in new window" target="_blank">&#x21a1;</a>
     <input class="extensionInfo-name userInput"  type='text' disabled='disabled' value=''/>
   </td>
   <td>
@@ -74,6 +76,11 @@
   </ol>
   Load these extensions as normal Chrome devtools extensions and put the URL <code>chrome-extension://id/path-to-html</code> in the table above.
 </p>
+<hr>
+<h3>Remote Debugging</h3>
+<div>
+  Remote port number: <input class="remoteDebugPort" type='number' min='1025' max='16385' value='9222'/>
+</div>
 <hr>
 <h3>Debugging Communications to chrome.devtools Extension</h3> 
 <div id="debugOptions">

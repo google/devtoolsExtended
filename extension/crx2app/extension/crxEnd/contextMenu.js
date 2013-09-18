@@ -36,13 +36,21 @@ function buildContextMenuItem(title, url, onDebuggerWindowCreated) {
         };
       }
 
-      /**
-       * Create a context menu which will only show up on all pages
-       */
-      chrome.contextMenus.create({
+      var id = title.replace(/\s/g,'_');
+      
+      var menuProps = {
         "title" : title,
+        "id": id,
         "type" : "normal",
         "contexts" : ["page"],
         "onclick" : getClickHandler()
-      });
+      };
+
+      buildContextMenuItem.menus = buildContextMenuItem.menus || {};
+
+      if (buildContextMenuItem.menus.hasOwnProperty(id)) {
+        chrome.contextMenus.update(id, menuProps);
+      } else {
+        chrome.contextMenus.create(menuProps);  
+      }
 }

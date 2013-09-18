@@ -9,12 +9,12 @@ function(  )  {
 
   // dynamic iframe load
   //
-  function appendFrame(id, url) {
+  function appendFrame(eltOrSelector, url) {
     var iframe = window.document.createElement('iframe');
     iframe.setAttribute('src', url);
-    var elt = id;
-    if (!id.ownerDocument) {
-      elt = window.document.getElementById(id);
+    var elt = eltOrSelector;
+    if (!eltOrSelector.ownerDocument) {
+      elt = window.document.querySelector(eltOrSelector);
     }
     elt.appendChild(iframe);
     return iframe;
