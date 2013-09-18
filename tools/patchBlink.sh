@@ -42,4 +42,4 @@ git checkout -b "$BLINK_BRANCH"
 BLINK_GIT_HEAD=$(git rev-parse HEAD)
 
 # Copy our Blink patches, accounting for the path a/extension/WebInspectorKit
-stg import -p 3 --series "$CWD/patches-blink"
+stg import -p 3 --series "$CWD/patches-blink/series"
