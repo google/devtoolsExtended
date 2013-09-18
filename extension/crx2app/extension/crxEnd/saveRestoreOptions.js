@@ -4,12 +4,13 @@
 /*globals document window */
 
 // used by options.html and crxEnd.js 
-// options.allowedSites is array of {site: url, name: string}
+// crx2app.options.allowedSites is array of {site: url, name: string}
+
+var crx2appOptionsKey = "crx2app.options";
 
 function saveOptions() {
   var options = {
-      allowedSites: [],
-      extensionInfos: []
+      allowedSites: []
   };
   var allowedSitesTable = document.getElementById('origins');
   var originElts = allowedSitesTable.getElementsByClassName('origin');
@@ -22,22 +23,6 @@ function saveOptions() {
       var name = contextMenuNameElt.value || '(none)';
       options.allowedSites.push({site: origin, name: name});
     }
-  }
-
-  
-  var extensionInfosRows = document.querySelectorAll('.extensionInfos-row');
-  for (var i = 0; i < extensionInfosRows.length; i++) {
-      if (extensionInfosRows[i].classList.contains('extensionInfo-template')) {
-	  continue;
-      }
-      var name = extensionInfosRows[i].querySelector('.extensionInfo-name').value;
-      var startPage =  extensionInfosRows[i].querySelector('.extensionInfo-startPage').value;
-      options.extensionInfos.push(
-        {
-	    name: name,
-	    startPage: startPage
-	 }
-      );
   }
   
   var debugConnection = document.getElementById('debugConnection');
@@ -52,15 +37,15 @@ function saveOptions() {
   var debugAdapters = document.getElementById('debugAdapters');
   options.debugAdapters = debugAdapters.checked;
 
-  var stringified = JSON.stringify(options);
-  window.localStorage.setItem('options', stringified);
-  
   var warnReload = document.getElementById('warnReload');
   warnReload.classList.remove('hidden');  
+
+  var stringified = JSON.stringify(options);
+  window.localStorage.setItem(crx2appOptionsKey, stringified);
 }
 
 function restoreOptions() {
-  var stringified = window.localStorage.getItem('options');
+  var stringified = window.localStorage.getItem(crx2appOptionsKey);
   try {
     var options = JSON.parse(stringified);
     return options;
