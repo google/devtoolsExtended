@@ -1,0 +1,404 @@
+diff --git a/LayoutTests/inspector/extensions/extensions-panel-expected.txt b/LayoutTests/inspector/extensions/extensions-panel-expected.txt
+index 78cbfda..92f34de 100644
+--- a/LayoutTests/inspector/extensions/extensions-panel-expected.txt
++++ b/LayoutTests/inspector/extensions/extensions-panel-expected.txt
+@@ -28,6 +28,11 @@ RUNNING TEST: extension_testGlobalShortcuts
+ Panel shown, now toggling console...
+ Panel resized, switching away...
+ Panel hidden, test passed.
++RUNNING TEST: extension_testItemSelector
++selected 1
++prompt ti
++selected null
++prompt null
+ RUNNING TEST: extension_testOpenResource
+ Showing .../extensions-panel.html
+ Showing resource .../inspector/extensions/extensions-panel.html in panel scripts (scripts), line: 1001
+diff --git a/LayoutTests/inspector/extensions/extensions-panel.html b/LayoutTests/inspector/extensions/extensions-panel.html
+index 4779bd4..cc772ae 100644
+--- a/LayoutTests/inspector/extensions/extensions-panel.html
++++ b/LayoutTests/inspector/extensions/extensions-panel.html
+@@ -69,6 +69,23 @@ function initialize_extensionsPanelTest()
+         var lastPanelName = WebInspector.inspectorView._panelOrder.peekLast();
+         WebInspector.showPanel(lastPanelName);
+     }
++
++    InspectorTest.selectItem = function()
++    {
++        if (!WebInspector.Dialog.currentInstance()) {
++            output("No Dialog.currentInstance");
++        } else {
++            var element = WebInspector.Dialog.currentInstance()._delegate.element;
++            element.querySelector("input").value = "ti";
++            var items = element.querySelectorAll(".filtered-item-list-dialog-item");
++            if (!items.length)
++                throw new Error("selectItem found no items");
++
++            var click = document.createEvent("MouseEvent");
++            click.initMouseEvent("click", true, true);
++            items[1].dispatchEvent(click);
++        }
++    }
+ }
+ 
+ function extension_testCreatePanel(nextTest)
+@@ -168,7 +185,7 @@ function extension_testSearch(nextTest)
+         panel.onSearch.addListener(callback);
+ 
+         extension_showPanel("extension");
+-        
++
+         function performSearch(query)
+         {
+             WebInspector.searchController.showSearchField();
+@@ -292,6 +309,35 @@ function loadResources()
+     img.src = "resources/abe.png";
+     document.body.appendChild(img);
+ }
++
++function extension_testItemSelector(nextTest)
++{
++    function onPanelCreated(panel)
++    {
++        panel.show();
++        function onSelectorCreated(itemSelector) {
++            function onFileSelected(item, promptValue)
++            {
++                output("selected " + JSON.stringify(item));
++                output("prompt " + promptValue);
++                if (!item)  // signal that the dialog closed
++                    nextTest();
++            }
++            itemSelector.onItemSelected.addListener(onFileSelected);
++            var testItems = [
++                {title: 'title1', subtitle: 'subtitle1'},
++                {title: 'title2', subtitle: 'subtitle2'},
++            ];
++            itemSelector.addItems(testItems, function() {
++                evaluateOnFrontend("InspectorTest.selectItem();");
++            });
++        }
++        webInspector.panels.createItemSelector("TestItemSelector", onSelectorCreated);
++    }
++
++    var basePath = location.pathname.replace(/\/[^/]*$/, "/");
++    webInspector.panels.create("Test Panel", basePath + "extension-panel.png", basePath + "non-existent.html", onPanelCreated);
++}
+ </script>
+ </head>
+ <body onload="runTest()">
+diff --git a/Source/devtools/front_end/ExtensionAPI.js b/Source/devtools/front_end/ExtensionAPI.js
+index 31d062c..e243fde 100644
+--- a/Source/devtools/front_end/ExtensionAPI.js
++++ b/Source/devtools/front_end/ExtensionAPI.js
+@@ -59,6 +59,7 @@ function defineCommonExtensionSymbols(apiPrivate)
+     apiPrivate.Events = {
+         AuditStarted: "audit-started-",
+         ButtonClicked: "button-clicked-",
++        ItemSelected: "item-selected-",
+         ConsoleMessageAdded: "console-message-added",
+         ElementsPanelObjectSelected: "panel-objectSelected-elements",
+         NetworkRequestFinished: "network-request-finished",
+@@ -76,9 +77,11 @@ function defineCommonExtensionSymbols(apiPrivate)
+         AddAuditResult: "addAuditResult",
+         AddConsoleMessage: "addConsoleMessage",
+         AddRequestHeaders: "addRequestHeaders",
++        AddSelectorItems: "addSelectorItems",
+         CreatePanel: "createPanel",
+         CreateSidebarPane: "createSidebarPane",
+         CreateStatusBarButton: "createStatusBarButton",
++        CreateItemSelector: "createItemSelector",
+         EvaluateOnInspectedPage: "evaluateOnInspectedPage",
+         ForwardKeyboardEvent: "_forwardKeyboardEvent",
+         GetConsoleMessages: "getConsoleMessages",
+@@ -330,7 +333,20 @@ Panels.prototype = {
+     get SearchAction()
+     {
+         return apiPrivate.panels.SearchAction;
+-    }
++    },
++
++    createItemSelector: function(title, callback)
++    {
++        var id = "itemSelector-" + extensionServer.nextObjectId();
++        var request = {
++            command: commands.CreateItemSelector,
++            id: id,
++            title: title
++        };
++        extensionServer.sendRequest(request, function() {
++            callback(new ItemSelectorImpl(id));
++        });
++    },
+ }
+ 
+ /**
+@@ -390,6 +406,28 @@ function ElementsPanel()
+ 
+ /**
+  * @constructor
++ */
++function ItemSelectorImpl(id)
++{
++    this._id = id;
++    this.onItemSelected = new EventSink(events.ItemSelected + id);
++}
++
++ItemSelectorImpl.prototype =
++{
++    addItems: function(items, opt_callback)
++    {
++        var request = {
++            command: commands.AddSelectorItems,
++            itemSelectorId: this._id,
++            items: items
++        };
++        extensionServer.sendRequest(request, opt_callback);
++    }
++}
++
++/**
++ * @constructor
+  * @extends {ExtensionViewImpl}
+  */
+ function ExtensionPanelImpl(id)
+diff --git a/Source/devtools/front_end/ExtensionServer.js b/Source/devtools/front_end/ExtensionServer.js
+index 15a668c..2e3e15e 100644
+--- a/Source/devtools/front_end/ExtensionServer.js
++++ b/Source/devtools/front_end/ExtensionServer.js
+@@ -28,6 +28,10 @@
+  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
++loadScript('Dialog.js');
++loadScript("FilteredItemSelectionDialog.js");
++loadScript("FilePathScoreFunction.js");
++
+ /**
+  * @constructor
+  */
+@@ -50,9 +54,11 @@ WebInspector.ExtensionServer = function()
+     this._registerHandler(commands.AddAuditResult, this._onAddAuditResult.bind(this));
+     this._registerHandler(commands.AddConsoleMessage, this._onAddConsoleMessage.bind(this));
+     this._registerHandler(commands.AddRequestHeaders, this._onAddRequestHeaders.bind(this));
++    this._registerHandler(commands.AddSelectorItems, this._onAddSelectorItems.bind(this));
+     this._registerHandler(commands.CreatePanel, this._onCreatePanel.bind(this));
+     this._registerHandler(commands.CreateSidebarPane, this._onCreateSidebarPane.bind(this));
+     this._registerHandler(commands.CreateStatusBarButton, this._onCreateStatusBarButton.bind(this));
++    this._registerHandler(commands.CreateItemSelector, this._onCreateItemSelector.bind(this));
+     this._registerHandler(commands.EvaluateOnInspectedPage, this._onEvaluateOnInspectedPage.bind(this));
+     this._registerHandler(commands.ForwardKeyboardEvent, this._onForwardKeyboardEvent.bind(this));
+     this._registerHandler(commands.GetHAR, this._onGetHAR.bind(this));
+@@ -103,6 +109,11 @@ WebInspector.ExtensionServer.prototype = {
+         this._postNotification(WebInspector.extensionAPI.Events.ButtonClicked + identifier);
+     },
+ 
++    notifyItemSelected: function(identifier, item, promptValue)
++    {
++        this._postNotification(WebInspector.extensionAPI.Events.ItemSelected + identifier, item, promptValue);
++    },
++
+     _inspectedURLChanged: function(event)
+     {
+         this._requests = {};
+@@ -195,6 +206,24 @@ WebInspector.ExtensionServer.prototype = {
+         NetworkAgent.setExtraHTTPHeaders(allHeaders);
+     },
+ 
++    _onAddSelectorItems: function(message)
++    {
++        var id = message.itemSelectorId;
++        if (typeof id !== "string")
++            return this._status.E_BADARGTYPE("itemSelectorId", typeof id, "string");
++
++        if (!WebInspector.Dialog.currentInstance())
++            return; // fail silently, the dialog could exit asynchronously
++
++        var dialog = this._clientObjects[id];
++        if (!dialog)
++            return this._status.E_NOTFOUND(message.itemSelectorId);
++
++        var items = message.items;
++        dialog.addItems(items);
++        return this._status.OK();
++    },
++
+     _onCreatePanel: function(message, port)
+     {
+         var id = message.id;
+@@ -216,6 +245,33 @@ WebInspector.ExtensionServer.prototype = {
+         WebInspector.showPanel(message.id);
+     },
+ 
++    _onCreateItemSelector: function(message, port)
++    {
++        var extensionPanel = WebInspector.inspectorView.currentPanel();
++        if (!extensionPanel)
++            return this._status.E_FAILED("No panel is visible");
++
++        var refereneceElement = extensionPanel.element;
++        var id = message.id;
++
++        if (id in this._clientObjects)
++            return this._status.E_EXISTS(id);
++
++        if (WebInspector.Dialog.currentInstance())
++            WebInspector.Dialog.hide();
++
++        var extensionServer = this;
++        function onClosingDialog()
++        {
++            extensionServer.notifyItemSelected(id, null, null);
++            delete extensionServer._clientObjects[id];
++        }
++
++        var delegate = WebInspector.createExtensionSelectionDialogAndDelegate(refereneceElement, this.notifyItemSelected.bind(this, id), onClosingDialog);
++        this._clientObjects[id] = delegate;
++        return this._status.OK();
++    },
++
+     _onCreateStatusBarButton: function(message, port)
+     {
+         var panel = this._clientObjects[message.panel];
+@@ -306,7 +362,7 @@ WebInspector.ExtensionServer.prototype = {
+         var contentProvider = WebInspector.workspace.uiSourceCodeForOriginURL(url) || WebInspector.resourceForURL(url);
+         if (!contentProvider)
+             return false;
+-            
++
+         var lineNumber = details.lineNumber;
+         if (typeof lineNumber === "number")
+             lineNumber += 1;
+@@ -346,7 +402,7 @@ WebInspector.ExtensionServer.prototype = {
+                 result = { isException: true, value: resultPayload.description };
+             else
+                 result = { value: resultPayload.value };
+-      
++
+             this._dispatchCallback(message.requestId, port, result);
+         }
+         return this.evaluate(message.expression, true, true, message.evaluateOptions, port._extensionOrigin, callback.bind(this));
+@@ -813,7 +869,7 @@ WebInspector.ExtensionServer.prototype = {
+      * @param {string} securityOrigin
+      * @param {function(?string, ?RuntimeAgent.RemoteObject, boolean=)} callback
+      */
+-    evaluate: function(expression, exposeCommandLineAPI, returnByValue, options, securityOrigin, callback) 
++    evaluate: function(expression, exposeCommandLineAPI, returnByValue, options, securityOrigin, callback)
+     {
+         var contextId;
+         if (typeof options === "object") {
+@@ -821,7 +877,7 @@ WebInspector.ExtensionServer.prototype = {
+             function resolveURLToFrame(url)
+             {
+                 var found;
+-                function hasMatchingURL(frame) 
++                function hasMatchingURL(frame)
+                 {
+                     found = (frame.url === url) ? frame : null;
+                     return found;
+@@ -846,7 +902,7 @@ WebInspector.ExtensionServer.prototype = {
+                 contextSecurityOrigin = options.scriptExecutionContext;
+ 
+             var frameContextList = WebInspector.runtimeModel.contextListByFrame(frame);
+-            var context; 
++            var context;
+             if (contextSecurityOrigin) {
+                 context = frameContextList.contextBySecurityOrigin(contextSecurityOrigin);
+                 if (!context) {
+@@ -855,7 +911,7 @@ WebInspector.ExtensionServer.prototype = {
+                 }
+             } else {
+                 context = frameContextList.mainWorldContext();
+-                if (!context) 
++                if (!context)
+                     return this._status.E_FAILED(frame.url + " has no execution context");
+             }
+ 
+diff --git a/Source/devtools/front_end/FilteredItemSelectionDialog.js b/Source/devtools/front_end/FilteredItemSelectionDialog.js
+index c7b4e30..84d0b64 100644
+--- a/Source/devtools/front_end/FilteredItemSelectionDialog.js
++++ b/Source/devtools/front_end/FilteredItemSelectionDialog.js
+@@ -299,11 +299,11 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
+     },
+ 
+     /**
+-     * @param {number} index  
++     * @param {number} index
+      * @param {boolean} makeLast
+      */
+     _updateSelection: function(index, makeLast)
+-    { 
++    {
+         var element = this._viewportControl.renderedElementAt(this._selectedIndexInFiltered);
+         if (element)
+             element.removeStyleClass("selected");
+@@ -866,3 +866,69 @@ WebInspector.SelectUISourceCodeForProjectTypeDialog.show = function(name, type,
+     filteredItemSelectionDialog.renderAsTwoRows();
+     WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);
+ }
++
++/**
++ * @constructor
++ * @extends {WebInspector.SelectionDialogContentProvider}
++ * @param {Function} onSelectItem
++ */
++
++ WebInspector.ExtensionSelectionDialogContentProvider = function(onSelectItem)
++{
++    WebInspector.SelectionDialogContentProvider.call(this);
++    this._onSelectItem = onSelectItem;
++    this._items = [];
++
++}
++
++WebInspector.ExtensionSelectionDialogContentProvider.prototype = {
++    addItems: function(items)
++    {
++        this._items = this._items.concat(items);
++        this.refresh();
++    },
++
++    itemCount: function()
++    {
++        return this._items.length;
++    },
++
++    itemKeyAt: function(itemIndex)
++    {
++        return this._items[itemIndex].title;
++    },
++
++    itemScoreAt: function(itemIndex, query)
++    {
++        if (query !== this._query) {
++            this._scorer = new WebInspector.FilePathScoreFunction(query);
++            this._query = query;
++        }
++
++        return this._scorer.score(this._items[itemIndex].title, null);
++    },
++
++    renderItem: function(itemIndex, query, titleElement, subtitleElement)
++    {
++        var item = this._items[itemIndex];
++        titleElement.textContent = item.title;
++        this.highlightRanges(titleElement, query);
++        subtitleElement.textContent = item.subtitle;
++    },
++
++    selectItem: function(itemIndex, promptValue)
++    {
++        this._onSelectItem(itemIndex, promptValue);
++    },
++};
++
++WebInspector.ExtensionSelectionDialogContentProvider.prototype.__proto__ = WebInspector.SelectionDialogContentProvider.prototype;
++
++WebInspector.createExtensionSelectionDialogAndDelegate = function(element, onItemSelected, onClosing)
++{
++    var delegate = new WebInspector.ExtensionSelectionDialogContentProvider(onItemSelected);
++    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(delegate);
++    filteredItemSelectionDialog.willHide = onClosing;
++    WebInspector.Dialog.show(element, filteredItemSelectionDialog);
++    return delegate;
++}

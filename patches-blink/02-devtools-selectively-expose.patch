@@ -1,0 +1,609 @@
+diff --git a/LayoutTests/inspector/extensions/extensions-api-expected.txt b/LayoutTests/inspector/extensions/extensions-api-expected.txt
+index 80119ce..08aa59b 100644
+--- a/LayoutTests/inspector/extensions/extensions-api-expected.txt
++++ b/LayoutTests/inspector/extensions/extensions-api-expected.txt
+@@ -45,6 +45,66 @@ RUNNING TEST: extension_testAPI
+             }
+         }
+     }
++    protocol : {
++        ApplicationCache : {
++        }
++        CSS : {
++        }
++        Canvas : {
++        }
++        Console : {
++            onMessageAdded : {
++                addListener : <function>
++                removeListener : <function>
++            }
++            onMessageRepeatCountUpdated : {
++                addListener : <function>
++                removeListener : <function>
++            }
++            onMessagesCleared : {
++                addListener : <function>
++                removeListener : <function>
++            }
++        }
++        DOM : {
++        }
++        DOMDebugger : {
++        }
++        DOMStorage : {
++        }
++        Database : {
++        }
++        Debugger : {
++        }
++        FileSystem : {
++        }
++        HeapProfiler : {
++        }
++        IndexedDB : {
++        }
++        Input : {
++        }
++        Inspector : {
++        }
++        LayerTree : {
++        }
++        Memory : {
++        }
++        Network : {
++        }
++        Page : {
++        }
++        Profiler : {
++        }
++        Runtime : {
++        }
++        Timeline : {
++        }
++        Tracing : {
++        }
++        Worker : {
++        }
++    }
+     resources : {
+         onFinished : {
+             addListener : <function>
+diff --git a/Source/devtools/devtools.gyp b/Source/devtools/devtools.gyp
+index bf277be..a56448a 100644
+--- a/Source/devtools/devtools.gyp
++++ b/Source/devtools/devtools.gyp
+@@ -516,6 +516,12 @@
+                         }],
+                     ],
+                 },
++                  {
++                    'destination': '<(PRODUCT_DIR)/resources/inspector',
++                    'files': [
++                        '<(SHARED_INTERMEDIATE_DIR)/blink/ExtensionProtocolGenerator.js'
++                    ],
++                },
+                 {
+                     'destination': '<(PRODUCT_DIR)/resources/inspector/UglifyJS',
+                     'files': [
+@@ -565,15 +571,17 @@
+         {
+             'target_name': 'devtools_extension_api',
+             'type': 'none',
++            'dependencies': ['devtools_frontend_resources'],
+             'actions': [{
+                 'action_name': 'devtools_html',
+                 'script_name': 'scripts/generate_devtools_extension_api.py',
+                 'inputs': [
+                     '<@(_script_name)',
++                    '<(SHARED_INTERMEDIATE_DIR)/blink/ExtensionProtocolGenerator.js',
+                     '<@(devtools_extension_api_files)',
+                 ],
+                 'outputs': ['<(PRODUCT_DIR)/resources/inspector/devtools_extension_api.js'],
+-                'action': ['python', '<@(_script_name)', '<@(_outputs)', '<@(devtools_extension_api_files)'],
++                'action': ['python', '<@(_script_name)', '<@(_outputs)', '<(SHARED_INTERMEDIATE_DIR)/blink/ExtensionProtocolGenerator.js', '<@(devtools_extension_api_files)'],
+             }],
+         },
+         {
+@@ -645,6 +653,7 @@
+                         'input_pages': [
+                             '<@(devtools_files)',
+                             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
++                            '<(SHARED_INTERMEDIATE_DIR)/blink/ExtensionProtocolGenerator.js',
+                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
+                         ],
+                         'images': [
+@@ -679,6 +688,7 @@
+               ],
+               'outputs': [
+                 '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
++                '<(SHARED_INTERMEDIATE_DIR)/blink/ExtensionProtocolGenerator.js',
+               ],
+               'action': [
+                 'python',
+@@ -710,7 +720,8 @@
+                             '<@(_script_name)',
+                             '<@(_input_page)',
+                             '<@(devtools_files)',
+-                            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js'
++                            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
++                            '<(SHARED_INTERMEDIATE_DIR)/blink/ExtensionProtocolGenerator.js'
+                         ],
+                         'search_path': [
+                             'front_end',
+diff --git a/Source/devtools/front_end/DevToolsExtensionAPI.js b/Source/devtools/front_end/DevToolsExtensionAPI.js
+index 44f7c21..d31d06a 100644
+--- a/Source/devtools/front_end/DevToolsExtensionAPI.js
++++ b/Source/devtools/front_end/DevToolsExtensionAPI.js
+@@ -47,6 +47,7 @@ function platformExtensionAPI(coreAPI)
+     chrome.devtools.inspectedWindow.__proto__ = coreAPI.inspectedWindow;
+     chrome.devtools.network = coreAPI.network;
+     chrome.devtools.panels = coreAPI.panels;
++    chrome.devtools.protocol = coreAPI.protocol;
+ 
+     // default to expose experimental APIs for now.
+     if (extensionInfo.exposeExperimentalAPIs !== false) {
+diff --git a/Source/devtools/front_end/ExtensionAPI.js b/Source/devtools/front_end/ExtensionAPI.js
+index e243fde..8bbae57 100644
+--- a/Source/devtools/front_end/ExtensionAPI.js
++++ b/Source/devtools/front_end/ExtensionAPI.js
+@@ -65,6 +65,7 @@ function defineCommonExtensionSymbols(apiPrivate)
+         NetworkRequestFinished: "network-request-finished",
+         OpenResource: "open-resource",
+         PanelSearch: "panel-search-",
++        RemoteDebug: "remote-debug-",
+         ResourceAdded: "resource-added",
+         ResourceContentCommitted: "resource-content-committed",
+         TimelineEventRecorded: "timeline-event-recorded",
+@@ -91,6 +92,7 @@ function defineCommonExtensionSymbols(apiPrivate)
+         GetResourceContent: "getResourceContent",
+         Reload: "Reload",
+         Subscribe: "subscribe",
++        SendCommand: "sendCommand",
+         SetOpenResourceHandler: "setOpenResourceHandler",
+         SetResourceContent: "setResourceContent",
+         SetSidebarContent: "setSidebarContent",
+@@ -107,7 +109,10 @@ function defineCommonExtensionSymbols(apiPrivate)
+     };
+ }
+ 
+-function injectedExtensionAPI(injectedScriptId)
++/**
++ * @return InspectorExtensionAPI
++ */
++function injectedExtensionAPI(injectedScriptId, ProtocolImpl)
+ {
+ 
+ var apiPrivate = {};
+@@ -187,6 +192,7 @@ function InspectorExtensionAPI()
+     defineDeprecatedProperty(this, "webInspector", "resources", "network");
+     this.timeline = new Timeline();
+     this.console = new ConsoleAPI();
++    this.protocol = new Protocol(new RemoteDebugImpl());
+ }
+ 
+ /**
+@@ -758,6 +764,38 @@ ResourceImpl.prototype = {
+ /**
+  * @constructor
+  */
++function RemoteDebugImpl()
++{
++    this._eventSink = {};
++}
++
++RemoteDebugImpl.prototype =
++{
++    sendCommand: function(domainMethod, params, callback)
++    {
++        return extensionServer.sendRequest({ command: commands.SendCommand, method: domainMethod, params: params }, callback);
++    },
++
++    addListener: function(domainEvent, callback)
++    {
++        var name = apiPrivate.Events.RemoteDebug + domainEvent;
++        this._eventSink[name] = this._eventSink[name] || new EventSink(name);
++        this._eventSink[name].addListener(callback);
++    },
++
++    removeListener: function(domain, domainEvent, callback)
++    {
++        var name = apiPrivate.Events.RemoteDebug + domainEvent;
++        var eventSink = this._eventSink[name];
++        if (eventSink)
++            eventSink.removeListener(callback);
++    },
++
++}
++
++/**
++ * @constructor
++ */
+ function TimelineImpl()
+ {
+     this.onEventRecorded = new EventSink(events.TimelineEventRecorded);
+@@ -920,6 +958,7 @@ var PanelWithSidebar = declareInterfaceClass(PanelWithSidebarImpl);
+ var Request = declareInterfaceClass(RequestImpl);
+ var Resource = declareInterfaceClass(ResourceImpl);
+ var Timeline = declareInterfaceClass(TimelineImpl);
++var Protocol = declareInterfaceClass(ProtocolImpl);
+ 
+ // extensionServer is a closure variable defined by the glue below -- make sure we fail if it's not there.
+ if (!extensionServer)
+@@ -939,7 +978,8 @@ function buildExtensionAPIInjectedScript(extensionInfo)
+         defineCommonExtensionSymbols.toString() + ";" +
+         injectedExtensionAPI.toString() + ";" +
+         buildPlatformExtensionAPI(extensionInfo) + ";" +
+-        "platformExtensionAPI(injectedExtensionAPI(injectedScriptId));" +
++        extensionProtocolGenerator.toString() + ";" +
++        "platformExtensionAPI(injectedExtensionAPI(injectedScriptId, extensionProtocolGenerator()));" +
+         "return {};" +
+         "})";
+ }
+diff --git a/Source/devtools/front_end/ExtensionServer.js b/Source/devtools/front_end/ExtensionServer.js
+index 2e3e15e..a92cf61 100644
+--- a/Source/devtools/front_end/ExtensionServer.js
++++ b/Source/devtools/front_end/ExtensionServer.js
+@@ -67,6 +67,7 @@ WebInspector.ExtensionServer = function()
+     this._registerHandler(commands.GetRequestContent, this._onGetRequestContent.bind(this));
+     this._registerHandler(commands.GetResourceContent, this._onGetResourceContent.bind(this));
+     this._registerHandler(commands.Reload, this._onReload.bind(this));
++    this._registerHandler(commands.SendCommand, this._onSendCommand.bind(this));
+     this._registerHandler(commands.SetOpenResourceHandler, this._onSetOpenResourceHandler.bind(this));
+     this._registerHandler(commands.SetResourceContent, this._onSetResourceContent.bind(this));
+     this._registerHandler(commands.SetSidebarHeight, this._onSetSidebarHeight.bind(this));
+@@ -645,6 +646,15 @@ WebInspector.ExtensionServer.prototype = {
+         document.dispatchEvent(event);
+     },
+ 
++    _onSendCommand: function(message, port)
++    {
++        function dispatchSendCommandReply(result)
++        {
++            this._dispatchCallback(message.requestId, port, result);
++        }
++        InspectorBackend._wrapCallbackAndSendMessageObject(message.method, message.params, dispatchSendCommandReply.bind(this));
++    },
++
+     _dispatchCallback: function(requestId, port, result)
+     {
+         if (requestId)
+@@ -729,6 +739,11 @@ WebInspector.ExtensionServer.prototype = {
+         this._postNotification(WebInspector.extensionAPI.Events.TimelineEventRecorded, event.data);
+     },
+ 
++    _notifyRemoteDebugEvent: function(data)
++    {
++        this._postNotification(WebInspector.extensionAPI.Events.RemoteDebug + data.method, data);
++    },
++
+     /**
+      * @param {Array.<ExtensionDescriptor>} extensions
+      */
+@@ -770,7 +785,8 @@ WebInspector.ExtensionServer.prototype = {
+             var extensionOrigin = originMatch[1];
+             if (!this._registeredExtensions[extensionOrigin]) {
+                 // See ExtensionAPI.js and ExtensionCommon.js for details.
+-                InspectorFrontendHost.setInjectedScriptForOrigin(extensionOrigin, buildExtensionAPIInjectedScript(extensionInfo));
++                var injectedScript =  buildExtensionAPIInjectedScript(extensionInfo);
++                InspectorFrontendHost.setInjectedScriptForOrigin(extensionOrigin, injectedScript);
+                 this._registeredExtensions[extensionOrigin] = { name: name };
+             }
+             var iframe = document.createElement("iframe");
+@@ -797,6 +813,7 @@ WebInspector.ExtensionServer.prototype = {
+                 console.error("Ignoring unauthorized client request from " + origin);
+             return;
+         }
++        InspectorBackend.registerExtensionDispatcher(this._notifyRemoteDebugEvent.bind(this));
+         port._extensionOrigin = origin;
+         port.addEventListener("message", this._onmessage.bind(this), false);
+         port.start();
+diff --git a/Source/devtools/front_end/InspectorBackend.js b/Source/devtools/front_end/InspectorBackend.js
+index 658e421..7153baa 100644
+--- a/Source/devtools/front_end/InspectorBackend.js
++++ b/Source/devtools/front_end/InspectorBackend.js
+@@ -181,6 +181,11 @@ InspectorBackendClass.prototype = {
+         this._domainDispatchers[domain] = dispatcher;
+     },
+ 
++    registerExtensionDispatcher: function(dispatcher)
++    {
++        this._extensionDispatcher = dispatcher;
++    },
++
+     dispatch: function(message)
+     {
+         if (this.dumpInspectorProtocolMessages)
+@@ -261,6 +266,9 @@ InspectorBackendClass.prototype = {
+ 
+             dispatcher[functionName].apply(dispatcher, params);
+ 
++            if (this._extensionDispatcher)
++                this._extensionDispatcher.call(this._extensionDispatcher, messageObject);
++
+             if (this.dumpInspectorTimeStats)
+                 console.log("time-stats: " + messageObject.method + " = " + (Date.now() - processingStartTime));
+         }
+diff --git a/Source/devtools/front_end/externs.js b/Source/devtools/front_end/externs.js
+index af4d6c0..1b5b378 100644
+--- a/Source/devtools/front_end/externs.js
++++ b/Source/devtools/front_end/externs.js
+@@ -76,7 +76,7 @@ function WebKitMutation(callback)
+  * @param {function(Array.<WebKitMutation>)} callback
+  */
+ function WebKitMutationObserver(callback) {}
+-/** 
++/**
+  * @param {Node} container
+  * @param {Object} options
+  */
+@@ -370,7 +370,7 @@ WebInspector.showPanel = function(panel)
+ function buildPlatformExtensionAPI(extensionInfo) {}
+ 
+ /**
+- * @type {string} 
++ * @type {string}
+  */
+ WebInspector.inspectedPageDomain;
+ 
+@@ -556,3 +556,5 @@ WebInspector.settings.showPaintRects = /** type {WebInspector.Setting} */ { }
+ 
+ /** @type {boolean} */
+ window.dispatchStandaloneTestRunnerMessages;
++
++window.extensionProtocolGenerator = function() {}
+diff --git a/Source/devtools/front_end/inspector.html b/Source/devtools/front_end/inspector.html
+index 32d7bcb..32a5e49 100644
+--- a/Source/devtools/front_end/inspector.html
++++ b/Source/devtools/front_end/inspector.html
+@@ -116,6 +116,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     <script type="text/javascript" src="SplitView.js"></script>
+     <script type="text/javascript" src="SidebarView.js"></script>
+     <script type="text/javascript" src="ConsolePanel.js"></script>
++    <script type="text/javascript" src="ExtensionProtocolGenerator.js"></script>
+     <script type="text/javascript" src="ExtensionAPI.js"></script>
+     <script type="text/javascript" src="ExtensionAuditCategory.js"></script>
+     <script type="text/javascript" src="ExtensionServer.js"></script>
+diff --git a/Source/devtools/protocol.json b/Source/devtools/protocol.json
+index 72b27bd..522f4c7 100644
+--- a/Source/devtools/protocol.json
++++ b/Source/devtools/protocol.json
+@@ -883,7 +883,8 @@
+                 "parameters": [
+                     { "name": "message", "$ref": "ConsoleMessage", "description": "Console message that has been added." }
+                 ],
+-                "description": "Issued when new console message is added."
++                "description": "Issued when new console message is added.",
++                "extension": true
+             },
+             {
+                 "name": "messageRepeatCountUpdated",
+@@ -891,11 +892,13 @@
+                     { "name": "count", "type": "integer", "description": "New repeat count value." },
+                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp of most recent message in batch.", "hidden": true }
+                 ],
+-                "description": "Issued when subsequent message(s) are equal to the previous one(s)."
++                "description": "Issued when subsequent message(s) are equal to the previous one(s).",
++                "extension": true
+             },
+             {
+                 "name": "messagesCleared",
+-                "description": "Issued when console is cleared. This happens either upon <code>clearMessages</code> command or after page navigation."
++                "description": "Issued when console is cleared. This happens either upon <code>clearMessages</code> command or after page navigation.",
++                "extension": true
+             }
+         ]
+     },
+@@ -1096,7 +1099,7 @@
+                     { "name": "cacheDisabled", "type": "boolean", "description": "Cache disabled state." }
+                 ],
+                 "description": "Toggles ignoring cache for each request. If <code>true</code>, cache will not be used."
+-            },  
++            },
+             {
+                 "name": "loadResourceForFrontend",
+                 "async": true,
+diff --git a/Source/devtools/scripts/CodeGeneratorFrontend.py b/Source/devtools/scripts/CodeGeneratorFrontend.py
+index 720f4de..62a1e82 100755
+--- a/Source/devtools/scripts/CodeGeneratorFrontend.py
++++ b/Source/devtools/scripts/CodeGeneratorFrontend.py
+@@ -179,50 +179,53 @@ type_map = TypeMap(json_api)
+ 
+ 
+ class Generator:
+-    backend_js_domain_initializer_list = []
++    def __init__(self):
++        self.output_list = []
+ 
+-    @staticmethod
+-    def go():
++    def go(self):
+         for json_domain in json_api["domains"]:
+             domain_name = json_domain["domain"]
+             domain_name_lower = domain_name.lower()
+ 
+-            Generator.backend_js_domain_initializer_list.append("// %s.\n" % domain_name)
+-            Generator.backend_js_domain_initializer_list.append("InspectorBackend.register%sDispatcher = InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, \"%s\");\n" % (domain_name, domain_name))
++            self.output_domain(domain_name)
+ 
+             if "types" in json_domain:
+                 for json_type in json_domain["types"]:
+                     if "type" in json_type and json_type["type"] == "string" and "enum" in json_type:
+                         enum_name = "%s.%s" % (domain_name, json_type["id"])
+-                        Generator.process_enum(json_type, enum_name)
++                        self.process_enum(json_type, enum_name)
+                     elif json_type["type"] == "object":
+                         if "properties" in json_type:
+                             for json_property in json_type["properties"]:
+                                 if "type" in json_property and json_property["type"] == "string" and "enum" in json_property:
+                                     enum_name = "%s.%s%s" % (domain_name, json_type["id"], to_title_case(json_property["name"]))
+-                                    Generator.process_enum(json_property, enum_name)
++                                    self.process_enum(json_property, enum_name)
+ 
+             if "events" in json_domain:
+                 for json_event in json_domain["events"]:
+-                    Generator.process_event(json_event, domain_name)
++                    self.process_event(json_event, domain_name)
+ 
+             if "commands" in json_domain:
+                 for json_command in json_domain["commands"]:
+-                    Generator.process_command(json_command, domain_name)
++                    self.process_command(json_command, domain_name)
+ 
+-            Generator.backend_js_domain_initializer_list.append("\n")
++            self.output_list.append("\n")
+ 
+-    @staticmethod
+-    def process_enum(json_enum, enum_name):
++    def output_domain(self, domain_name):
++            self.output_list.append("// %s.\n" % domain_name)
++            self.output_list.append(("InspectorBackend.register%sDispatcher = " + "InspectorBackend.registerDomainDispatcher.bind(InspectorBackend, \"%s\");\n") % (domain_name, domain_name))
++
++    def process_enum(self, json_enum, enum_name):
+         enum_members = []
+         for member in json_enum["enum"]:
+             enum_members.append("%s: \"%s\"" % (fix_camel_case(member), member))
++        self.output_enum(enum_name, enum_members)
+ 
+-        Generator.backend_js_domain_initializer_list.append("InspectorBackend.registerEnum(\"%s\", {%s});\n" % (
++    def output_enum(self, enum_name, enum_members):
++        self.output_list.append("InspectorBackend.registerEnum(\"%s\", {%s});\n" % (
+             enum_name, ", ".join(enum_members)))
+ 
+-    @staticmethod
+-    def process_event(json_event, domain_name):
++    def process_event(self, json_event, domain_name):
+         event_name = json_event["name"]
+ 
+         json_parameters = json_event.get("parameters")
+@@ -233,11 +236,13 @@ class Generator:
+                 parameter_name = parameter["name"]
+                 backend_js_event_param_list.append("\"%s\"" % parameter_name)
+ 
+-        Generator.backend_js_domain_initializer_list.append("InspectorBackend.registerEvent(\"%s.%s\", [%s]);\n" % (
++        self.output_event(domain_name, event_name, backend_js_event_param_list)
++
++    def output_event(self, domain_name, event_name, backend_js_event_param_list):
++        self.output_list.append("InspectorBackend.registerEvent(\"%s.%s\", [%s]);\n" % (
+             domain_name, event_name, ", ".join(backend_js_event_param_list)))
+ 
+-    @staticmethod
+-    def process_command(json_command, domain_name):
++    def process_command(self, json_command, domain_name):
+         json_command_name = json_command["name"]
+ 
+         js_parameters_text = ""
+@@ -251,7 +256,6 @@ class Generator:
+ 
+                 optional = json_parameter.get("optional")
+ 
+-
+                 js_param_text = "{\"name\": \"%s\", \"type\": \"%s\", \"optional\": %s}" % (
+                     json_param_name,
+                     js_bind_type,
+@@ -261,7 +265,6 @@ class Generator:
+ 
+             js_parameters_text = ", ".join(js_param_list)
+ 
+-
+         backend_js_reply_param_list = []
+         if "returns" in json_command:
+             for json_return in json_command["returns"]:
+@@ -274,13 +277,80 @@ class Generator:
+         else:
+             has_error_data_param = "false"
+ 
+-        Generator.backend_js_domain_initializer_list.append("InspectorBackend.registerCommand(\"%s.%s\", [%s], %s, %s);\n" % (domain_name, json_command_name, js_parameters_text, js_reply_list, has_error_data_param))
++        self.output_command(domain_name, json_command_name, js_parameters_text, js_reply_list, has_error_data_param)
++
++    def output_command(self, domain_name, json_command_name, js_parameters_text, js_reply_list, has_error_data_param):
++        self.output_list.append("InspectorBackend.registerCommand(\"%s.%s\", [%s], %s, %s);\n" % (domain_name, json_command_name, js_parameters_text, js_reply_list, has_error_data_param))
+ 
+-Generator.go()
++backend_generator = Generator()
++backend_generator.go()
+ 
+ backend_js_file = open(output_js_dirname + "/InspectorBackendCommands.js", "w")
+ 
+ backend_js_file.write(Templates.backend_js.substitute(None,
+-    domainInitializers="".join(Generator.backend_js_domain_initializer_list)))
++    domainInitializers="".join(backend_generator.output_list)))
+ 
+ backend_js_file.close()
++
++
++class APIGenerator(Generator):
++    def go(self):
++        self.output_list.append("function extensionProtocolGenerator() {\n")
++        self.output_list.append("function ProtocolImpl(remoteDebug)\n")
++        self.output_list.append("{\n")
++        self.output_list.append("    ProtocolImpl.remoteDebug = remoteDebug;\n")
++        self.output_list.append("};\n")
++        self.output_list.append("ProtocolImpl.prototype = {};\n")
++        Generator.go(self)
++        self.output_list.append("return ProtocolImpl; \n")
++        self.output_list.append("}\n")
++
++    def output_domain(self, domain_name):
++        self.output_list.append("ProtocolImpl.prototype.%s = {};\n" % domain_name)
++
++    def output_enum(self, enum_name, enum_members):
++        self.output_list.append("// Ignore Enum(\"%s\", {%s})\n" % (
++            enum_name, ", ".join(enum_members)))
++
++    def process_event(self, json_event, domain_name):
++        if "extension" not in json_event:
++            return
++        Generator.process_event(self, json_event, domain_name)
++
++    def output_event(self, domain_name, event_name, backend_js_event_param_list):
++        firstUpper = event_name[0].upper()
++        camel_name = event_name.replace(event_name[0], firstUpper, 1)
++        self.output_list.append("ProtocolImpl.prototype.%s.on%s = {\n" % (domain_name, camel_name))
++        self.output_list.append("    addListener: function(callback) {\n")
++        self.output_list.append("        ProtocolImpl.remoteDebug.addListener(\"%s.%s\", callback);\n" % (domain_name, event_name))
++        self.output_list.append("    },\n")
++        self.output_list.append("    removeListener: function(callback) {\n")
++        self.output_list.append("        ProtocolImpl.remoteDebug.removeListener(\"%s.%s\", callback);\n" % (domain_name, event_name))
++        self.output_list.append("    }\n")
++        self.output_list.append("}\n")
++
++    def  process_command(self, json_command, domain_name):
++        if "extension" not in json_command:
++            return
++        js_param_list = []
++        if "parameters" in json_command:
++            json_params = json_command["parameters"]
++            for json_parameter in json_params:
++                js_param_list.append(json_parameter["name"].encode("ascii"))
++
++        self.output_list.append("ProtocolImpl.prototype.%s.%s = function()\n" % (domain_name,  json_command["name"]))
++        self.output_list.append("{\n")
++        self.output_list.append("    var params = {};\n")
++        self.output_list.append("    var userArguments = Array.prototype.slice.call(arguments);\n")
++        self.output_list.append("    %s.forEach(function(param_text){\n" % js_param_list)
++        self.output_list.append("        params[param_text] = userArguments.pop();\n")
++        self.output_list.append("    });\n")
++        self.output_list.append("    ProtocolImpl.remoteDebug.sendCommand(\"%s.%s\", params, userArguments.pop());\n" % (domain_name,  json_command["name"]))
++        self.output_list.append("}\n")
++
++extension_api_generator = APIGenerator()
++extension_api_generator.go()
++extension_js_file = open(output_js_dirname + "/ExtensionProtocolGenerator.js", "w")
++extension_js_file.write(Templates.backend_js.substitute(None,
++    domainInitializers="".join(extension_api_generator.output_list)))
++extension_js_file.close()
+diff --git a/Source/devtools/scripts/generate_devtools_extension_api.py b/Source/devtools/scripts/generate_devtools_extension_api.py
+index 6d5728b..4bd7b96 100644
+--- a/Source/devtools/scripts/generate_devtools_extension_api.py
++++ b/Source/devtools/scripts/generate_devtools_extension_api.py
+@@ -42,7 +42,8 @@ def write_devtools_extension_api(output, input_names):
+         var tabId;
+         var extensionInfo = {};
+         var extensionServer;
+-        platformExtensionAPI(injectedExtensionAPI("remote-" + window.parent.frames.length));
++        var ProtocolImpl = extensionProtocolGenerator();
++        platformExtensionAPI(injectedExtensionAPI("remote-" + window.parent.frames.length, ProtocolImpl));
+     })();""")
+ 
+ 
