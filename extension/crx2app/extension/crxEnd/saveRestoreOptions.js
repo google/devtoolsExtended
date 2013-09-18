@@ -6,7 +6,7 @@
 // used by options.html and crxEnd.js 
 // crx2app.options.allowedSites is array of {site: url, name: string}
 
-var crx2appOptionsKey = "crx2app.options";
+var optionsKey = "crx2app.options";
 
 function saveOptions() {
   var options = {
@@ -41,15 +41,23 @@ function saveOptions() {
   warnReload.classList.remove('hidden');  
 
   var stringified = JSON.stringify(options);
-  window.localStorage.setItem(crx2appOptionsKey, stringified);
+  window.localStorage.setItem(optionsKey, stringified);
 }
 
-function restoreOptions() {
-  var stringified = window.localStorage.getItem(crx2appOptionsKey);
-  try {
-    var options = JSON.parse(stringified);
-    return options;
-  } catch (exc) {
-    // ignore corrupt data
+function restoreOptions(defaultOptions) {
+  var stringified = window.localStorage.getItem(optionsKey);
+  var options;
+  if (stringified) {
+    try {
+      options = JSON.parse(stringified);
+      return options;
+    } catch (exc) {
+      // ignore corrupt data
+    }  
+  }
+  if (defaultOptions) {
+    var stringified = JSON.stringify(defaultOptions);
+    window.localStorage.setItem(optionsKey, stringified);
+    return defaultOptions;
   }
 }
