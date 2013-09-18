@@ -19,7 +19,7 @@ ExtensionOptions.prototype = {
   },
 
   restoreOptions: function() {
-    var stringified = window.localStorage.getItem(optionsKey);
+    var stringified = window.localStorage.getItem(this.optionsKey);
     var options;
     if (stringified) {
       try {
