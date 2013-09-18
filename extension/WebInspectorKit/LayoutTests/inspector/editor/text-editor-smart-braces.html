@@ -1,0 +1,48 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="editor-test.js"></script>
+<script>
+
+function test()
+{
+    var textEditor = InspectorTest.createTestEditor();
+    textEditor.setMimeType("text/javascript");
+    textEditor.setReadOnly(false);
+    textEditor.element.focus();
+
+    function clearEditor()
+    {
+        textEditor.setText("");
+        textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 0));
+    }
+
+    InspectorTest.runTestSuite([
+        function testTypeBraceSequence(next)
+        {
+            clearEditor();
+            InspectorTest.typeIn("({[");
+            InspectorTest.addResult(InspectorTest.textWithSelection(textEditor.text(), textEditor.selection()));
+            next();
+        },
+
+        function testBraceOverride(next)
+        {
+            clearEditor();
+            InspectorTest.typeIn("({[]})");
+            InspectorTest.addResult(InspectorTest.textWithSelection(textEditor.text(), textEditor.selection()));
+            next();
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest();">
+<p>
+This test checks text editor smart braces functionality.
+</p>
+
+</body>
+</html>

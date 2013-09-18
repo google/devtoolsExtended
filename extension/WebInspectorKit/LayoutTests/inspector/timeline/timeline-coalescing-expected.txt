@@ -1,0 +1,28 @@
+Test timeline records coalescing
+
+Root
+----> Layout
+--------> Layout
+--------> Layout
+--------> Layout
+----> Layout
+----> FunctionCall
+--------> FunctionCall
+------------> Layout
+----------------> Layout
+----------------> Layout
+--------> FunctionCall
+------------> Layout
+----------------> Layout
+----------------> Layout
+----> TimeStamp : foo
+--------> TimeStamp : foo
+--------> TimeStamp : foo
+----> TimeStamp : bar
+----> EventDispatch
+--------> EventDispatch
+--------> EventDispatch
+----> EventDispatch
+coalesced record's hasWarning: undefined
+coalesced record's childHasWarning: true
+

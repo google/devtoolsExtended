@@ -1,0 +1,95 @@
+<html>
+<head>
+<style>
+div#img-container {
+    position: relative;
+    width: 99px;
+    height: 99px;
+    overflow: clip;
+}
+</style>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function display()
+{
+    if (window.testRunner)
+        testRunner.display();
+}
+
+function addImage(src, width, height)
+{
+    var img = document.getElementById("img-container").firstElementChild;
+    img.width = width;
+    img.height = height;
+    img.src = src;
+}
+
+function test()
+{
+    var images = [
+        ["resources/test.bmp", "25", "25"],
+        ["resources/test.gif", "25", "25"],
+        ["resources/test.ico", "25", "25"],
+        ["resources/test.jpg", "25", "25"],
+        ["resources/test.png", "25", "25"],
+        ["resources/test.webp", "25", "25"],
+        ["resources/big.png", "150", "150"]
+    ];
+    var imageCount = 0;
+    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, recordSniffer);
+    InspectorTest.startTimeline(showImage);
+
+    function showImage()
+    {
+        if (imageCount >= images.length) {
+            allImagesShown();
+            return;
+        }
+        InspectorTest.evaluateInPage('addImage("' + images[imageCount].join('", "') + '");');
+        imageCount++;
+    }
+
+    function recordSniffer(event)
+    {
+        processRecord(event.data);
+    }
+
+    function processRecord(record)
+    {
+        if (record.type === WebInspector.TimelineModel.RecordType.ResizeImage)
+            showImage();
+        (record.children || []).forEach(processRecord);
+    }
+
+    function allImagesShown()
+    {
+        WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, recordSniffer);
+        InspectorTest.stopTimeline(dumpRecords);
+    }
+
+    function dumpRecords(records)
+    {
+        for (var i = 0; i < records.length; ++i) {
+            var record = records[i];
+            if (record.type === WebInspector.TimelineModel.RecordType.DecodeImage || record.type === WebInspector.TimelineModel.RecordType.ResizeImage) {
+                // Some decode events may happen in the background, so we won't have a stack trace.
+                delete record.stackTrace;
+                InspectorTest.printTimelineRecordProperties(record);
+            }
+        }
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline API instrumentation of a DecodeImage and ResizeImage events
+</p>
+<div id="img-container"><img onload="display()"></div>
+</body>
+</html>

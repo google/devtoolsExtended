@@ -1,0 +1,9 @@
+This test checks text editor smart braces functionality.
+
+
+Running: testTypeBraceSequence
+({[|]})
+
+Running: testBraceOverride
+({[]})|
+

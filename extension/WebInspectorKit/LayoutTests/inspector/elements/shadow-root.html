@@ -1,0 +1,37 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    WebInspector.ElementsTreeOutline.showShadowDOMForTest = true;
+
+    InspectorTest.expandElementsTree(function() {
+        var container = InspectorTest.expandedNodeWithId("container");
+        InspectorTest.dumpElementsTree(container);
+        InspectorTest.completeTest();
+    });
+}
+</script>
+</head>
+
+<body onload="runTest()">
+
+<p id="description">This test verified #document-fragment is displayed when showShadowRoot is enabled.</p>
+
+<div id="container">
+    <div id="test1"></div>
+    <div id="test2">only test</div>
+    <div id="test3">with <span>elements</span></div>
+</div>
+
+<script>
+test1.createShadowRoot();
+test2.createShadowRoot();
+test3.createShadowRoot();
+</script>
+
+</body>
+</html>

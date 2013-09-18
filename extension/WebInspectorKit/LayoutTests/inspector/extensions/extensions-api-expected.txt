@@ -1,0 +1,130 @@
+Tests public interface of WebInspector Extensions API
+
+Started extension.
+Running tests...
+RUNNING TEST: extension_testAPI
+{
+    audits : {
+    }
+    console : {
+        onMessageAdded : {
+            addListener : <function>
+            removeListener : <function>
+        }
+    }
+    inspectedWindow : {
+        onResourceAdded : {
+            addListener : <function>
+            removeListener : <function>
+        }
+        onResourceContentCommitted : {
+            addListener : <function>
+            removeListener : <function>
+        }
+    }
+    network : {
+        onFinished : {
+            addListener : <function>
+            removeListener : <function>
+        }
+        onNavigated : {
+            addListener : <function>
+            removeListener : <function>
+        }
+        onRequestFinished : {
+            addListener : <function>
+            removeListener : <function>
+        }
+    }
+    panels : {
+        elements : {
+            createSidebarPane : <function>
+            onSelectionChanged : {
+                addListener : <function>
+                removeListener : <function>
+            }
+        }
+    }
+    protocol : {
+        ApplicationCache : {
+        }
+        CSS : {
+        }
+        Canvas : {
+        }
+        Console : {
+            onMessageAdded : {
+                addListener : <function>
+                removeListener : <function>
+            }
+            onMessageRepeatCountUpdated : {
+                addListener : <function>
+                removeListener : <function>
+            }
+            onMessagesCleared : {
+                addListener : <function>
+                removeListener : <function>
+            }
+        }
+        DOM : {
+        }
+        DOMDebugger : {
+        }
+        DOMStorage : {
+        }
+        Database : {
+        }
+        Debugger : {
+        }
+        FileSystem : {
+        }
+        HeapProfiler : {
+        }
+        IndexedDB : {
+        }
+        Input : {
+        }
+        Inspector : {
+        }
+        LayerTree : {
+        }
+        Memory : {
+        }
+        Network : {
+        }
+        Page : {
+        }
+        Profiler : {
+        }
+        Runtime : {
+        }
+        Timeline : {
+        }
+        Tracing : {
+        }
+        Worker : {
+        }
+    }
+    resources : {
+        onFinished : {
+            addListener : <function>
+            removeListener : <function>
+        }
+        onNavigated : {
+            addListener : <function>
+            removeListener : <function>
+        }
+        onRequestFinished : {
+            addListener : <function>
+            removeListener : <function>
+        }
+    }
+    timeline : {
+        onEventRecorded : {
+            addListener : <function>
+            removeListener : <function>
+        }
+    }
+}
+All tests done.
+

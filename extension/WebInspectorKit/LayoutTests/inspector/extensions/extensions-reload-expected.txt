@@ -1,0 +1,21 @@
+Tests that webInspector.inspectedWindow.reload() successfully injects and preprocesses user's code upon reload
+
+Started extension.
+Running tests...
+RUNNING TEST: extension_testReloadInjectsCode
+Page reloaded.
+Page reloaded.
+With injected code: foo = 42
+Without injected code: foo = undefined
+RUNNING TEST: extension_testReloadPreprocessesCode
+Page reloaded.
+Page reloaded.
+With preprocessor:
+inspector-test.js.js
+debugger-test.js.js
+extensions-test.js.js
+extensions-reload.html.js
+extensions-reload.html_onload.js
+Without preprocessor: undefined
+All tests done.
+

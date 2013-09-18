@@ -1,0 +1,4 @@
+Tests SourceMap and StyleSheetMapping.
+
+UILocation upon LiveLocation update: http://localhost:8000/inspector/resources/example.scss:2:2
+
