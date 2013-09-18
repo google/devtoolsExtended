@@ -1,0 +1,32 @@
+{
+  "name": "DevtoolsExtended",
+  "version": "0.1",
+  "manifest_version": 2,
+  "content_security_policy": "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'",
+  "minimum_chrome_version": "23",
+  "description": "Chrome Devtools in a Chrome Extension, with an extended extension system ;-)",
+  // Assigns the name 'ggimboaoffjaeoblofehalflljohnfbl',
+  // see http://code.google.com/chrome/extensions/manifest.html#key
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDOHTtgc0bngtw8MjIYF4BZ4xqiR64OUuSvfHvKOitQrJGDWzNY0WEWNVlRBYTHPZfsIJnDJp15hqkBnS8egrxSwZhZq/m89YxZjKHpH0fW6jjBL+JZ2TfUEbamc9WqThGJeHSUkyMDyn2+L26SA8Ubv4DUNZbekf6dGkI27RqXmQIDAQAB",
+  "background" : {
+    "page": "background.html"
+  }, 
+  "options_page": "options/options.html",
+  "permissions" :
+    [
+      "*://*/*",
+      "tabs",
+      "contextMenus",
+      "webNavigation",
+      "webRequest",
+      "debugger",
+      "webRequestBlocking",
+      "experimental"
+    ]
+//   "content_scripts": [
+//     {
+//       "matches": ["*://*/*atopwi.html*"],
+//       "js": ["atopwi/devtoolsAdapter/webSocketOverrides.js"]
+//     }
+//   ]
+}
