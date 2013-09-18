@@ -1,0 +1,28 @@
+<html>
+<head>
+<script src="../ChannelPlate.js"></script>
+
+</head>
+<body>
+<p>Open the debugging console to see the conversation logged</p>
+<!-- define the iframe with blank content -->
+<iframe class='ChannelPlateClient' src="about:blank"></iframe>
+</body>
+<script>
+// Google BSD license http://code.google.com/google_bsd_license.html
+// Copyright 2011 Google Inc. johnjbarton@google.com
+
+// The iframe can be an HTML element or created by DOM calls
+var childFrame = document.querySelector('.ChannelPlateClient');
+
+// After we listen for messages we navigate the frame.
+var portToChild = new ChannelPlate.Parent(childFrame, "childFrame.html", function(message) {
+    console.log(window.location +  ' heard: \"' + message.data + '\"');
+  });
+
+console.log("parent listening for child");
+
+portToChild.postMessage ("hello child");
+
+</script>
+</html>
