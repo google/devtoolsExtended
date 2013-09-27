@@ -220,6 +220,10 @@ WebInspector.StylesSidebarPane.prototype = {
         if (!this.node)
             return;
 
+        var hasPseudoType = !!this.node.pseudoType();
+        this._elementStateButton.enableStyleClass("hidden", hasPseudoType);
+        this._elementStatePane.enableStyleClass("expanded", !hasPseudoType && this._elementStateButton.hasStyleClass("toggled"));
+
         var nodePseudoState = this._forcedPseudoClasses;
         if (!nodePseudoState)
             nodePseudoState = [];
@@ -432,7 +436,7 @@ WebInspector.StylesSidebarPane.prototype = {
         var styleRules = this._rebuildStyleRules(node, styles);
         var usedProperties = {};
         this._markUsedProperties(styleRules, usedProperties);
-        this.sections[0] = this._rebuildSectionsForStyleRules(styleRules, usedProperties, 0, null);
+        this.sections[0] = this._rebuildSectionsForStyleRules(styleRules, usedProperties, null);
         var anchorElement = this.sections[0].inheritedPropertiesSeparatorElement;
 
         if (styles.computedStyle)
@@ -454,7 +458,7 @@ WebInspector.StylesSidebarPane.prototype = {
             }
             usedProperties = {};
             this._markUsedProperties(styleRules, usedProperties);
-            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(styleRules, usedProperties, pseudoId, anchorElement);
+            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(styleRules, usedProperties, anchorElement);
         }
 
         this._nodeStylesUpdatedForTest(node, true);
@@ -498,7 +502,11 @@ WebInspector.StylesSidebarPane.prototype = {
             styleRules.push(attrStyle);
         }
 
+
         styleRules.push({ computedStyle: true, selectorText: "", style: nodeComputedStyle, editable: false });
+
+        if (!!node.pseudoType())
+            styleRules.push({ isStyleSeparator: true, isPlaceholder: true });
 
         // Inline style has the greatest specificity.
         if (styles.inlineStyle && node.nodeType() === Node.ELEMENT_NODE) {
@@ -635,7 +643,12 @@ WebInspector.StylesSidebarPane.prototype = {
         }
     },
 
-    _rebuildSectionsForStyleRules: function(styleRules, usedProperties, pseudoId, anchorElement)
+    /**
+     * @param {!Array.<Object>} styleRules
+     * @param {!Object.<string, boolean>} usedProperties
+     * @param {Element} anchorElement
+     */
+    _rebuildSectionsForStyleRules: function(styleRules, usedProperties, anchorElement)
     {
         // Make a property section for each style rule.
         var sections = [];
@@ -644,6 +657,11 @@ WebInspector.StylesSidebarPane.prototype = {
             var styleRule = styleRules[i];
             if (styleRule.isStyleSeparator) {
                 var separatorElement = document.createElement("div");
+                if (styleRule.isPlaceholder) {
+                    separatorElement.className = "styles-sidebar-placeholder";
+                    this._sectionsContainer.insertBefore(separatorElement, anchorElement);
+                    continue;
+                }
                 separatorElement.className = "sidebar-separator";
                 if (styleRule.node) {
                     var link = WebInspector.DOMPresentationUtils.linkifyNodeReference(styleRule.node);
@@ -768,14 +786,12 @@ WebInspector.StylesSidebarPane.prototype = {
     _toggleElementStatePane: function(event)
     {
         event.consume();
-        if (!this._elementStateButton.hasStyleClass("toggled")) {
+
+        var buttonToggled = !this._elementStateButton.hasStyleClass("toggled");
+        if (buttonToggled)
             this.expand();
-            this._elementStateButton.addStyleClass("toggled");
-            this._elementStatePane.addStyleClass("expanded");
-        } else {
-            this._elementStateButton.removeStyleClass("toggled");
-            this._elementStatePane.removeStyleClass("expanded");
-        }
+        this._elementStateButton.enableStyleClass("toggled", buttonToggled);
+        this._elementStatePane.enableStyleClass("expanded", buttonToggled);
     },
 
     _createElementStatePane: function()
@@ -885,7 +901,7 @@ WebInspector.ComputedStyleSidebarPane = function()
         showInheritedCheckbox.checked = true;
     }
 
-    function showInheritedToggleFunction(event)
+    function showInheritedToggleFunction()
     {
         WebInspector.settings.showInheritedComputedStyleProperties.set(showInheritedCheckbox.checked);
         if (WebInspector.settings.showInheritedComputedStyleProperties.get())
@@ -978,7 +994,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
                     // The "linkedStylesheet" case.
                     anchor = WebInspector.linkifyResourceAsNode(media.sourceURL, undefined, "subtitle", media.sourceURL);
                 }
-                anchor.preferredPanel = "scripts";
+                anchor.preferredPanel = "sources";
                 anchor.style.float = "right";
                 refElement.appendChild(anchor);
             }
@@ -1045,7 +1061,7 @@ WebInspector.StylePropertiesSection.prototype = {
         return this._parentPane;
     },
 
-    collapse: function(dontRememberState)
+    collapse: function()
     {
         // Overriding with empty body.
     },
@@ -1215,17 +1231,6 @@ WebInspector.StylePropertiesSection.prototype = {
         }
     },
 
-    findTreeElementWithName: function(name)
-    {
-        var treeElement = this.propertiesTreeOutline.children[0];
-        while (treeElement) {
-            if (treeElement.name === name)
-                return treeElement;
-            treeElement = treeElement.traverseNextTreeElement(true, null, true);
-        }
-        return null;
-    },
-
     _markSelectorMatches: function()
     {
         var rule = this.styleRule.rule;
@@ -1302,7 +1307,7 @@ WebInspector.StylePropertiesSection.prototype = {
         function linkifyUncopyable(url, line)
         {
             var link = WebInspector.linkifyResourceAsNode(url, line, "", url + ":" + (line + 1));
-            link.preferredPanel = "scripts";
+            link.preferredPanel = "sources";
             link.classList.add("webkit-html-resource-link");
             link.setAttribute("data-uncopyable", link.textContent);
             link.textContent = "";
@@ -1324,7 +1329,7 @@ WebInspector.StylePropertiesSection.prototype = {
         return document.createTextNode("");
     },
 
-    _handleEmptySpaceMouseDown: function(event)
+    _handleEmptySpaceMouseDown: function()
     {
         this._willCauseCancelEditing = this._parentPane._isEditingStyle;
     },
@@ -2194,18 +2199,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
     },
 
-    restoreNameElement: function()
-    {
-        // Restore <span class="webkit-css-property"> if it doesn't yet exist or was accidentally deleted.
-        if (this.nameElement === this.listItemElement.querySelector(".webkit-css-property"))
-            return;
-
-        this.nameElement = document.createElement("span");
-        this.nameElement.className = "webkit-css-property";
-        this.nameElement.textContent = "";
-        this.listItemElement.insertBefore(this.nameElement, this.listItemElement.firstChild);
-    },
-
     onattach: function()
     {
         WebInspector.StylePropertyTreeElementBase.prototype.onattach.call(this);
@@ -2283,7 +2276,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var uiLocation = this.property.uiLocation(propertyNameClicked);
         if (!uiLocation)
             return;
-        WebInspector.showPanel("scripts").showUILocation(uiLocation);
+        WebInspector.showPanel("sources").showUILocation(uiLocation);
     },
 
     /**
@@ -2328,23 +2321,26 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
         var isEditingName = selectElement === this.nameElement;
         if (!isEditingName)
-            this.valueElement.textContent = (!this._newProperty && WebInspector.CSSMetadata.isColorAwareProperty(this.name)) ? formatColors(this.value) : this.value;
+            this.valueElement.textContent = restoreURLs(this.valueElement.textContent, this.value);
 
         /**
-         * @param {string} value
+         * @param {string} fieldValue
+         * @param {string} modelValue
          * @return {string}
          */
-        function formatColors(value)
+        function restoreURLs(fieldValue, modelValue)
         {
-            var result = [];
-            var items = value.replace(WebInspector.StylesSidebarPane._colorRegex, "\0$1\0").split("\0");
-            for (var i = 0; i < items.length; ++i) {
-                var color = WebInspector.Color.parse(items[i]);
-
-                // We can be called with valid non-color values of |text| (like 'none' from border style).
-                result.push(color ? color.toString(WebInspector.StylesSidebarPane._colorFormat(color)) : items[i]);
+            const urlRegex = /\b(url\([^)]*\))/g;
+            var splitFieldValue = fieldValue.split(urlRegex);
+            if (splitFieldValue.length === 1)
+                return fieldValue;
+            var modelUrlRegex = new RegExp(urlRegex);
+            for (var i = 1; i < splitFieldValue.length; i += 2) {
+                var match = modelUrlRegex.exec(modelValue);
+                if (match)
+                    splitFieldValue[i] = match[0];
             }
-            return result.join("");
+            return splitFieldValue.join("");
         }
 
         var context = {
@@ -2385,7 +2381,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
             this.nameElement.normalize();
             this.valueElement.normalize();
 
-            this.editingCommitted(null, event.target.textContent, context.previousContent, context, "forward");
+            this.editingCommitted(event.target.textContent, context, "forward");
         }
 
         function blurListener(context, event)
@@ -2398,7 +2394,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 if (!isEditingName && this._parentPane._mouseDownTreeElementIsName)
                     moveDirection = "backward";
             }
-            this.editingCommitted(null, event.target.textContent, context.previousContent, context, moveDirection);
+            this.editingCommitted(event.target.textContent, context, moveDirection);
         }
 
         delete this.originalPropertyText;
@@ -2474,7 +2470,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 break;
             case "forward":
             case "backward":
-                this.editingCommitted(null, event.target.textContent, context.previousContent, context, result);
+                this.editingCommitted(event.target.textContent, context, result);
                 break;
             }
 
@@ -2556,7 +2552,12 @@ WebInspector.StylePropertyTreeElement.prototype = {
         return target;
     },
 
-    editingCommitted: function(element, userInput, previousContent, context, moveDirection)
+    /**
+     * @param {string} userInput
+     * @param {Object} context
+     * @param {string} moveDirection
+     */
+    editingCommitted: function(userInput, context, moveDirection)
     {
         this._removePrompt();
         this.editingEnded(context);
@@ -2585,7 +2586,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var blankInput = /^\s*$/.test(userInput);
         var shouldCommitNewProperty = this._newProperty && (isPropertySplitPaste || moveToOther || (!moveDirection && !isEditingName) || (isEditingName && blankInput));
         var section = this.section();
-        if (((userInput !== previousContent || isDirtyViaPaste) && !this._newProperty) || shouldCommitNewProperty) {
+        if (((userInput !== context.previousContent || isDirtyViaPaste) && !this._newProperty) || shouldCommitNewProperty) {
             section._afterUpdate = moveToNextCallback.bind(this, this._newProperty, !blankInput, section);
             var propertyText;
             if (blankInput || (this._newProperty && /^\s*$/.test(this.valueElement.textContent)))

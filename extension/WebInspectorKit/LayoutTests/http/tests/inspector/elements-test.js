@@ -11,7 +11,7 @@ InspectorTest.findNode = function(matchFunction, callback)
             if (result)
                 return;
 
-            var children = (node.children() || []).concat(node.shadowRoots());
+            var children = (node.children() || []).concat(node.shadowRoots()).concat(Object.values(node.pseudoElements() || {}));
             if (node.templateContent())
                 children.push(node.templateContent());
 
@@ -369,7 +369,7 @@ InspectorTest.dumpStyleTreeItem = function(treeItem, prefix, depth)
     }
 };
 
-InspectorTest.dumpElementsTree = function(rootNode, depth)
+InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
 {
     function beautify(element)
     {
@@ -420,7 +420,11 @@ InspectorTest.dumpElementsTree = function(rootNode, depth)
                 expander = "  ";
 
             var userProperties = userPropertyDataDump(treeItem);
-            InspectorTest.addResult(prefix + expander + beautify(treeItem.listItemElement) + userProperties);
+            var value = prefix + expander + beautify(treeItem.listItemElement) + userProperties;
+            if (resultsArray)
+                resultsArray.push(value);
+            else
+                InspectorTest.addResult(value);
         }
 
         if (!treeItem.expanded)
@@ -478,7 +482,7 @@ InspectorTest.dumpDOMAgentTree = function(node)
             dump(node.templateContent(), prefix);
         var shadowRoots = node.shadowRoots();
         for (var i = 0; i < shadowRoots.length; ++i)
-            dump(node.shadowRoots()[i], prefix);
+            dump(shadowRoots[i], prefix);
         var children = node.children();
         for (var i = 0; children && i < children.length; ++i)
             dump(children[i], prefix);

@@ -545,7 +545,15 @@ WebInspector.HeapSnapshot = function(profile, progress)
     this._aggregatesForDiff = null;
 
     this._init();
+
+    if (WebInspector.HeapSnapshot.enableAllocationProfiler) {
+        this._progress.updateStatus("Buiding allocation statistics\u2026");
+        this._allocationProfile = new WebInspector.AllocationProfile(profile);
+        this._progress.updateStatus("Done");
+    }
 }
+
+WebInspector.HeapSnapshot.enableAllocationProfiler = false;
 
 /**
  * @constructor
@@ -664,7 +672,6 @@ WebInspector.HeapSnapshot.prototype = {
         var edgeFieldsCount = this._edgeFieldsCount;
         var nodeFieldCount = this._nodeFieldCount;
         var edgeToNodeOffset = this._edgeToNodeOffset;
-        var nodes = this._nodes;
         var firstEdgeIndexes = this._firstEdgeIndexes;
         var nodeCount = this.nodeCount;
 
@@ -806,6 +813,16 @@ WebInspector.HeapSnapshot.prototype = {
         return aggregatesByClassName;
     },
 
+    allocationTracesTops: function()
+    {
+        return this._allocationProfile.serializeTraceTops();
+    },
+
+    allocationNodeCallers: function(nodeId)
+    {
+        return this._allocationProfile.serializeCallers(nodeId);
+    },
+
     aggregatesForDiff: function()
     {
         if (this._aggregatesForDiff)
@@ -906,7 +923,6 @@ WebInspector.HeapSnapshot.prototype = {
         var firstEdgeIndexes = this._firstEdgeIndexes;
         var edgeToNodeOffset = this._edgeToNodeOffset;
         var edgeTypeOffset = this._edgeTypeOffset;
-        var nodes = this._nodes;
         var nodeCount = this.nodeCount;
         var containmentEdgesLength = containmentEdges.length;
         var edgeWeakType = this._edgeWeakType;

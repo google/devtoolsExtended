@@ -416,7 +416,7 @@ WebInspector.CPUProfileView.prototype = {
         var uiLocation = script.rawLocationToUILocation(node.lineNumber);
         if (!uiLocation)
             return;
-        WebInspector.showPanel("scripts").showUILocation(uiLocation);
+        WebInspector.showPanel("sources").showUILocation(uiLocation);
     },
 
     _changeView: function()
@@ -749,7 +749,7 @@ WebInspector.CPUProfileType.prototype = {
     removeProfile: function(profile)
     {
         WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
-        if (!profile.isTemporary)
+        if (!profile.isTemporary && !profile.fromFile())
             ProfilerAgent.removeProfile(this.id, profile.uid);
     },
 
@@ -919,11 +919,10 @@ WebInspector.CPUProfileHeader.prototype = {
     },
 
     /**
-     * @param {File} file
+     * @param {!File} file
      */
     loadFromFile: function(file)
     {
-        this.title = file.name;
         this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
         this.sidebarElement.wait = true;
 

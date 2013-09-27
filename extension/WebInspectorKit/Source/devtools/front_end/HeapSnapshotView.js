@@ -90,6 +90,15 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.dominatorDataGrid.show(this.dominatorView.element);
     this.dominatorDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
+    if (WebInspector.HeapSnapshot.enableAllocationProfiler) {
+        this.allocationView = new WebInspector.View();
+        this.allocationView.element.addStyleClass("view");
+        this.allocationDataGrid = new WebInspector.AllocationDataGrid();
+        this.allocationDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
+        this.allocationDataGrid.show(this.allocationView.element);
+        this.allocationDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
+    }
+
     this.retainmentViewHeader = document.createElement("div");
     this.retainmentViewHeader.addStyleClass("retainers-view-header");
     WebInspector.installDragHandle(this.retainmentViewHeader, this._startRetainersHeaderDragging.bind(this), this._retainersHeaderDragging.bind(this), this._endRetainersHeaderDragging.bind(this), "row-resize");
@@ -117,6 +126,8 @@ WebInspector.HeapSnapshotView = function(parent, profile)
                   {title: "Containment", view: this.containmentView, grid: this.containmentDataGrid}];
     if (WebInspector.settings.showAdvancedHeapSnapshotProperties.get())
         this.views.push({title: "Dominators", view: this.dominatorView, grid: this.dominatorDataGrid});
+    if (WebInspector.HeapSnapshot.enableAllocationProfiler)
+        this.views.push({title: "Allocation", view: this.allocationView, grid: this.allocationDataGrid});
     this.views.current = 0;
     for (var i = 0; i < this.views.length; ++i)
         this.viewSelect.createOption(WebInspector.UIString(this.views[i].title));
@@ -647,8 +658,6 @@ WebInspector.HeapSnapshotView.prototype = {
 
         for (var i = this.baseSelect.size(), n = list.length; i < n; ++i) {
             var title = list[i].title;
-            if (WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(title))
-                title = WebInspector.UIString("Snapshot %d", WebInspector.ProfilesPanelDescriptor.userInitiatedProfileIndex(title));
             this.baseSelect.createOption(title);
         }
     },
@@ -663,18 +672,12 @@ WebInspector.HeapSnapshotView.prototype = {
         if (!this.filterSelect.size())
             this.filterSelect.createOption(WebInspector.UIString("All objects"));
 
-        if (this.profile.fromFile())
-            return;
         for (var i = this.filterSelect.size() - 1, n = list.length; i < n; ++i) {
-            var profile = list[i];
             var title = list[i].title;
-            if (WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(title)) {
-                var profileIndex = WebInspector.ProfilesPanelDescriptor.userInitiatedProfileIndex(title);
-                if (!i)
-                    title = WebInspector.UIString("Objects allocated before Snapshot %d", profileIndex);
-                else
-                    title = WebInspector.UIString("Objects allocated between Snapshots %d and %d", profileIndex - 1, profileIndex);
-            }
+            if (!i)
+                title = WebInspector.UIString("Objects allocated before %s", title);
+            else
+                title = WebInspector.UIString("Objects allocated between %s and %s", list[i - 1].title, title);
             this.filterSelect.createOption(title);
         }
     },
@@ -954,7 +957,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     removeProfile: function(profile)
     {
         WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
-        if (!profile.isTemporary)
+        if (!profile.isTemporary && !profile.fromFile())
             HeapProfilerAgent.removeProfile(profile.uid);
     },
 
@@ -1298,6 +1301,14 @@ WebInspector.HeapProfileHeader.prototype = {
         this.isTemporary = false;
         worker.startCheckingForLongRunningCalls();
         this.notifySnapshotReceived();
+
+        if (this.fromFile()) {
+            function didGetMaxNodeId(id)
+            {
+               this.maxJSObjectId = id;
+            }
+            snapshotProxy.maxJsNodeId(didGetMaxNodeId.bind(this));
+        }
     },
 
     notifySnapshotReceived: function()
@@ -1349,7 +1360,6 @@ WebInspector.HeapProfileHeader.prototype = {
      */
     loadFromFile: function(file)
     {
-        this.title = file.name;
         this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
         this.sidebarElement.wait = true;
         this._setupWorker();

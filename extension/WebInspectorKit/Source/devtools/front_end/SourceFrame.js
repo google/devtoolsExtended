@@ -336,6 +336,23 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
+     * @param {string} highlighterType
+     */
+    setHighlighterType: function(highlighterType)
+    {
+        this._highlighterType = highlighterType;
+        this._updateHighlighterType("");
+    },
+
+    /**
+     * @param {string} content
+     */
+    _updateHighlighterType: function(content)
+    {
+        this._textEditor.setMimeType(this._simplifyMimeType(content, this._highlighterType));
+    },
+
+    /**
      * @param {?string} content
      * @param {boolean} contentEncoded
      * @param {string} mimeType
@@ -354,7 +371,7 @@ WebInspector.SourceFrame.prototype = {
             this._textEditor.setSelection(selection);
         }
 
-        this._textEditor.setMimeType(this._simplifyMimeType(content, mimeType));
+        this._updateHighlighterType(content || "");
 
         this._textEditor.beginUpdates();
 
@@ -709,7 +726,7 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @param {string} text 
+     * @param {string} text
      */
     commitEditing: function(text)
     {
@@ -722,6 +739,7 @@ WebInspector.SourceFrame.prototype = {
     {
         this._updateSourcePosition(textRange);
         this.dispatchEventToListeners(WebInspector.SourceFrame.Events.SelectionChanged, textRange);
+        WebInspector.notifications.dispatchEventToListeners(WebInspector.SourceFrame.Events.SelectionChanged, textRange);
     },
 
     /**

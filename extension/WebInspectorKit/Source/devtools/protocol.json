@@ -603,6 +603,14 @@
                     { "name": "offsetBottom", "type": "number", "hidden": true, "optional": true, "description": "Bottom offset in DIP." }
                 ],
                 "hidden": true
+            },
+            {
+                "name": "screencastVisibilityChanged",
+                "description": "Fired when the page with currently enabled screencast was shown or hidden </code>.",
+                "parameters": [
+                    { "name": "visible", "type": "boolean", "description": "True if the page is visible." }
+                ],
+                "hidden": true
             }
         ]
     },
@@ -2208,6 +2216,17 @@
                 ],
                 "description": "Returns node id at given location.",
                 "hidden": true
+            },
+            {
+                "name": "getRelayoutBoundary",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node." }
+                ],
+                "returns": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Relayout boundary node id for the given node." }
+                ],
+                "description": "Returns the id of the nearest ancestor that is a relayout boundary.",
+                "hidden": true
             }
         ],
         "events": [
@@ -2580,6 +2599,7 @@
         "commands": [
             {
                 "name": "enable",
+                "async": true,
                 "description": "Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received."
             },
             {
@@ -2838,8 +2858,7 @@
                     { "name": "data", "type": "object", "description": "Event data." },
                     { "name": "children", "type": "array", "optional": true, "items": { "$ref": "TimelineEvent" }, "description": "Nested records." },
                     { "name": "counters", "$ref": "DOMCounters", "optional": true, "hidden": true, "description": "Current values of DOM counters." },
-                    { "name": "usedHeapSize", "type": "integer", "optional": true, "hidden": true, "description": "Current size of JS heap." },
-                    { "name": "nativeHeapStatistics", "type": "object", "optional": true, "hidden": true, "description": "Native heap statistics." }
+                    { "name": "usedHeapSize", "type": "integer", "optional": true, "hidden": true, "description": "Current size of JS heap." }
                 ],
                 "description": "Timeline record contains information about the recorded activity."
             }
@@ -2857,15 +2876,17 @@
                 "name": "start",
                 "parameters": [
                     { "name": "maxCallStackDepth", "optional": true, "type": "integer", "description": "Samples JavaScript stack traces up to <code>maxCallStackDepth</code>, defaults to 5." },
-                    { "name": "includeDomCounters", "optional": true, "type": "boolean", "hidden": true, "description": "Whether DOM counters data should be included into timeline events." },
-                    { "name": "includeNativeMemoryStatistics", "optional": true, "type": "boolean", "hidden": true, "description": "Whether native memory usage statistics should be reported as part of timeline events." }
-
+                    { "name": "bufferEvents", "optional": true, "type": "boolean", "hidden": true, "description": "Whether instrumentation events should be buffered and returned upon <code>stop</code> call." },
+                    { "name": "includeDomCounters", "optional": true, "type": "boolean", "hidden": true, "description": "Whether DOM counters data should be included into timeline events." }
                 ],
                 "description": "Starts capturing instrumentation events."
             },
             {
                 "name": "stop",
-                "description": "Stops capturing instrumentation events."
+                "description": "Stops capturing instrumentation events.",
+                "returns": [
+                    { "name": "events", "type": "array", "items": { "$ref": "TimelineEvent" }, "optional": true, "hidden": true, "description": "Timeline event record data." }
+                ]
             }
         ],
         "events": [
@@ -3043,7 +3064,10 @@
             },
             {
                 "name": "stepOver",
-                "description": "Steps over the statement."
+                "parameters": [
+                    { "name": "callFrameId", "optional": true, "$ref": "CallFrameId", "description": "A frame where the step must be performed." }
+                ],
+                "description": "Steps over the statement. Moves execution to the next statement in the top call frame or in the specified one."
             },
             {
                 "name": "stepInto",
@@ -3411,6 +3435,13 @@
             },
             {
                 "name": "disable"
+            },
+            {
+                "name": "setSamplingInterval",
+                "parameters": [
+                    { "name": "interval", "type": "integer", "description": "New sampling interval in microseconds." }
+                ],
+                "description": "Changes CPU profiler sampling interval. Must be called before CPU profiles recording started."
             },
             {
                 "name": "start"

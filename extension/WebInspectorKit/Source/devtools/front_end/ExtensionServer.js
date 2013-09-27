@@ -301,7 +301,7 @@ WebInspector.ExtensionServer.prototype = {
         if (!panel.addExtensionSidebarPane)
             return this._status.E_NOTSUPPORTED();
         var id = message.id;
-        var sidebar = new WebInspector.ExtensionSidebarPane(message.title, message.id);
+        var sidebar = new WebInspector.ExtensionSidebarPane(message.title, id);
         this._clientObjects[id] = sidebar;
         panel.addExtensionSidebarPane(id, sidebar);
 
@@ -671,10 +671,14 @@ WebInspector.ExtensionServer.prototype = {
             WebInspector.workspace,
             WebInspector.Workspace.Events.UISourceCodeAdded,
             this._notifyResourceAdded);
-        this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.ElementsPanelObjectSelected,
+        this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.PanelObjectSelected + "elements",
             WebInspector.notifications,
             WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged,
             this._notifyElementsSelectionChanged);
+        this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.PanelObjectSelected + "sources",
+            WebInspector.notifications,
+            WebInspector.SourceFrame.Events.SelectionChanged,
+            this._notifySourceFrameSelectionChanged);
         this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.ResourceContentCommitted,
             WebInspector.workspace,
             WebInspector.Workspace.Events.UISourceCodeContentCommitted,
@@ -697,12 +701,35 @@ WebInspector.ExtensionServer.prototype = {
 
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged,
             this._inspectedURLChanged, this);
+
         this._initDone = true;
         if (this._pendingExtensions) {
             this._pendingExtensions.forEach(this._innerAddExtension, this);
             delete this._pendingExtensions;
         }
         InspectorExtensionRegistry.getExtensionsAsync();
+    },
+
+    /**
+     * @param {WebInspector.TextRange} textRange
+     */
+    _makeSourceSelection: function(textRange)
+    {
+        var sourcesPanel = WebInspector.inspectorView.panel("sources");
+        var selection = {
+            startLine: textRange.startLine,
+            startColumn: textRange.startColumn,
+            endLine: textRange.endLine,
+            endColumn: textRange.endColumn,
+            url: sourcesPanel.tabbedEditorContainer.currentFile().uri()
+        };
+
+        return selection;
+    },
+
+    _notifySourceFrameSelectionChanged: function(event)
+    {
+        this._postNotification(WebInspector.extensionAPI.Events.PanelObjectSelected + "sources", this._makeSourceSelection(event.data));
     },
 
     _notifyConsoleMessageAdded: function(event)
@@ -731,7 +758,7 @@ WebInspector.ExtensionServer.prototype = {
 
     _notifyElementsSelectionChanged: function()
     {
-        this._postNotification(WebInspector.extensionAPI.Events.ElementsPanelObjectSelected);
+        this._postNotification(WebInspector.extensionAPI.Events.PanelObjectSelected + "elements");
     },
 
     _notifyTimelineEventRecorded: function(event)

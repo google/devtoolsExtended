@@ -83,19 +83,26 @@ WebInspector.LiveEditSupport.prototype = {
  */
 WebInspector.LiveEditSupport.logDetailedError = function(error, errorData, contextScript)
 {
+    var logLevel = WebInspector.ConsoleMessage.MessageLevel.Warning;
     if (!errorData) {
-        WebInspector.showErrorMessage(error);
+        if (error)
+            WebInspector.log(WebInspector.UIString("LiveEdit failed: %s", error), logLevel, true);
         return;
     }
     var compileError = errorData.compileError;
     if (compileError) {
-        var message = compileError.message;
+        var message = "LiveEdit compile failed: " + compileError.message;
         if (contextScript)
             message += " at " + contextScript.sourceURL + ":" + compileError.lineNumber + ":" + compileError.columnNumber;
-        WebInspector.showErrorMessage(message);
+        WebInspector.log(message, logLevel, true);
     } else {
-        WebInspector.showErrorMessage("Unknown LiveEdit error: " + JSON.stringify(errorData) + "; " + error);
+        WebInspector.log("Unknown LiveEdit error: " + JSON.stringify(errorData) + "; " + error, logLevel, true);
     }
+}
+
+WebInspector.LiveEditSupport.logSuccess = function()
+{
+    WebInspector.log(WebInspector.UIString("LiveEdit succeeded"), WebInspector.ConsoleMessage.MessageLevel.Debug, true);
 }
 
 /**
@@ -129,6 +136,7 @@ WebInspector.LiveEditScriptFile.prototype = {
                 WebInspector.LiveEditSupport.logDetailedError(error, errorData, script);
                 return;
             }
+            WebInspector.LiveEditSupport.logSuccess();
         }
 
         var script = WebInspector.debuggerModel.scriptForId(this._scriptId);
