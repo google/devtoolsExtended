@@ -1,3 +1,3 @@
-# This series applies on GIT commit ddb6a92ef56bfb9436cc20e99e72ff8b300417a5
+# This series applies on GIT commit 1155d1386f7900d37785a9e9f88864f676097928
 01-devtools.panels.createItemSelector.patch
 02-devtools-selectively-expose.patch

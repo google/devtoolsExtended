@@ -1,5 +1,5 @@
 diff --git a/LayoutTests/inspector/extensions/extensions-panel-expected.txt b/LayoutTests/inspector/extensions/extensions-panel-expected.txt
-index 78cbfda..92f34de 100644
+index e49f1fb..53b721d 100644
 --- a/LayoutTests/inspector/extensions/extensions-panel-expected.txt
 +++ b/LayoutTests/inspector/extensions/extensions-panel-expected.txt
 @@ -28,6 +28,11 @@ RUNNING TEST: extension_testGlobalShortcuts
@@ -13,9 +13,9 @@ index 78cbfda..92f34de 100644
 +prompt null
  RUNNING TEST: extension_testOpenResource
  Showing .../extensions-panel.html
- Showing resource .../inspector/extensions/extensions-panel.html in panel scripts (scripts), line: 1001
+ Showing resource .../inspector/extensions/extensions-panel.html in panel sources (sources), line: 1001
 diff --git a/LayoutTests/inspector/extensions/extensions-panel.html b/LayoutTests/inspector/extensions/extensions-panel.html
-index 4779bd4..cc772ae 100644
+index e5ec5c2..fe441e6 100644
 --- a/LayoutTests/inspector/extensions/extensions-panel.html
 +++ b/LayoutTests/inspector/extensions/extensions-panel.html
 @@ -69,6 +69,23 @@ function initialize_extensionsPanelTest()
@@ -88,7 +88,7 @@ index 4779bd4..cc772ae 100644
  </head>
  <body onload="runTest()">
 diff --git a/Source/devtools/front_end/ExtensionAPI.js b/Source/devtools/front_end/ExtensionAPI.js
-index 31d062c..e243fde 100644
+index 29aa4ff..41eb3fd 100644
 --- a/Source/devtools/front_end/ExtensionAPI.js
 +++ b/Source/devtools/front_end/ExtensionAPI.js
 @@ -59,6 +59,7 @@ function defineCommonExtensionSymbols(apiPrivate)
@@ -97,7 +97,7 @@ index 31d062c..e243fde 100644
          ButtonClicked: "button-clicked-",
 +        ItemSelected: "item-selected-",
          ConsoleMessageAdded: "console-message-added",
-         ElementsPanelObjectSelected: "panel-objectSelected-elements",
+         PanelObjectSelected: "panel-objectSelected-",
          NetworkRequestFinished: "network-request-finished",
 @@ -76,9 +77,11 @@ function defineCommonExtensionSymbols(apiPrivate)
          AddAuditResult: "addAuditResult",
@@ -111,7 +111,7 @@ index 31d062c..e243fde 100644
          EvaluateOnInspectedPage: "evaluateOnInspectedPage",
          ForwardKeyboardEvent: "_forwardKeyboardEvent",
          GetConsoleMessages: "getConsoleMessages",
-@@ -330,7 +333,20 @@ Panels.prototype = {
+@@ -331,7 +334,20 @@ Panels.prototype = {
      get SearchAction()
      {
          return apiPrivate.panels.SearchAction;
@@ -133,7 +133,7 @@ index 31d062c..e243fde 100644
  }
  
  /**
-@@ -390,6 +406,28 @@ function ElementsPanel()
+@@ -399,6 +415,28 @@ function SourcesPanel()
  
  /**
   * @constructor
@@ -163,7 +163,7 @@ index 31d062c..e243fde 100644
   */
  function ExtensionPanelImpl(id)
 diff --git a/Source/devtools/front_end/ExtensionServer.js b/Source/devtools/front_end/ExtensionServer.js
-index 15a668c..2e3e15e 100644
+index 7f97551..2efe7cb 100644
 --- a/Source/devtools/front_end/ExtensionServer.js
 +++ b/Source/devtools/front_end/ExtensionServer.js
 @@ -28,6 +28,10 @@
@@ -260,62 +260,8 @@ index 15a668c..2e3e15e 100644
      _onCreateStatusBarButton: function(message, port)
      {
          var panel = this._clientObjects[message.panel];
-@@ -306,7 +362,7 @@ WebInspector.ExtensionServer.prototype = {
-         var contentProvider = WebInspector.workspace.uiSourceCodeForOriginURL(url) || WebInspector.resourceForURL(url);
-         if (!contentProvider)
-             return false;
--            
-+
-         var lineNumber = details.lineNumber;
-         if (typeof lineNumber === "number")
-             lineNumber += 1;
-@@ -346,7 +402,7 @@ WebInspector.ExtensionServer.prototype = {
-                 result = { isException: true, value: resultPayload.description };
-             else
-                 result = { value: resultPayload.value };
--      
-+
-             this._dispatchCallback(message.requestId, port, result);
-         }
-         return this.evaluate(message.expression, true, true, message.evaluateOptions, port._extensionOrigin, callback.bind(this));
-@@ -813,7 +869,7 @@ WebInspector.ExtensionServer.prototype = {
-      * @param {string} securityOrigin
-      * @param {function(?string, ?RuntimeAgent.RemoteObject, boolean=)} callback
-      */
--    evaluate: function(expression, exposeCommandLineAPI, returnByValue, options, securityOrigin, callback) 
-+    evaluate: function(expression, exposeCommandLineAPI, returnByValue, options, securityOrigin, callback)
-     {
-         var contextId;
-         if (typeof options === "object") {
-@@ -821,7 +877,7 @@ WebInspector.ExtensionServer.prototype = {
-             function resolveURLToFrame(url)
-             {
-                 var found;
--                function hasMatchingURL(frame) 
-+                function hasMatchingURL(frame)
-                 {
-                     found = (frame.url === url) ? frame : null;
-                     return found;
-@@ -846,7 +902,7 @@ WebInspector.ExtensionServer.prototype = {
-                 contextSecurityOrigin = options.scriptExecutionContext;
- 
-             var frameContextList = WebInspector.runtimeModel.contextListByFrame(frame);
--            var context; 
-+            var context;
-             if (contextSecurityOrigin) {
-                 context = frameContextList.contextBySecurityOrigin(contextSecurityOrigin);
-                 if (!context) {
-@@ -855,7 +911,7 @@ WebInspector.ExtensionServer.prototype = {
-                 }
-             } else {
-                 context = frameContextList.mainWorldContext();
--                if (!context) 
-+                if (!context)
-                     return this._status.E_FAILED(frame.url + " has no execution context");
-             }
- 
 diff --git a/Source/devtools/front_end/FilteredItemSelectionDialog.js b/Source/devtools/front_end/FilteredItemSelectionDialog.js
-index c7b4e30..84d0b64 100644
+index 5ffbff1..58caf60 100644
 --- a/Source/devtools/front_end/FilteredItemSelectionDialog.js
 +++ b/Source/devtools/front_end/FilteredItemSelectionDialog.js
 @@ -299,11 +299,11 @@ WebInspector.FilteredItemSelectionDialog.prototype = {

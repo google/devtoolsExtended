@@ -1,8 +1,8 @@
 diff --git a/LayoutTests/inspector/extensions/extensions-api-expected.txt b/LayoutTests/inspector/extensions/extensions-api-expected.txt
-index 80119ce..08aa59b 100644
+index 167c9f7..2493227 100644
 --- a/LayoutTests/inspector/extensions/extensions-api-expected.txt
 +++ b/LayoutTests/inspector/extensions/extensions-api-expected.txt
-@@ -45,6 +45,66 @@ RUNNING TEST: extension_testAPI
+@@ -52,6 +52,66 @@ RUNNING TEST: extension_testAPI
              }
          }
      }
@@ -70,10 +70,10 @@ index 80119ce..08aa59b 100644
          onFinished : {
              addListener : <function>
 diff --git a/Source/devtools/devtools.gyp b/Source/devtools/devtools.gyp
-index bf277be..a56448a 100644
+index a689772..bf6b9d7 100644
 --- a/Source/devtools/devtools.gyp
 +++ b/Source/devtools/devtools.gyp
-@@ -516,6 +516,12 @@
+@@ -517,6 +517,12 @@
                          }],
                      ],
                  },
@@ -86,7 +86,7 @@ index bf277be..a56448a 100644
                  {
                      'destination': '<(PRODUCT_DIR)/resources/inspector/UglifyJS',
                      'files': [
-@@ -565,15 +571,17 @@
+@@ -566,15 +572,17 @@
          {
              'target_name': 'devtools_extension_api',
              'type': 'none',
@@ -105,7 +105,7 @@ index bf277be..a56448a 100644
              }],
          },
          {
-@@ -645,6 +653,7 @@
+@@ -646,6 +654,7 @@
                          'input_pages': [
                              '<@(devtools_files)',
                              '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
@@ -113,7 +113,7 @@ index bf277be..a56448a 100644
                              '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                          ],
                          'images': [
-@@ -679,6 +688,7 @@
+@@ -680,6 +689,7 @@
                ],
                'outputs': [
                  '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
@@ -121,7 +121,7 @@ index bf277be..a56448a 100644
                ],
                'action': [
                  'python',
-@@ -710,7 +720,8 @@
+@@ -711,7 +721,8 @@
                              '<@(_script_name)',
                              '<@(_input_page)',
                              '<@(devtools_files)',
@@ -144,7 +144,7 @@ index 44f7c21..d31d06a 100644
      // default to expose experimental APIs for now.
      if (extensionInfo.exposeExperimentalAPIs !== false) {
 diff --git a/Source/devtools/front_end/ExtensionAPI.js b/Source/devtools/front_end/ExtensionAPI.js
-index e243fde..8bbae57 100644
+index 41eb3fd..ea91bb4 100644
 --- a/Source/devtools/front_end/ExtensionAPI.js
 +++ b/Source/devtools/front_end/ExtensionAPI.js
 @@ -65,6 +65,7 @@ function defineCommonExtensionSymbols(apiPrivate)
@@ -183,7 +183,7 @@ index e243fde..8bbae57 100644
  }
  
  /**
-@@ -758,6 +764,38 @@ ResourceImpl.prototype = {
+@@ -767,6 +773,38 @@ ResourceImpl.prototype = {
  /**
   * @constructor
   */
@@ -222,7 +222,7 @@ index e243fde..8bbae57 100644
  function TimelineImpl()
  {
      this.onEventRecorded = new EventSink(events.TimelineEventRecorded);
-@@ -920,6 +958,7 @@ var PanelWithSidebar = declareInterfaceClass(PanelWithSidebarImpl);
+@@ -929,6 +967,7 @@ var PanelWithSidebar = declareInterfaceClass(PanelWithSidebarImpl);
  var Request = declareInterfaceClass(RequestImpl);
  var Resource = declareInterfaceClass(ResourceImpl);
  var Timeline = declareInterfaceClass(TimelineImpl);
@@ -230,7 +230,7 @@ index e243fde..8bbae57 100644
  
  // extensionServer is a closure variable defined by the glue below -- make sure we fail if it's not there.
  if (!extensionServer)
-@@ -939,7 +978,8 @@ function buildExtensionAPIInjectedScript(extensionInfo)
+@@ -948,7 +987,8 @@ function buildExtensionAPIInjectedScript(extensionInfo)
          defineCommonExtensionSymbols.toString() + ";" +
          injectedExtensionAPI.toString() + ";" +
          buildPlatformExtensionAPI(extensionInfo) + ";" +
@@ -241,7 +241,7 @@ index e243fde..8bbae57 100644
          "})";
  }
 diff --git a/Source/devtools/front_end/ExtensionServer.js b/Source/devtools/front_end/ExtensionServer.js
-index 2e3e15e..a92cf61 100644
+index 2efe7cb..d920d88 100644
 --- a/Source/devtools/front_end/ExtensionServer.js
 +++ b/Source/devtools/front_end/ExtensionServer.js
 @@ -67,6 +67,7 @@ WebInspector.ExtensionServer = function()
@@ -268,7 +268,7 @@ index 2e3e15e..a92cf61 100644
      _dispatchCallback: function(requestId, port, result)
      {
          if (requestId)
-@@ -729,6 +739,11 @@ WebInspector.ExtensionServer.prototype = {
+@@ -756,6 +766,11 @@ WebInspector.ExtensionServer.prototype = {
          this._postNotification(WebInspector.extensionAPI.Events.TimelineEventRecorded, event.data);
      },
  
@@ -280,7 +280,7 @@ index 2e3e15e..a92cf61 100644
      /**
       * @param {Array.<ExtensionDescriptor>} extensions
       */
-@@ -770,7 +785,8 @@ WebInspector.ExtensionServer.prototype = {
+@@ -797,7 +812,8 @@ WebInspector.ExtensionServer.prototype = {
              var extensionOrigin = originMatch[1];
              if (!this._registeredExtensions[extensionOrigin]) {
                  // See ExtensionAPI.js and ExtensionCommon.js for details.
@@ -290,7 +290,7 @@ index 2e3e15e..a92cf61 100644
                  this._registeredExtensions[extensionOrigin] = { name: name };
              }
              var iframe = document.createElement("iframe");
-@@ -797,6 +813,7 @@ WebInspector.ExtensionServer.prototype = {
+@@ -824,6 +840,7 @@ WebInspector.ExtensionServer.prototype = {
                  console.error("Ignoring unauthorized client request from " + origin);
              return;
          }
@@ -299,7 +299,7 @@ index 2e3e15e..a92cf61 100644
          port.addEventListener("message", this._onmessage.bind(this), false);
          port.start();
 diff --git a/Source/devtools/front_end/InspectorBackend.js b/Source/devtools/front_end/InspectorBackend.js
-index 658e421..7153baa 100644
+index 98f24b9..4672794 100644
 --- a/Source/devtools/front_end/InspectorBackend.js
 +++ b/Source/devtools/front_end/InspectorBackend.js
 @@ -181,6 +181,11 @@ InspectorBackendClass.prototype = {
@@ -353,7 +353,7 @@ index af4d6c0..1b5b378 100644
 +
 +window.extensionProtocolGenerator = function() {}
 diff --git a/Source/devtools/front_end/inspector.html b/Source/devtools/front_end/inspector.html
-index 32d7bcb..32a5e49 100644
+index d8a2065..c04c6bd 100644
 --- a/Source/devtools/front_end/inspector.html
 +++ b/Source/devtools/front_end/inspector.html
 @@ -116,6 +116,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -365,10 +365,10 @@ index 32d7bcb..32a5e49 100644
      <script type="text/javascript" src="ExtensionAuditCategory.js"></script>
      <script type="text/javascript" src="ExtensionServer.js"></script>
 diff --git a/Source/devtools/protocol.json b/Source/devtools/protocol.json
-index 72b27bd..522f4c7 100644
+index 716bec2..3c68a17 100644
 --- a/Source/devtools/protocol.json
 +++ b/Source/devtools/protocol.json
-@@ -883,7 +883,8 @@
+@@ -891,7 +891,8 @@
                  "parameters": [
                      { "name": "message", "$ref": "ConsoleMessage", "description": "Console message that has been added." }
                  ],
@@ -378,7 +378,7 @@ index 72b27bd..522f4c7 100644
              },
              {
                  "name": "messageRepeatCountUpdated",
-@@ -891,11 +892,13 @@
+@@ -899,11 +900,13 @@
                      { "name": "count", "type": "integer", "description": "New repeat count value." },
                      { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp of most recent message in batch.", "hidden": true }
                  ],
@@ -394,15 +394,6 @@ index 72b27bd..522f4c7 100644
              }
          ]
      },
-@@ -1096,7 +1099,7 @@
-                     { "name": "cacheDisabled", "type": "boolean", "description": "Cache disabled state." }
-                 ],
-                 "description": "Toggles ignoring cache for each request. If <code>true</code>, cache will not be used."
--            },  
-+            },
-             {
-                 "name": "loadResourceForFrontend",
-                 "async": true,
 diff --git a/Source/devtools/scripts/CodeGeneratorFrontend.py b/Source/devtools/scripts/CodeGeneratorFrontend.py
 index 720f4de..62a1e82 100755
 --- a/Source/devtools/scripts/CodeGeneratorFrontend.py
