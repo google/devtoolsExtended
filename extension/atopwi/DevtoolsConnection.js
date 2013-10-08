@@ -7,7 +7,7 @@
 define(['appendFrame'], 
 function(appendFrame)  {
 
-  var debug = false;
+  var debug = true;
 
   var DevtoolsConnection = { 
 
@@ -23,9 +23,15 @@ function(appendFrame)  {
  
     showWaiting: function() {
       window.document.querySelector('.devtoolsBackendURL').textContent = this.debuggee.devtoolsURL;
+      this._timeoutIndex = setTimeout(this._reportTimeout.bind(this), 2000);
+    },
+ 
+    _reportTimeout: function() {
+       window.document.querySelector('.splashWaitingMessage').textContent = " No response!"
     },
  
     showInspectorIframe: function() {
+      clearTimeout(this._timeoutIndex);
       var inspectorElt = window.document.querySelector('.WebInspectorContainer');
       inspectorElt.classList.remove('hide');
       window.document.querySelector('.splash').classList.add('hide');

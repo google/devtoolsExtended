@@ -18,7 +18,7 @@
 
   var InspectorPatch = {
 
-    // relative to WebInspectorKit/Source/WebCore/inspector/front-end
+    // relative to WebInspectorKit/Source/devtools/front-end
     files: [
        '../../../../../crx2app/extension/lib/requirejs/require.js',
        '../../../../../ChannelPlate/ChannelPlate.js',
